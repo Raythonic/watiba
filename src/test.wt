@@ -2,7 +2,9 @@
 import os
 import re
 
-`cd /tmp`
-print(`date`[0], `ls`[0])
+`cd /mnt/data3`
+print(`echo "BLAH!" > /tmp/blah.txt && tar -zcvf /tmp/blah.tar.gz /tmp/blah`.stderr)
+print(`echo "hello!"`.stdout[0])
+xc = `lsvv -lrt`.exit_code
 
-print(`pwd`[0])
+print("Return code: {}".format(xc))

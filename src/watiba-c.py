@@ -29,15 +29,11 @@ class Compiler:
         s = stmt
         output = self.output.copy()
         self.output = []
-        ct = -1
 
-        while ct != 0:
+        m = re.search(r".*`(\S.*)`.*", s)
+        while m:
+            s = s.replace("`{}`".format(m.group(1)), "{}.bash('{}')".format(watiba_ref, m.group(1)))
             m = re.search(r".*`(\S.*)`.*", s)
-            if m:
-                ct = len(m.groups())
-                s = s.replace("`{}`".format(m.group(1)), '{}.bash("{}")'.format(watiba_ref, m.group(1)))
-            else:
-                ct = 0
 
         output.append(s)
         return output
