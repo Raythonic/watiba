@@ -11,14 +11,6 @@ class WTOutput(Exception):
         self.exit_code = 0
         self.cwd = "."
 
-    def set_stdout(self, stdout):
-        self.stdout = stdout
-
-    def set_stderr(self, stderr):
-        self.stderr = stderr
-
-    def set_exit_code(self, exit_code):
-        self.exit_code = exit_code
 
 
 # Singleton object with no side effects
@@ -44,9 +36,9 @@ class Watiba(Exception):
                   stdout=PIPE,
                   stderr=PIPE,
                   close_fds=True)
-        out.set_exit_code(p.wait())
-        out.set_stdout(p.stdout.read().decode('utf-8').split('\n'))
-        out.set_stderr(p.stderr.read().decode('utf-8').split('\n'))
+        out.exit_code = p.wait()
+        out.stdout = p.stdout.read().decode('utf-8').split('\n')
+        out.stderr = p.stderr.read().decode('utf-8').split('\n')
 
         # Are we supposed to track context?  Yes, then set Python's CWD to where the command took us
         if context:
