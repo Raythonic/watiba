@@ -3,7 +3,7 @@ from subprocess import Popen, PIPE, STDOUT
 import re
 import os
 
-
+# The object returned to the caller of _watiba_
 class WTOutput(Exception):
     def __init__(self):
         self.stdout = []
@@ -20,23 +20,23 @@ class WTOutput(Exception):
     def set_exit_code(self, exit_code):
         self.exit_code = exit_code
 
-class Watiba(Exception):
-    def __init__(self):
-        self.out = WTOutput()
 
-    def set_context(self):
-        for n, o in enumerate(self.out.stdout):
-            m = re.match(r'^_watiba_\((\S.*)\)$', o)
-            if m:
-                os.chdir(m.group(1))
-                self.out.cwd = os.getcwd()
-                del self.out.stdout[n]
+# Singleton object with no side effects
+# Executes the command an returns a new WTOutput object
+class Watiba(Exception):
 
     # cmd - command string to execute
     # context = track or not track current dir
     # Returns:
-    #   string array of command result
+    #   WTOutput object that encapsulates stdout, stderr, exit code, etc.
     def bash(self, cmd, context=True):
+
+        # In order to be thread-safe in the generated code, ALWAYS create a new output object for each command
+        #  This is because in the generated code, the object reference, "_watiba_", is global and needs to be in scope
+        #  at all levels.  The compiler cannot be scope sensitive with this reference.  Therefore, it must be
+        # singleton with no side effects.
+        out = WTOutput()
+
         # Tack on this command to see what the current dir is after the user's command is executed
         ctx = ' && echo "_watiba_($(pwd))"' if context else ''
         p = Popen("{}{}".format(cmd, ctx),
@@ -44,11 +44,16 @@ class Watiba(Exception):
                   stdout=PIPE,
                   stderr=PIPE,
                   close_fds=True)
-        self.out.set_exit_code(p.wait())
-        self.out.set_stdout(p.stdout.read().decode('utf-8').split('\n'))
-        self.out.set_stderr(p.stderr.read().decode('utf-8').split('\n'))
+        out.set_exit_code(p.wait())
+        out.set_stdout(p.stdout.read().decode('utf-8').split('\n'))
+        out.set_stderr(p.stderr.read().decode('utf-8').split('\n'))
 
         # Are we supposed to track context?  Yes, then set Python's CWD to where the command took us
         if context:
-            self.set_context()
-        return self.out
+            for n, o in enumerate(out.stdout):
+                m = re.match(r'^_watiba_\((\S.*)\)$', o)
+                if m:
+                    os.chdir(m.group(1))
+                    out.cwd = os.getcwd()
+                    del out.stdout[n]
+        return out
