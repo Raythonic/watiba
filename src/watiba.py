@@ -3,6 +3,7 @@ from subprocess import Popen, PIPE, STDOUT
 import re
 import os
 
+
 # The object returned to the caller of _watiba_
 class WTOutput(Exception):
     def __init__(self):
@@ -10,7 +11,6 @@ class WTOutput(Exception):
         self.stderr = []
         self.exit_code = 0
         self.cwd = "."
-
 
 
 # Singleton object with no side effects
@@ -30,7 +30,7 @@ class Watiba(Exception):
         out = WTOutput()
 
         # Tack on this command to see what the current dir is after the user's command is executed
-        ctx = ' && echo "_watiba_cwd_($(pwd))"' if context else ''
+        ctx = ' && echo "_watiba_cwd_($(pwd))_"' if context else ''
         p = Popen("{}{}".format(cmd, ctx),
                   shell=True,
                   stdout=PIPE,
@@ -43,7 +43,7 @@ class Watiba(Exception):
         # Are we supposed to track context?  Yes, then set Python's CWD to where the command took us
         if context:
             for n, o in enumerate(out.stdout):
-                m = re.match(r'^_watiba_cwd_\((\S.*)\)$', o)
+                m = re.match(r'^_watiba_cwd_\((\S.*)\)_$', o)
                 if m:
                     os.chdir(m.group(1))
                     out.cwd = os.getcwd()
