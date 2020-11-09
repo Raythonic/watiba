@@ -4,13 +4,14 @@ import re
 
 `cd /mnt/data`
 for l in `ls > /tmp/hey.txt && cat /tmp/hey.txt`.stdout:
-    print("HEY: {}".format(l))
+    print("File: {}".format(l))
 
 
 print(`echo "BLAH!" > /tmp/blah.txt && tar -zcvf /tmp/blah.tar.gz /tmp/blah`.stderr)
 print(-`echo "hello!"`.stdout[0])
 
-`ls -lrt` or -`cd /tmp`
+if len(`ls -lrt`.stdout) > 0 or len(-`cd /tmp`.stdout) > 0:
+    print("larger than zero")
 
 # read the output example 2
 #  Iterate on the stdout property
