@@ -42,6 +42,8 @@ class Watiba(Exception):
 
         # Are we supposed to track context?  Yes, then set Python's CWD to where the command took us
         if context:
+            # if asked to keep CWD context, find our echo string and remove so the
+            # user doesn't see it
             for n, o in enumerate(out.stdout):
                 m = re.match(r'^_watiba_cwd_\((\S.*)\)_$', o)
                 if m:
