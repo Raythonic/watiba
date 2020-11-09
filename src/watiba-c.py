@@ -27,13 +27,19 @@ class Compiler:
 
     def compile(self, stmt):
         s = stmt
+        exp = ".*?(\-)?`(\S.*?)`.*?"
         output = self.output.copy()
         self.output = []
+        context = True
 
-        m = re.search(r".*`(\S.*)`.*", s)
+        m = re.search(exp, s)
         while m:
-            s = s.replace("`{}`".format(m.group(1)), "{}.bash('{}')".format(watiba_ref, m.group(1)))
-            m = re.search(r".*`(\S.*)`.*", s)
+            context = False if m.group(1) == "-" else True
+            dash = "-" if not context else ""
+            repl_str = "{}`{}`".format(dash, m.group(2))
+            print("groups: {}".format(m.groups()), file=sys.stderr)
+            s = s.replace(repl_str , "{}.bash('{}', {})".format(watiba_ref, m.group(2), context), 1)
+            m = re.search(exp, s)
 
         output.append(s)
         return output

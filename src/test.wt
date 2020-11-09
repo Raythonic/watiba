@@ -8,13 +8,9 @@ for l in `ls > /tmp/hey.txt && cat /tmp/hey.txt`.stdout:
 
 
 print(`echo "BLAH!" > /tmp/blah.txt && tar -zcvf /tmp/blah.tar.gz /tmp/blah`.stderr)
-print(`echo "hello!"`.stdout[0])
+print(-`echo "hello!"`.stdout[0])
 
-# read the output example 1
-#  Obtain a reference to the WTOutput object directly
-wto = `ls -lrt`
-for l in wto.stdout:
-    print(l)
+`ls -lrt` or -`cd /tmp`
 
 # read the output example 2
 #  Iterate on the stdout property
