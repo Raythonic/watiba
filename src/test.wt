@@ -3,6 +3,7 @@ import os
 import re
 
 `cd /mnt/data`
+-`cd /tmp`
 for l in `ls > /tmp/hey.txt && cat /tmp/hey.txt`.stdout:
     print("File: {}".format(l))
 

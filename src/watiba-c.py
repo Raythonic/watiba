@@ -26,7 +26,7 @@ class Compiler:
                     ]
 
     def compile(self, stmt):
-        s = stmt
+        s = str(stmt)
         exp = ".*?(\-)?`(\S.*?)`.*?"
         output = self.output.copy()
         self.output = []
@@ -34,9 +34,16 @@ class Compiler:
 
         m = re.search(exp, s)
         while m:
+            # This flag control Watiba's CWD tracking
             context = False if m.group(1) == "-" else True
+
+            # Make sure the string to be replaced as a dash or not
             repl_str = "{}`{}`".format("-" if not context else "", m.group(2))
+
+            # Replace the backticked commands with a Watiba function call
             s = s.replace(repl_str , "{}.bash('{}', {})".format(watiba_ref, m.group(2), context), 1)
+
+            # Test for more backticked commands
             m = re.search(exp, s)
 
         output.append(s)
