@@ -37,7 +37,6 @@ class Compiler:
             context = False if m.group(1) == "-" else True
             dash = "-" if not context else ""
             repl_str = "{}`{}`".format(dash, m.group(2))
-            print("groups: {}".format(m.groups()), file=sys.stderr)
             s = s.replace(repl_str , "{}.bash('{}', {})".format(watiba_ref, m.group(2), context), 1)
             m = re.search(exp, s)
 
