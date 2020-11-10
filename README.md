@@ -21,6 +21,26 @@ if __name__ == "__main__":
 This loop will display the file list from /tmp. The `ls -lrt` is run in the 
 context of previous `cd /tmp`.  
 
+Commands can also be Python variables. This is denoted by prepending a dollar sign on the
+variable name within backticks. A complete example:
+
+```
+#/usr/bin/python
+
+if __name__ == "__main__":
+    # Change CWD to /tmp
+    `cd /tmp`
+    
+    # Set a command string
+    my_cmd = "tar -zxvf blah.tar.gz"
+    
+    # Execute that command and save the result object in variable "w"
+    w = `$my_cmd`
+    if w.exit_code == 0:
+        for l in w.stderr:
+            print(l)
+```
+
 ### Directory Context
 
 A prominent Watiba usage point is directory context is kept for dispersed shell commands.

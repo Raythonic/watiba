@@ -10,8 +10,13 @@ Watiba complier.  Watiba are BASH embedded commands between escape characters (i
 
 Examples:
   example1.wt
-    for line in `ls -lrt`:
+    for line in `ls -lrt`.stdout:
         print(line)
+    
+    w = `cd /tmp && tar -zxvf blah.zip`
+    if w.exit_code != 0:
+        for l in w.stderr:
+            print(l, file=stderr)
 
 Author:
 Ray Walker
@@ -50,12 +55,18 @@ class Compiler:
         while m:
             # This flag control Watiba's CWD tracking
             context = False if m.group(1) == "-" else True
+            cmd = m.group(2)
 
             # Make sure the string to be replaced as a dash or not
-            repl_str = "{}`{}`".format("-" if not context else "", m.group(2))
+            repl_str = "{}`{}`".format("-" if not context else "", cmd)
 
             # Replace the backticked commands with a Watiba function call
-            s = s.replace(repl_str , "{}.bash('{}', {})".format(watiba_ref, m.group(2), context), 1)
+            if cmd[0] == "$":
+                cmd = cmd[1:]
+            else:
+                quote_style = "'" if cmd.find("'") < 0 else '"'
+                cmd = "{}{}{}".format(quote_style, cmd, quote_style)
+            s = s.replace(repl_str , "{}.bash({}, {})".format(watiba_ref, cmd, context), 1)
 
             # Test for more backticked commands
             m = re.search(exp, s)
