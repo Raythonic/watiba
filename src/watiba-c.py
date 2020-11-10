@@ -26,12 +26,23 @@ class Compiler:
                     ]
 
     def compile(self, stmt):
+
+        # Make a copy of the statement string
         s = str(stmt)
+
+        # Regex expression for catching backticked shell commands
         exp = ".*?(\-)?`(\S.*?)`.*?"
+
+        # Take a copy of initial generated code
         output = self.output.copy()
+
+        # Remove initial statements so they're not generated for every shell commands
         self.output = []
+
+        # Flag for Watiba CWD tracking
         context = True
 
+        # Run through the statement and replace backticked shell commands with Watiba function calls
         m = re.search(exp, s)
         while m:
             # This flag control Watiba's CWD tracking
