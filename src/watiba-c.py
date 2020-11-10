@@ -2,6 +2,9 @@
 import sys
 import re
 
+versions = ["Watiba 0.0.1",
+            "Python 3.8"]
+
 """
 Watiba complier.  Watiba are BASH embedded commands between escape characters (i.e. `), like traditional Bash.
 
@@ -65,6 +68,12 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("ERROR. No input file.")
         sys.exit(0)
+
+    if sys.argv[1] == "version":
+        for v in versions:
+            print(v)
+        sys.exit(0)
+
     in_file = sys.argv[1]
     if not re.match(r".*\.wt$", in_file):
         print("ERROR: Input file must be type .wt.  Found {}".format(in_file))
