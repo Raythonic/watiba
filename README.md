@@ -9,7 +9,7 @@ They can be placed in any Python statement or expression.  Watiba keeps track of
 any shell command so that all subsequent shell commands keep context.  For example:
 
 ```
-#/usr/bin/python
+#/usr/bin/python3
 
 if __name__ == "__main__":
     `cd /tmp`
@@ -24,7 +24,7 @@ Commands can also be Python variables. This is denoted by prepending a dollar si
 variable name within backticks. A complete example:
 
 ```
-#/usr/bin/python
+#/usr/bin/python3
 
 if __name__ == "__main__":
     # Change CWD to /tmp
@@ -52,7 +52,7 @@ the product of the `echo` as this element is removed from the STDOUT array passe
 to the user's program.
 
 If the `echo` presents a problem for the user, it can be eliminated by prefixing
-the leading escape (backtick) with dash.  Example:  ```for l in -`ls -lrt && pwd`.stdout:```
+the leading backtick with dash.  Example:  ```for l in -`ls -lrt && pwd`.stdout:```
 Warning: the dash will cause Watiba to lose its directory context should the command
 cause a CWD change.
 

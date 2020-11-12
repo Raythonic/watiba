@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="Watiba_Raythonic", # Replace with your own username
-    version="0.0.1",
+    version="0.0.2",
     author="Ray Walker",
     author_email="raythonic@gmail.com",
     description="Python syntactical sugar for embedded shell commands",
