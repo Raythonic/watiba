@@ -42,12 +42,12 @@ if __name__ == "__main__":
 
 ### Directory Context
 
-A prominent Watiba usage point is directory context is kept for dispersed shell commands.
-Any command that changes the shell's CWD is discovered and kept by Watiba.  
-Watiba achieves this by tagging a `&& echo pwd` to the user's 
+An important Watiba usage point is directory context is kept for dispersed shell commands.
+Any command that changes the shell's CWD is discovered and kept by Watiba.  Watiba achieves 
+this by tagging a `&& echo pwd` to the user's 
 command and then locating the result in the command's STDOUT and setting the
-Python environment to that CWD with `os.chdir(dir)`.  This is automatic and opaque to the user.  
-The user's STDOUT from the command(s) will not contain
+Python environment to that CWD with `os.chdir(dir)`.  This is automatic and opaque to the user.  The 
+user's STDOUT from the command(s) will not contain
 the product of the `echo` as this element is removed from the STDOUT array passed
 to the user's program.
 
@@ -65,3 +65,50 @@ Python object.  Following are its properties:
 - stderr - array of standard error output lines from the command normalized for display
 - exit_code - integer exit code value from command
 - cwd - current working directory after command was executed
+
+### Examples
+```
+
+# Stand alone commands.  One with directory context, one without
+
+# This CWD will be active until a subsequent command changes it
+`cd /tmp`
+
+# This will not change the Watiba CWD context, becasue of the dash prefix, but within the command
+# the cd is honored.  file.txt is created in /home/user/blah but
+# this does not impact the CWD of any subsequent commands.  They
+# are still operating from the previous cd command to /tmp
+-`cd /home/user/blah && touch file.txt`
+
+# This will find text files in /tmp/, not /home/user/blah  (CWD context!)
+w=`find . -name '*.txt'`
+for l in w.stdout:
+    print("File: {}".format(l))
+
+
+# Embedding commands in print expressions
+print(`echo "BLAH!" > /tmp/blah.txt && tar -zcvf /tmp/blah.tar.gz /tmp/blah.txt`.stderr)
+print(-`echo "hello!"`.stdout[0])
+
+# Example of more than one command in a statement line
+if len(`ls -lrt`.stdout) > 0 or len(-`cd /tmp`.stdout) > 0:
+    print("You have stdout or stderr messages")
+
+
+# Example of a command as a Python varible and
+#  receiving a Watiba object
+cmd = "tar -zcvf /tmp/watiba_test.tar.gz /mnt/data/git/watiba/src"
+cmd_results = `$cmd`
+if cmd_results.exit_code == 0:
+    for l in cmd_results.stderr:
+        print(l)
+
+# Simple reading of command output
+#  Iterate on the stdout property
+for l in `cat blah.txt`.stdout:
+    print(l)
+
+# example of a failed command to see its exit code
+xc = `lsvv -lrt`.exit_code
+print("Return code: {}".format(xc))
+```
