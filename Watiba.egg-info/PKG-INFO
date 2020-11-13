@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: Watiba
-Version: 0.0.36
+Version: 0.0.37
 Summary: Python syntactical sugar for embedded shell commands
 Home-page: https://github.com/Raythonic/watiba
 Author: Ray Walker
@@ -84,7 +84,7 @@ Description: # Watiba
         
         # Installation
         ## PIP
-        If you installed this with as a Python package, e.g. pip, then the pre-compiler can be found
+        If you installed this as a Python package, e.g. pip, then the pre-compiler can be found
         where the package was installed.  For example, on Linux:
         ```
         /home/{user}/.local/lib/python3.8/site-packages/watiba/watiba-c.py
