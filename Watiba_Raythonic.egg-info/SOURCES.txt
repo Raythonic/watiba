@@ -1,0 +1,6 @@
+README.md
+setup.py
+Watiba_Raythonic.egg-info/PKG-INFO
+Watiba_Raythonic.egg-info/SOURCES.txt
+Watiba_Raythonic.egg-info/dependency_links.txt
+Watiba_Raythonic.egg-info/top_level.txt
