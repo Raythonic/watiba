@@ -112,3 +112,6 @@ for l in `cat blah.txt`.stdout:
 xc = `lsvv -lrt`.exit_code
 print("Return code: {}".format(xc))
 ```
+
+# Installation
+If you installed this with as a Python package, e.g. pip, then the pre-compiler can be
