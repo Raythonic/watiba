@@ -9,11 +9,11 @@ They can be placed in any Python statement or expression.  Watiba keeps track of
 any shell command so that all subsequent shell commands keep context.  For example:
 
 ```
-#/usr/bin/python3
+#!/usr/bin/python3
 
 if __name__ == "__main__":
     `cd /tmp`
-    for l in 'ls -lrt`.stdout:
+    for l in `ls -lrt`.stdout:
         print(l)
 ```
 
@@ -24,7 +24,7 @@ Commands can also be Python variables. This is denoted by prepending a dollar si
 variable name within backticks. A complete example:
 
 ```
-#/usr/bin/python3
+#!/usr/bin/python3
 
 if __name__ == "__main__":
     # Change CWD to /tmp
@@ -45,10 +45,10 @@ if __name__ == "__main__":
 An important Watiba usage point is directory context is kept for dispersed shell commands.
 Any command that changes the shell's CWD is discovered and kept by Watiba.  Watiba achieves 
 this by tagging a `&& echo pwd` to the user's 
-command and then locating the result in the command's STDOUT and setting the
+command, locating the result in the command's STDOUT, and finally setting the
 Python environment to that CWD with `os.chdir(dir)`.  This is automatic and opaque to the user.  The 
 user's STDOUT from the command(s) will not contain
-the product of the `echo` as this element is removed from the STDOUT array passed
+the product of the inserted `echo` as this element is removed from the STDOUT array passed
 to the user's program.
 
 If the `echo` command suffix presents a problem for the user, it can be eliminated by prefixing
@@ -77,7 +77,7 @@ Python object.  Following are its properties:
 # Installation
 ## PIP
 If you installed this as a Python package, e.g. pip, then the pre-compiler can be found
-where the package was installed.  For example, on Linux:
+where the package was installed.  For example:
 ```
 /home/{user}/.local/lib/python3.8/site-packages/watiba/watiba-c.py
 ```
@@ -86,7 +86,7 @@ anywhere you need.
 
 ## GITHUB
 If you cloned this from github, you'll still need to install the package with pip for the
-watbia module first then you'll need modify and run the makefile.
+watbia module first then you'll need to modify and run the makefile.
 ```
 
 # Must install Watiba package
@@ -101,7 +101,7 @@ cd {to where you git cloned watiba}/watiba
 #    bin = /home/rwalk/bin/watiba-c
 #        -- CHANGE TO --
 #    venv = {your Python venv environment}
-#    bin = {your bin directory}
+#    bin = {your bin directory and file name}
 
 # Execute command
 make
@@ -110,7 +110,7 @@ make
 
 # Pre-compiling
 Once you've installed watiba-c.py into your path, you can execute it to pre-compile
-your .wt (watiba) code.  Output will be written to STDOUT, so you'll need to redirect
+your .wt (Watiba) code.  Output will be written to STDOUT, so you'll need to redirect
 it to your final Python file.  Example follows:
 ```
 watiba-c.py my_file.wt > my_file.py
@@ -123,7 +123,11 @@ watiba-c.py version
 ```
 
 ### Examples
+
+**my_file.wt**
+
 ```
+#!/usr/bin/python3
 
 # Stand alone commands.  One with directory context, one without
 
@@ -142,9 +146,10 @@ for l in w.stdout:
     print("File: {}".format(l))
 
 
-# Embedding commands in print expressions
+# Embedding commands in print expressions that will print the stderr output, which tar writes to
 print(`echo "BLAH!" > /tmp/blah.txt && tar -zcvf /tmp/blah.tar.gz /tmp/blah.txt`.stderr)
-print(-`echo "hello!"`.stdout[0])
+# This will print the first line of stdout from the echo
+print(`echo "hello!"`.stdout[0])
 
 # Example of more than one command in a statement line
 if len(`ls -lrt`.stdout) > 0 or len(-`cd /tmp`.stdout) > 0:
