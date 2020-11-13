@@ -1,9 +1,5 @@
-#!/usr/bin/python3.8
 import sys
 import re
-
-versions = ["Watiba 0.0.1",
-            "Python 3.8"]
 
 """
 Watiba complier.  Watiba are BASH embedded commands between escape characters (i.e. `), like traditional Bash.
