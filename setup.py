@@ -3,7 +3,7 @@ import setuptools
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-with open(".version", "r") as fh:
+with open("watiba/version.py", "r") as fh:
     new_version = fh.read().strip()
 
 setuptools.setup(

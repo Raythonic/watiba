@@ -1,11 +1,11 @@
 #!/bin/bash
 
 cd ~/git/watiba
-rm -f dist/*
+rm -rf dist
+mkdir dist
 
 # Increment the version number
-bin/__version__.py
-ver=$(cat .version)
+ver=$(bin/__version__.py)
 
 # Create a work space for version number change
 if [ -d tmp ]
@@ -16,18 +16,18 @@ fi
 mkdir tmp
 
 # Put version number in Watiba compiler code and build the dist package
-cp src/watiba-c.py tmp/.
+cp watiba/watiba-c.py tmp/.
 echo "#!/bin/python3" > tmp/temp.py
 echo "versions = [\"Watiba $ver\", \"Python 3.8\"]" >> tmp/temp.py
-cat src/watiba-c.py >> tmp/temp.py
-cp tmp/temp.py src/watiba-c.py
-cp src/watiba-c.py bin/.
+cat watiba/watiba-c.py >> tmp/temp.py
+cp tmp/temp.py watiba/watiba-c.py
+cp watiba/watiba-c.py bin/.
 
 # Build the dist package
-python3 setup.py sdist bdist_wheel
+python3 setup.py sdist
 
 # Restore original code
-cp tmp/watiba-c.py src/.
+cp tmp/watiba-c.py watiba/.
 
 # Push package to distribution site
 echo "__________________________"
