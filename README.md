@@ -74,7 +74,7 @@ Python object.  Following are its properties:
 # This CWD will be active until a subsequent command changes it
 `cd /tmp`
 
-# This will not change the Watiba CWD context, becasue of the dash prefix, but within 
+# This will not change the Watiba CWD context, because of the dash prefix, but within 
 # the command itself the cd is honored.  file.txt is created in /home/user/blah but
 # this does not impact the CWD of any subsequent commands.  They
 # are still operating from the previous cd command to /tmp
