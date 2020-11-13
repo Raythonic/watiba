@@ -1,0 +1,6 @@
+README.md
+setup.py
+Raythonic.egg-info/PKG-INFO
+Raythonic.egg-info/SOURCES.txt
+Raythonic.egg-info/dependency_links.txt
+Raythonic.egg-info/top_level.txt
