@@ -51,8 +51,8 @@ user's STDOUT from the command(s) will not contain
 the product of the `echo` as this element is removed from the STDOUT array passed
 to the user's program.
 
-If the `echo` presents a problem for the user, it can be eliminated by prefixing
-the leading backtick with dash.  Example:  ```for l in -`ls -lrt && pwd`.stdout:```
+If the `echo` command suffix presents a problem for the user, it can be eliminated by prefixing
+the leading backtick with a dash.  Example:  ```for l in -`ls -lrt && pwd`.stdout:```
 Warning: the dash will cause Watiba to lose its directory context should the command
 cause a CWD change.
 
