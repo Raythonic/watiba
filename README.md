@@ -76,7 +76,7 @@ Python object.  Following are its properties:
 
 # Installation
 ## PIP
-If you installed this with as a Python package, e.g. pip, then the pre-compiler can be found
+If you installed this as a Python package, e.g. pip, then the pre-compiler can be found
 where the package was installed.  For example, on Linux:
 ```
 /home/{user}/.local/lib/python3.8/site-packages/watiba/watiba-c.py
