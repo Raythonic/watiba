@@ -3,9 +3,12 @@ import setuptools
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
+with open(".version", "r") as fh:
+    new_version = fh.read().strip()
+
 setuptools.setup(
-    name="Watiba_Raythonic", # Replace with your own username
-    version="0.0.2",
+    name="Watiba", # Replace with your own username
+    version=new_version,
     author="Ray Walker",
     author_email="raythonic@gmail.com",
     description="Python syntactical sugar for embedded shell commands",
