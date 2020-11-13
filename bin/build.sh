@@ -21,6 +21,7 @@ echo "#!/bin/python3" > tmp/temp.py
 echo "versions = [\"Watiba $ver\", \"Python 3.8\"]" >> tmp/temp.py
 cat src/watiba-c.py >> tmp/temp.py
 cp tmp/temp.py src/watiba-c.py
+cp src/watiba-c.py bin/.
 
 # Build the dist package
 python3 setup.py sdist bdist_wheel
