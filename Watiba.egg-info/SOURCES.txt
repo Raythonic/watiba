@@ -1,0 +1,10 @@
+README.md
+setup.py
+Watiba.egg-info/PKG-INFO
+Watiba.egg-info/SOURCES.txt
+Watiba.egg-info/dependency_links.txt
+Watiba.egg-info/top_level.txt
+watiba/__init__.py
+watiba/version.py
+watiba/watiba-c.py
+watiba/watiba.py
