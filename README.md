@@ -52,9 +52,16 @@ the product of the `echo` as this element is removed from the STDOUT array passe
 to the user's program.
 
 If the `echo` command suffix presents a problem for the user, it can be eliminated by prefixing
-the leading backtick with a dash.  Example:  ```for l in -`ls -lrt && pwd`.stdout:```
-Warning: the dash will cause Watiba to lose its directory context should the command
+the leading backtick with a dash.  
+
+_Warning_: the dash will cause Watiba to lose its directory context should the command
 cause a CWD change.
+
+
+Example:  ```for l in -`cd /home/user && ls -lrt && pwd`.stdout: print(l)``` will list the files
+for /home/user and ```pwd``` output, but it will not change the current working directory for 
+subsequent commands.
+
 
 ### Command Results
 The results of the command issued in backticks are available in the properties
@@ -114,4 +121,44 @@ print("Return code: {}".format(xc))
 ```
 
 # Installation
-If you installed this with as a Python package, e.g. pip, then the pre-compiler can be
+## PIP
+If you installed this with as a Python package, e.g. pip, then the pre-compiler can be found
+where the package was installed.  For example, on Linux:
+```
+/home/{user}/.local/lib/python3.8/site-packages/watiba/watiba-c.py
+```
+This file can be copied to any directory in your PATH.  It is stand-alone and can be copied
+anywhere you need.
+
+## GITHUB
+If you cloned this from github, you'll still need to install the package with pip for the
+watbia module first then you'll need modify and run the makefile.
+```
+pip3 install watiba
+cd {to where you git cloned watiba}/watiba
+# 1. Edit makefile
+# 2. Change the top two variables to your target destinations
+# 3. venv = /home/rwalk/Projects/python3/venv/lib64/python3.8/site-packages/
+#    bin = /home/rwalk/bin/watiba-c
+#        -- CHANGE TO --
+#    venv = {your Python venv environment}
+#    bin = {your bin directory}
+
+# Execute command
+make
+
+```
+
+# Pre-compiling
+Once you've installed watiba-c.py into your path, you can execute it to pre-compile
+your .wt (watiba) code.  Output will be written to STDOUT, so you'll need to redirect
+it to your final Python file.  Example follows:
+```
+watiba-c.py my_file.wt > my_file.py
+chmod +x my_file.py
+./my_file.py
+```
+To show the Watiba version of your pre-compiler, enter:
+```
+watiba-c.py version
+```
