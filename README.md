@@ -157,7 +157,7 @@ for l in w.stdout:
 
 
 # Embedding commands in print expressions that will print the stderr output, which tar writes to
-print(`echo "Some textual comment" > /tmp/blah.txt && tar -zcvf /tmp/blah.tar.gz /tmp/
+print(`echo "Some textual comment" > /tmp/blah.txt && tar -zcvf /tmp/blah.tar.gz /tmp`).stdout)
 
 # This will print the first line of stdout from the echo
 print(`echo "hello!"`.stdout[0])
