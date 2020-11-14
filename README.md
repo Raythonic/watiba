@@ -40,6 +40,16 @@ if __name__ == "__main__":
             print(l)
 ```
 
+#### Commands with Variables
+Commands within backticks cannot contain snippets of Python code or variables.  They must be pure shell commands.  
+However, command strings can be constructed with Python variables in the typical ways.  For example:
+```
+in_file = "some_file.txt"
+my_cmd = "cat {}".format(in_file)
+print(`$my_cmd`.stdout)
+```
+
+
 ### Directory Context
 
 An important Watiba usage point is directory context is kept for dispersed shell commands.
