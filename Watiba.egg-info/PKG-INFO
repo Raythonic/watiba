@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: Watiba
-Version: 0.0.37
+Version: 0.0.38
 Summary: Python syntactical sugar for embedded shell commands
 Home-page: https://github.com/Raythonic/watiba
 Author: Ray Walker
@@ -17,11 +17,11 @@ Description: # Watiba
         any shell command so that all subsequent shell commands keep context.  For example:
         
         ```
-        #/usr/bin/python3
+        #!/usr/bin/python3
         
         if __name__ == "__main__":
             `cd /tmp`
-            for l in 'ls -lrt`.stdout:
+            for l in `ls -lrt`.stdout:
                 print(l)
         ```
         
@@ -32,7 +32,7 @@ Description: # Watiba
         variable name within backticks. A complete example:
         
         ```
-        #/usr/bin/python3
+        #!/usr/bin/python3
         
         if __name__ == "__main__":
             # Change CWD to /tmp
@@ -53,10 +53,10 @@ Description: # Watiba
         An important Watiba usage point is directory context is kept for dispersed shell commands.
         Any command that changes the shell's CWD is discovered and kept by Watiba.  Watiba achieves 
         this by tagging a `&& echo pwd` to the user's 
-        command and then locating the result in the command's STDOUT and setting the
+        command, locating the result in the command's STDOUT, and finally setting the
         Python environment to that CWD with `os.chdir(dir)`.  This is automatic and opaque to the user.  The 
         user's STDOUT from the command(s) will not contain
-        the product of the `echo` as this element is removed from the STDOUT array passed
+        the product of the inserted `echo` as this element is removed from the STDOUT array passed
         to the user's program.
         
         If the `echo` command suffix presents a problem for the user, it can be eliminated by prefixing
@@ -85,7 +85,7 @@ Description: # Watiba
         # Installation
         ## PIP
         If you installed this as a Python package, e.g. pip, then the pre-compiler can be found
-        where the package was installed.  For example, on Linux:
+        where the package was installed.  For example:
         ```
         /home/{user}/.local/lib/python3.8/site-packages/watiba/watiba-c.py
         ```
@@ -94,7 +94,7 @@ Description: # Watiba
         
         ## GITHUB
         If you cloned this from github, you'll still need to install the package with pip for the
-        watbia module first then you'll need modify and run the makefile.
+        watbia module first then you'll need to modify and run the makefile.
         ```
         
         # Must install Watiba package
@@ -109,7 +109,7 @@ Description: # Watiba
         #    bin = /home/rwalk/bin/watiba-c
         #        -- CHANGE TO --
         #    venv = {your Python venv environment}
-        #    bin = {your bin directory}
+        #    bin = {your bin directory and file name}
         
         # Execute command
         make
@@ -118,7 +118,7 @@ Description: # Watiba
         
         # Pre-compiling
         Once you've installed watiba-c.py into your path, you can execute it to pre-compile
-        your .wt (watiba) code.  Output will be written to STDOUT, so you'll need to redirect
+        your .wt (Watiba) code.  Output will be written to STDOUT, so you'll need to redirect
         it to your final Python file.  Example follows:
         ```
         watiba-c.py my_file.wt > my_file.py
@@ -131,7 +131,11 @@ Description: # Watiba
         ```
         
         ### Examples
+        
+        **my_file.wt**
+        
         ```
+        #!/usr/bin/python3
         
         # Stand alone commands.  One with directory context, one without
         
@@ -150,9 +154,10 @@ Description: # Watiba
             print("File: {}".format(l))
         
         
-        # Embedding commands in print expressions
+        # Embedding commands in print expressions that will print the stderr output, which tar writes to
         print(`echo "BLAH!" > /tmp/blah.txt && tar -zcvf /tmp/blah.tar.gz /tmp/blah.txt`.stderr)
-        print(-`echo "hello!"`.stdout[0])
+        # This will print the first line of stdout from the echo
+        print(`echo "hello!"`.stdout[0])
         
         # Example of more than one command in a statement line
         if len(`ls -lrt`.stdout) > 0 or len(-`cd /tmp`.stdout) > 0:

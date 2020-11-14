@@ -5,8 +5,8 @@ commands within Python applications.
 ## Usage
 Watiba files, suffixed with ".wt", are Python programs containing embedded shell commands. 
 Shell commands are expressed within backtick characters emulating BASH's original capture syntax.
-They can be placed in any Python statement or expression.  Watiba keeps track of the current working directory after the execution of 
-any shell command so that all subsequent shell commands keep context.  For example:
+They can be placed in any Python statement or expression.  Watiba keeps track of the current working directory 
+after the execution of any shell command so that all subsequent shell commands keep context.  For example:
 
 ```
 #!/usr/bin/python3
