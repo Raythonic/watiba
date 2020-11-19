@@ -1,4 +1,10 @@
 #!/bin/python3
+versions = ["Watiba 0.0.60", "Python 3.8"]
+#!/bin/python3
+versions = ["Watiba 0.0.59", "Python 3.8"]
+#!/bin/python3
+versions = ["Watiba 0.0.58", "Python 3.8"]
+#!/bin/python3
 versions = ["Watiba 0.0.57", "Python 3.8"]
 #!/bin/python3
 versions = ["Watiba 0.0.56", "Python 3.8"]

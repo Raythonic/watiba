@@ -5,6 +5,8 @@ import re
 `cd /tmp`
 -`cd /mnt/data`
 
+print("CWD is not /home: {}".format(-`cd /home`.cwd))
+
 # This will find text file in /tmp/, not /mnt/data
 w=`find . -name '*.txt'`
 for l in w.stdout:
