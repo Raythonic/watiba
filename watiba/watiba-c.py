@@ -1,3 +1,23 @@
+#!/bin/python3
+versions = ["Watiba 0.0.57", "Python 3.8"]
+#!/bin/python3
+versions = ["Watiba 0.0.56", "Python 3.8"]
+#!/bin/python3
+versions = ["Watiba 0.0.55", "Python 3.8"]
+#!/bin/python3
+versions = ["Watiba 0.0.54", "Python 3.8"]
+#!/bin/python3
+versions = ["Watiba 0.0.53", "Python 3.8"]
+#!/bin/python3
+versions = ["Watiba 0.0.52", "Python 3.8"]
+#!/bin/python3
+versions = ["Watiba 0.0.51", "Python 3.8"]
+#!/bin/python3
+versions = ["Watiba 0.0.50", "Python 3.8"]
+#!/bin/python3
+versions = ["Watiba 0.0.49", "Python 3.8"]
+#!/bin/python3
+versions = ["Watiba 0.0.48", "Python 3.8"]
 import sys
 import re
 
@@ -68,14 +88,14 @@ class Compiler:
         s = str(stmt)
 
         # Spit out async call if it's queued up
-        if len(self.async_call) > 0 and len(s) - len(s.lstrip()) <= self.indention_count:
+        if len(self.async_call) > 0 and len(s) - len(s.lstrip()) <= self.indentation_count:
             output.append(self.async_call.pop())
             self.async_call = []
             self.indentation_count = len(s) - len(s.lstrip())
 
         # Async expressions
-        async_exp_self = "^self.w_async\(`(\S.*)\):$"
-        async_exp = "^w_async\(`(\S.*)\):$"
+        async_exp_self = "^self.w_async\(`(\S.*)`\):$"
+        async_exp = "^w_async\(`(\S.*)`\):$"
 
         # Backticks expression
         backticks_exp = ".*?([\-])?`(\S.*?)`.*?"

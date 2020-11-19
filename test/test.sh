@@ -1,7 +1,8 @@
 #!/bin/bash
+cd /home/rwalk/git/watiba
+echo "Building Watiba"
+bin/build.sh
 
 echo "Testing Watiba"
-cd /home/rwalk/git/watiba
-bin/watiba-c.py test/test.wt > /tmp/watiba_test.py
-chmod +x /tmp/watiba_test.py
-/tmp/watiba_test.py
+bin/watiba-c.py test/test.wt > tmp/watiba_test.py
+chmod +x tmp/watiba_test.py

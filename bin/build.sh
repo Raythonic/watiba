@@ -22,6 +22,8 @@ echo "versions = [\"Watiba $ver\", \"Python 3.8\"]" >> tmp/temp.py
 cat watiba/watiba-c.py >> tmp/temp.py
 cp tmp/temp.py watiba/watiba-c.py
 cp watiba/watiba-c.py bin/.
+cp watiba/watiba.py tmp/.
+rm tmp/temp.py tmp/watiba-c.py
 
 # Build the dist package
 python3 setup.py sdist

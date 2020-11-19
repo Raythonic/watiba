@@ -41,7 +41,15 @@ print("Return code: {}".format(`ls gg`.exit_code))
 print(`pwd`.cwd)
 
 # Experimental promise
+print("running async test")
+`rm /tmp/done`
 w_async(`ls -lrt`):
     # This is the resolver block
     print("Async command done!")
     print("results {}".format(results.stdout))
+    `touch /tmp/done`
+
+while not os.path.exists("/tmp/done"):
+    `sleep 3`
+
+print("test complete.")
