@@ -63,19 +63,17 @@ class Watiba(Exception):
                 m = re.match(r'^_watiba_cwd_\((\S.*)\)_$', o)
                 if m:
                     os.chdir(m.group(1))
-                    out.cwd = os.getcwd()
                     del out.stdout[n]
+        out.cwd = os.getcwd()
         return out
 
     def w_async(self, command, resolver):
         def run_command(cmd, resolver):
-            print("DEBUG: async command thread: {}  resolver: {}".format(cmd, resolver), file=stderr)
             self.promise.output = self.bash(cmd)
             self.resolve = True
             resolver(self.promise.output)
         try:
             self.promise = WTPromise()
-            print("DEBUG: starting thread: {}  resolver: {}".format(command, resolver), file=stderr)
             t = threading.Thread(target=run_command, args=(command, resolver,))
             t.start()
         except:

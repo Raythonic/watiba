@@ -84,6 +84,51 @@ Python object.  Following are its properties:
 - cwd - current working directory after command was executed
 
 
+## Watiba Async
+Shell commands can be executed asynchronously with a defined resolver.  The resolver is a
+a callback block that follows the Watiba async statement.  The async feature is executed
+when a ```w_async(`cmd`): statements``` code block is found. The resolver is passed the results in
+argument "results".  (This structure contains the properties defined in "Command Results" of this README.) 
+
+Watiba backticked commands can exist within the resolver as well as other w_async() blocks.
+
+Simple example.  _Note_: This code snippet _likely_ terminates before the resolver block gets executed.  Therefore, the
+print statements are not _likely_ to show.
+```
+#!/usr/bin/python3
+
+# run "date" command asynchronously 
+w_async(`date`):
+    for l in results.stdout:
+        print(l)
+
+```
+Example with embedded backticked commands
+```
+#!/usr/bin/python3
+import os
+
+print("Running Watiba async with wait")
+`rm /tmp/done`
+
+# run "ls -lrt" command asynchronously 
+w_async(`ls -lrt`):
+    print("Exit code: {}".format(results.exit_code))
+    print("CWD: {}".format(results.cwd))
+    print("STDERR: {}".format(results.stderr))
+    for l in results.stdout:
+        print(l)
+    `touch /tmp/done`
+
+# Pause until async command is complete
+while not os.path.exists("/tmp/done"):
+    `sleep 3`
+
+print("complete")
+
+```
+
+
 # Installation
 ## PIP
 If you installed this as a Python package, e.g. pip, then the pre-compiler can be found
@@ -144,11 +189,17 @@ watiba-c.py version
 # This CWD will be active until a subsequent command changes it
 `cd /tmp`
 
+# Simple statement utilizing command and results in one statement
+print(`cd /tmp`.cwd)
+
 # This will not change the Watiba CWD context, because of the dash prefix, but within 
 # the command itself the cd is honored.  file.txt is created in /home/user/blah but
 # this does not impact the CWD of any subsequent commands.  They
 # are still operating from the previous cd command to /tmp
 -`cd /home/user/blah && touch file.txt`
+
+# This will print "/tmp" _not_ /home because of the leading dash on the command
+print("CWD is not /home: {}".format(-`cd /home`.cwd))
 
 # This will find text files in /tmp/, not /home/user/blah  (CWD context!)
 w=`find . -name '*.txt'`
