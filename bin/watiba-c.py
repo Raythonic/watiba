@@ -1,29 +1,5 @@
 #!/bin/python3
-versions = ["Watiba 0.0.60", "Python 3.8"]
-#!/bin/python3
-versions = ["Watiba 0.0.59", "Python 3.8"]
-#!/bin/python3
-versions = ["Watiba 0.0.58", "Python 3.8"]
-#!/bin/python3
-versions = ["Watiba 0.0.57", "Python 3.8"]
-#!/bin/python3
-versions = ["Watiba 0.0.56", "Python 3.8"]
-#!/bin/python3
-versions = ["Watiba 0.0.55", "Python 3.8"]
-#!/bin/python3
-versions = ["Watiba 0.0.54", "Python 3.8"]
-#!/bin/python3
-versions = ["Watiba 0.0.53", "Python 3.8"]
-#!/bin/python3
-versions = ["Watiba 0.0.52", "Python 3.8"]
-#!/bin/python3
-versions = ["Watiba 0.0.51", "Python 3.8"]
-#!/bin/python3
-versions = ["Watiba 0.0.50", "Python 3.8"]
-#!/bin/python3
-versions = ["Watiba 0.0.49", "Python 3.8"]
-#!/bin/python3
-versions = ["Watiba 0.0.48", "Python 3.8"]
+versions = ["Watiba 0.0.70", "Python 3.8"]
 import sys
 import re
 
