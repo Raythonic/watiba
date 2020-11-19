@@ -85,7 +85,7 @@ Python object.  Following are its properties:
 
 
 ## Watiba Async
-Shell commands can be executed asynchronously with a defined resolver.  The resolver is a
+Shell commands can be executed asynchronously with a defined resolver.  The resolver is
 a callback block that follows the Watiba async statement.  The async feature is executed
 when a ```w_async(`cmd`): statements``` code block is found. The resolver is passed the results in
 argument "results".  (This structure contains the properties defined in "Command Results" of this README.) 

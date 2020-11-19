@@ -1,5 +1,5 @@
 #!/bin/python3
-versions = ["Watiba 0.0.72", "Python 3.8"]
+versions = ["Watiba 0.0.74", "Python 3.8"]
 import sys
 import re
 
