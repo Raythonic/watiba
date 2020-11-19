@@ -10,7 +10,8 @@ ipyRaythonic@gmail.com
 from subprocess import Popen, PIPE, STDOUT
 import re
 import os
-import _thread
+import threading
+from sys import stderr
 
 
 # The object returned to the caller of _watiba_
@@ -26,9 +27,6 @@ class WTPromise(Exception):
     def __init__(self):
         self.output = WTOutput()
         self.resolve = None
-        self.return_code = -1
-
-
 
 # Singleton object with no side effects
 # Executes the command an returns a new WTOutput object
@@ -70,12 +68,18 @@ class Watiba(Exception):
         return out
 
     def w_async(self, command, resolver):
-        def run_command(cmd, resolve):
-            resolver(self.bash(cmd))
+        def run_command(cmd, resolver):
+            print("DEBUG: async command thread: {}  resolver: {}".format(cmd, resolver), file=stderr)
+            self.promise.output = self.bash(cmd)
+            self.resolve = True
+            resolver(self.promise.output)
         try:
-            _thread.start_new_thread(run_command, (command, resolver,))
+            self.promise = WTPromise()
+            print("DEBUG: starting thread: {}  resolver: {}".format(command, resolver), file=stderr)
+            t = threading.Thread(target=run_command, args=(command, resolver,))
+            t.start()
         except:
             print("ERROR.  w_async thread execution failed. {}".format(command))
 
-        return WTPromise()
+        return self.promise
 
