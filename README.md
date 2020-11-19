@@ -95,8 +95,8 @@ This file can be copied to any directory in your PATH.  It is stand-alone and ca
 anywhere you need.
 
 ## GITHUB
-If you cloned this from github, you'll still need to install the package with pip for the
-watbia module first then you'll need to modify and run the makefile.
+If you cloned this from github, you'll still need to install the package with pip, first, for the
+watbia module.  Follow these steps to install Watiba locally.
 ```
 
 # Must install Watiba package

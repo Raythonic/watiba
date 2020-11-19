@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: Watiba
-Version: 0.0.38
+Version: 0.0.41
 Summary: Python syntactical sugar for embedded shell commands
 Home-page: https://github.com/Raythonic/watiba
 Author: Ray Walker
@@ -13,8 +13,8 @@ Description: # Watiba
         ## Usage
         Watiba files, suffixed with ".wt", are Python programs containing embedded shell commands. 
         Shell commands are expressed within backtick characters emulating BASH's original capture syntax.
-        They can be placed in any Python statement or expression.  Watiba keeps track of the current working directory after the execution of 
-        any shell command so that all subsequent shell commands keep context.  For example:
+        They can be placed in any Python statement or expression.  Watiba keeps track of the current working directory 
+        after the execution of any shell command so that all subsequent shell commands keep context.  For example:
         
         ```
         #!/usr/bin/python3
@@ -47,6 +47,16 @@ Description: # Watiba
                 for l in w.stderr:
                     print(l)
         ```
+        
+        #### Commands with Variables
+        Commands within backticks cannot contain snippets of Python code or variables.  They must be pure shell commands.  
+        However, command strings can be constructed with Python variables in the typical ways.  For example:
+        ```
+        in_file = "some_file.txt"
+        my_cmd = "cat {}".format(in_file)
+        print(`$my_cmd`.stdout)
+        ```
+        
         
         ### Directory Context
         
@@ -93,8 +103,8 @@ Description: # Watiba
         anywhere you need.
         
         ## GITHUB
-        If you cloned this from github, you'll still need to install the package with pip for the
-        watbia module first then you'll need to modify and run the makefile.
+        If you cloned this from github, you'll still need to install the package with pip, first, for the
+        watbia module.  Follow these steps to install Watiba locally.
         ```
         
         # Must install Watiba package
@@ -155,7 +165,8 @@ Description: # Watiba
         
         
         # Embedding commands in print expressions that will print the stderr output, which tar writes to
-        print(`echo "BLAH!" > /tmp/blah.txt && tar -zcvf /tmp/blah.tar.gz /tmp/blah.txt`.stderr)
+        print(`echo "Some textual comment" > /tmp/blah.txt && tar -zcvf /tmp/blah.tar.gz /tmp`).stdout)
+        
         # This will print the first line of stdout from the echo
         print(`echo "hello!"`.stdout[0])
         
