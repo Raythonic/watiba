@@ -35,6 +35,8 @@ class Compiler:
 
     # Handle w_async() code blocks
     def async_handler(self, parms):
+
+        # Build the async call that will be located just after the resolver block
         quote_style = "'" if "'" not in parms["match"].group(1) else '"'
         cmd = parms["match"].group(1) if parms["match"].group(1)[0] == "$" else "{}{}{}".format(quote_style, parms["match"].group(1), quote_style)
         resolver_name = "{}__watiba_resolver_{}__".format(parms["prefix"], self.resolver_count)

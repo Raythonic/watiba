@@ -75,7 +75,7 @@ class Watiba(Exception):
         try:
             _thread.start_new_thread(run_command, (command, resolver,))
         except:
-            # something
+            print("ERROR.  w_async thread execution failed. {}".format(command))
 
         return WTPromise()
 
