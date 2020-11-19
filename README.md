@@ -42,6 +42,7 @@ if __name__ == "__main__":
 
 #### Commands with Variables
 Commands within backticks cannot contain snippets of Python code or Python variables. They must be pure shell commands.   
+
 For example, these are not valid:
  ```
 file_name = "blah.txt"
