@@ -20,8 +20,8 @@ if __name__ == "__main__":
 This loop will display the file list from /tmp. The `ls -lrt` is run in the 
 context of previous `cd /tmp`.  
 
-Commands can also be Python variables. This is denoted by prepending a dollar sign on the
-variable name within backticks. A complete example:
+Commands can also be Python variables only if the entire command is within the variable. This is denoted by 
+prepending a dollar sign on the variable name within backticks. A complete example:
 
 ```
 #!/usr/bin/python3
@@ -41,8 +41,30 @@ if __name__ == "__main__":
 ```
 
 #### Commands with Variables
-Commands within backticks cannot contain snippets of Python code or variables.  They must be pure shell commands.  
-However, command strings can be constructed with Python variables in the typical ways.  For example:
+Commands within backticks cannot contain snippets of Python code or Python variables. They must be pure shell commands.   
+For example, these are not valid:
+ ```
+file_name = "blah.txt"
+
+# Python variable within backticks
+`touch file_name`  # NOT SUPPORTED!
+
+# Attempting to access Python variable with dollar sign
+`touch $file_name` # NOT SUPPORTED!
+
+# Mixed shell and Python statements within backticks
+`if x not in l: ls -lrt x` # NOT SUPPORTED!
+```
+
+But a full command expressed in a Python variable can be executed like this:
+```
+touch_cmd = "touch /tmp/blah.txt"
+
+# Command variable within backticks
+`$touch_cmd`  # SUCCESS! A single Python variable containing the command is supported
+```
+
+Command strings can be constructed with straight Python code and then executed in backticks:
 ```
 in_file = "some_file.txt"
 my_cmd = "cat {}".format(in_file)
