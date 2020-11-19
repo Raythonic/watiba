@@ -43,7 +43,7 @@ if __name__ == "__main__":
 #### Commands with Variables
 Commands within backticks cannot contain snippets of Python code or Python variables. They must be pure shell commands.   
 
-For example, these are not valid:
+For example, these constructs are not supported:
  ```
 file_name = "blah.txt"
 
@@ -119,10 +119,29 @@ _Notes:_
 3. The command within the w_async() definition can be a variable
 4. The leading dash to ignore CWD _cannot_ be used in the w_async() command
 
-The backticked command in the ```w_async(`cmd`):``` can be avar
+The backticked command in the ```w_async(`cmd`):``` can be a Python variable, but as with all backticked
+shell commands, it must be a complete command.
+
+For example, this is not supported:
+```
+dir = "/tmp"
+w_async(`ls -lrt dir`):
+    print(results.stdout)
+
+# Attempting to access a Python variable with the dollar sign is not supported
+w_async(`ls -lrt $dir`):
+    print(results.stdout)
+```
+
+However, this is supported because the variable is a complete command:
+```
+dir = "ls -lrt /tmp"
+w_async(`$dir`):
+    print(results.stdout)
+```
 
 Simple example.  _Note_: This code snippet _likely_ terminates before the resolver block gets executed.  Therefore, the
-print statements are not _likely_ to show.
+print statements are not _likely_ to show.  It's an issue of timing.
 ```
 #!/usr/bin/python3
 
