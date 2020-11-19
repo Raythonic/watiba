@@ -30,9 +30,10 @@ class Compiler:
                        "{} = watiba.Watiba()".format(watiba_ref)
                        ]
         self.resolver_count = 1
-        self.async_call = None
+        self.async_call = []
         self.indentation_count = -1
 
+    # Handle w_async() code blocks
     def async_handler(self, parms):
         quote_style = "'" if "'" not in parms["match"].group(1) else '"'
         cmd = parms["match"].group(1) if parms["match"].group(1)[0] == "$" else "{}{}{}".format(quote_style, parms["match"].group(1), quote_style)
@@ -42,7 +43,7 @@ class Compiler:
         self_prefix = "" if parms["prefix"] == "" else parms["prefix"].replace(".", ", ")
 
         # Queue up asyc call which is executed (spit out) at the end of the w_async block
-        self.async_call = "_watiba_.w_async({}{}, {})".format(self_prefix, cmd, resolver_name)
+        self.async_call.append("_watiba_.w_async({}{}, {})".format(self_prefix, cmd, resolver_name))
 
         # Track the indentation level at the time we hit the w_async statement
         #   This way we know when to spit out the async call at the end of the block
@@ -51,22 +52,24 @@ class Compiler:
         # Convert w_async(`cmd`, resolver) statement to proper Python function definition
         return ["def {}(results):".format(resolver_name)]
 
+    # Flush out any queue async calls that are located after the resolver block
+    def flush(self):
+        # Spit out async calls if they're queued up
+        while len(self.async_call) > 0:
+            print(self.async_call.pop())
+
     def compile(self, stmt):
         # Take a copy of initial generated code
         output = self.output.copy()
 
-        # Make a copy of the statement string
+        # Copy the statement to a local variable
         s = str(stmt)
-        current_indentation_count = len(s) - len(s.lstrip())
 
         # Spit out async call if it's queued up
-        if self.async_call and current_indentation_count <= self.indention_count:
-            output.append(self.async_call)
-            self.async_call = None
-            self.indentation_count = -1
-
-        # Queue up the final statement call that's spit out at the end of the w_async block
-        if self.async_call and re.search("^\S", s)
+        if len(self.async_call) > 0 and len(s) - len(s.lstrip()) <= self.indention_count:
+            output.append(self.async_call.pop())
+            self.async_call = []
+            self.indentation_count = len(s) - len(s.lstrip())
 
         # Async expressions
         async_exp_self = "^self.w_async\(`(\S.*)\):$"
@@ -140,4 +143,7 @@ if __name__ == "__main__":
             else:
                 for o in c.compile(statement.rstrip()):
                     print(o)
+
+    # Flush out any queued async statement calls
+    c.flush()
 
