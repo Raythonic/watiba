@@ -1,7 +1,16 @@
 #!/usr/bin/python3.8
+'''
+Watiba class wraps the Python subprocess and captures all its outputs in a single object
+
+Author: Ray Walker
+ipyRaythonic@gmail.com
+'''
+
+
 from subprocess import Popen, PIPE, STDOUT
 import re
 import os
+import _thread
 
 
 # The object returned to the caller of _watiba_
@@ -11,6 +20,14 @@ class WTOutput(Exception):
         self.stderr = []
         self.exit_code = 0
         self.cwd = "."
+
+# The object returned to the caller of _watiba_
+class WTPromise(Exception):
+    def __init__(self):
+        self.output = WTOutput()
+        self.resolve = None
+        self.return_code = -1
+
 
 
 # Singleton object with no side effects
@@ -51,3 +68,14 @@ class Watiba(Exception):
                     out.cwd = os.getcwd()
                     del out.stdout[n]
         return out
+
+    def w_async(self, command, resolver):
+        def run_command(cmd, resolve):
+            resolver(self.bash(cmd))
+        try:
+            _thread.start_new_thread(run_command, (command, resolver,))
+        except:
+            # something
+
+        return WTPromise()
+
