@@ -25,9 +25,6 @@ rm tmp/temp.py
 # Build the dist package
 python3 setup.py sdist
 
-# Restore original code
-cp tmp/watiba-c.py watiba/.
-
 # Push package to distribution site
 echo "__________________________"
 echo "Dist is built"
