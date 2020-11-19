@@ -90,7 +90,13 @@ a callback block that follows the Watiba async statement.  The async feature is 
 when a ```w_async(`cmd`): statements``` code block is found. The resolver is passed the results in
 argument "results".  (This structure contains the properties defined in "Command Results" of this README.) 
 
-Watiba backticked commands can exist within the resolver as well as other w_async() blocks.
+_Notes:_
+1. Watiba backticked commands can exist within the resolver 
+2. Other w_async() blocks can be embedded within a resolver (recursion allowed)
+3. The command within the w_async() definition can be a variable
+4. The leading dash to ignore CWD _cannot_ be used in the w_async() command
+
+The backticked command in the ```w_async(`cmd`):``` can be avar
 
 Simple example.  _Note_: This code snippet _likely_ terminates before the resolver block gets executed.  Therefore, the
 print statements are not _likely_ to show.
@@ -101,6 +107,17 @@ print statements are not _likely_ to show.
 w_async(`date`):
     for l in results.stdout:
         print(l)
+
+```
+
+Simple example with the shell command as a Python variable.
+```
+#!/usr/bin/python3
+
+# run "date" command asynchronously 
+d = 'date "+%Y/%m/%d"'
+w_async(`$d`):
+    print(results.stdout[0])
 
 ```
 Example with embedded backticked commands
