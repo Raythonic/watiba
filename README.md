@@ -40,10 +40,27 @@ if __name__ == "__main__":
             print(l)
 ```
 
-#### Commands with Variables
-Commands within backticks cannot contain snippets of Python code or Python variables. They must be pure shell commands.   
+#### Commands Expressed as Variables
+Commands within backticks can _be_ a variable, but cannot contain snippets of Python code or Python variables. 
+The statement within the backticks _must_ be either a pure shell command or a Python variable containing a pure
+shell command.  To execute command in a Python variable, prefix the variable name between backticks with a dollar sign.
 
-For example, these constructs are not supported:
+A command expressed in a Python variable can be executed like this:
+```
+# Set the Python variable to the command
+touch_cmd = "touch /tmp/blah.txt"
+
+# Execute it
+`$touch_cmd`  # Execute the command within Python variable touch_cmd
+```
+An example of building a command from other variables and then executing it within a print() statement:
+```
+in_file = "some_file.txt"
+my_cmd = "cat {}".format(in_file)
+print(`$my_cmd`.stdout)
+```
+
+These constructs are not supported:
  ```
 file_name = "blah.txt"
 
@@ -55,21 +72,6 @@ file_name = "blah.txt"
 
 # Mixed shell and Python statements within backticks
 `if x not in l: ls -lrt x` # NOT SUPPORTED!
-```
-
-But a full command expressed in a Python variable can be executed like this:
-```
-touch_cmd = "touch /tmp/blah.txt"
-
-# Command variable within backticks
-`$touch_cmd`  # SUCCESS! A single Python variable containing the command is supported
-```
-
-Command strings can be constructed with straight Python code and then executed in backticks:
-```
-in_file = "some_file.txt"
-my_cmd = "cat {}".format(in_file)
-print(`$my_cmd`.stdout)
 ```
 
 
@@ -176,19 +178,21 @@ p = spawn `$dir`:
 Simple example.  _Note_: This code snippet _likely_ terminates before the resolver block gets executed.  Therefore, the
 print statements are not _likely_ to show.  It's an issue of timing.
 
-_note_: The promise object does not have to be used if you don't want to. It's still passed to the resolver, though.
+_Note_: The promise object does not have to be used if you don't want to. It's still passed to the resolver, though.
+However, it's best practice to always set the promise to resolved so its state is properly reflected.
  This demonstrates that.
 ```
 #!/usr/bin/python3
 
 # run "date" command asynchronously 
 spawn `date`:
+    promise.set_resolved()
     for l in promise.output.stdout:
         print(l)
 
 ```
 
-Simple example with the shell command as a Python variable.
+Simple example with the shell command as a Python variable:
 ```
 #!/usr/bin/python3
 
@@ -198,7 +202,7 @@ spawn `$d`:
     print(results.stdout[0])
 
 ```
-Example with embedded backticked commands
+Example with shell commands executed within resolver block:
 ```
 #!/usr/bin/python3
 import os
