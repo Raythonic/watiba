@@ -107,36 +107,36 @@ Python object.  Following are its properties:
 - cwd - current working directory after command was executed
 
 
-## Watiba Async
-Shell commands can be executed asynchronously with a defined resolver.  The resolver is
-a callback block that follows the Watiba async statement.  The async feature is executed
-when a ```w_async(`cmd`): statements``` code block is found. The resolver is passed the results in
+## Asynchronously Spawning
+Shell commands can be executed asynchronously with a defined resolver callback block.  The resolver is
+a callback block that follows the Watiba _spawn_ statement.  The spawn feature is executed
+when a ```spawn `cmd`: statements``` code block is found. The resolver is passed the results in
 argument "results".  (This structure contains the properties defined in "Command Results" of this README.) 
 
 _Notes:_
 1. Watiba backticked commands can exist within the resolver 
-2. Other w_async() blocks can be embedded within a resolver (recursion allowed)
-3. The command within the w_async() definition can be a variable
-4. The leading dash to ignore CWD _cannot_ be used in the w_async() command
+2. Other _spawn_ blocks can be embedded within a resolver (recursion allowed)
+3. The command within the _spawn_ definition can be a variable
+4. The leading dash to ignore CWD _cannot_ be used in the _spawn_ command
 
-The backticked command in the ```w_async(`cmd`):``` can be a Python variable, but as with all backticked
+The backticked command in the ```spawn `cmd`:``` can be a Python variable, but as with all backticked
 shell commands, it must be a complete command.
 
 For example, this is not supported:
 ```
 dir = "/tmp"
-w_async(`ls -lrt dir`):
+spawn `ls -lrt dir`:
     print(results.stdout)
 
 # Attempting to access a Python variable with the dollar sign is not supported
-w_async(`ls -lrt $dir`):
+spawn `ls -lrt $dir`:
     print(results.stdout)
 ```
 
 However, this is supported because the variable is a complete command:
 ```
 dir = "ls -lrt /tmp"
-w_async(`$dir`):
+spawn `$dir`:
     print(results.stdout)
 ```
 
@@ -146,7 +146,7 @@ print statements are not _likely_ to show.  It's an issue of timing.
 #!/usr/bin/python3
 
 # run "date" command asynchronously 
-w_async(`date`):
+spawn `date`:
     for l in results.stdout:
         print(l)
 
@@ -158,7 +158,7 @@ Simple example with the shell command as a Python variable.
 
 # run "date" command asynchronously 
 d = 'date "+%Y/%m/%d"'
-w_async(`$d`):
+spawn `$d`:
     print(results.stdout[0])
 
 ```
@@ -167,11 +167,11 @@ Example with embedded backticked commands
 #!/usr/bin/python3
 import os
 
-print("Running Watiba async with wait")
+print("Running Watiba spawn with wait")
 `rm /tmp/done`
 
 # run "ls -lrt" command asynchronously 
-w_async(`ls -lrt`):
+spawn `ls -lrt`:
     print("Exit code: {}".format(results.exit_code))
     print("CWD: {}".format(results.cwd))
     print("STDERR: {}".format(results.stderr))
@@ -179,7 +179,7 @@ w_async(`ls -lrt`):
         print(l)
     `touch /tmp/done`
 
-# Pause until async command is complete
+# Pause until spawn command is complete
 while not os.path.exists("/tmp/done"):
     `sleep 3`
 
@@ -295,9 +295,9 @@ xc = `lsvv -lrt`.exit_code
 print("Return code: {}".format(xc))
 
 # Example of running a command asynchronously and using the resolver callback code block
-w_async(`cd /tmp && tar -zxvf tarball.tar.gz`):
+spawn `cd /tmp && tar -zxvf tarball.tar.gz`:
     for l in results.stderr:
         print(l)
 print("This prints before the tar output.")
-`sleep 5`  # Pause for 5 seconds so async can complete
+`sleep 5`  # Pause for 5 seconds so spawn can complete
 ```
