@@ -45,7 +45,7 @@ class Compiler:
         self_prefix = "" if parms["prefix"] == "" else parms["prefix"].replace(".", ", ")
 
         # Queue up asyc call which is executed (spit out) at the end of the w_async block
-        self.async_call.append("_watiba_.w_async({}{}, {})".format(self_prefix, cmd, resolver_name))
+        self.async_call.append("_watiba_.spawn({}{}, {})".format(self_prefix, cmd, resolver_name))
 
         # Track the indentation level at the time we hit the w_async statement
         #   This way we know when to spit out the async call at the end of the block
