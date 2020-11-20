@@ -1,5 +1,5 @@
 #!/bin/python3
-versions = ["Watiba 0.0.84", "Python 3.8"]
+versions = ["Watiba 0.0.88", "Python 3.8"]
 import sys
 import re
 
@@ -39,22 +39,25 @@ class Compiler:
     def spawn_handler(self, parms):
 
         # Build the async call that will be located just after the resolver block
-        quote_style = "'" if "'" not in parms["match"].group(1) else '"'
-        cmd = parms["match"].group(1) if parms["match"].group(1)[0] == "$" else "{}{}{}".format(quote_style, parms["match"].group(1), quote_style)
+        quote_style = "'" if "'" not in parms["match"].group(2) else '"'
+        cmd = parms["match"].group(2) if parms["match"].group(2)[0] == "$" else "{}{}{}".format(quote_style, parms["match"].group(2), quote_style)
         resolver_name = "{}__watiba_resolver_{}__".format(parms["prefix"], self.resolver_count)
         self.resolver_count += 1
 
         self_prefix = "" if parms["prefix"] == "" else parms["prefix"].replace(".", ", ")
 
+        # Include promise return if there's an assignment on the stmt
+        promise_assign = parms["match"].group(1) if parms["match"].group(1) else ""
+
         # Queue up asyc call which is executed (spit out) at the end of the w_async block
-        self.async_call.append("_watiba_.spawn({}{}, {})".format(self_prefix, cmd, resolver_name))
+        self.async_call.append("{}_watiba_.spawn({}{}, {})".format(promise_assign, self_prefix, cmd, resolver_name))
 
         # Track the indentation level at the time we hit the w_async statement
         #   This way we know when to spit out the async call at the end of the block
         self.indentation_count = len(parms["stmt"]) - len(parms["stmt"].lstrip())
 
         # Convert w_async(`cmd`, resolver) statement to proper Python function definition
-        return ["def {}(results):".format(resolver_name)]
+        return ["def {}(promise):".format(resolver_name)]
 
     # Flush out any queue async calls that are located after the resolver block
     def flush(self):
@@ -76,8 +79,8 @@ class Compiler:
             self.indentation_count = len(s) - len(s.lstrip())
 
         # Async expressions
-        async_exp_self = "^self.spawn `(\S.*)`:$"
-        async_exp = "^spawn `(\S.*)`:$"
+        async_exp_self = "^(\S.*)?self.spawn `(\S.*)`:$"
+        async_exp = "^(\S.*)?spawn `(\S.*)`:$"
 
         # Backticks expression
         backticks_exp = ".*?([\-])?`(\S.*?)`.*?"
