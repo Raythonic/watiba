@@ -52,12 +52,12 @@ print(`pwd`.cwd)
 
 # Running a command asynchonously with the outer code
 # looking for the creation of a file to signal its completion
-print("running async test")
+print("running spawn test")
 `rm /tmp/done`
 
-w_async(`ls -lrt`):
+spawn `ls -lrt`:
     # This is the resolver callback block
-    print("Async command done!")
+    print("Spawn command done!")
     print("results {}".format(results.stdout))
     `touch /tmp/done`
 
