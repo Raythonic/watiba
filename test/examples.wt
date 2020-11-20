@@ -1,19 +1,29 @@
 #!/usr/bin/python3.8
 import os
 
+# This will change the CWD for all subsequent commands
 `cd /tmp`
--`cd /mnt/data`
 
+# This will CWD only for the commands within the backticks,
+# but NOT for any subsequent commands (the dash prefix prevents the context
+# change)
+-`cd /home`
+
+# This demonstrates a CWD change that is only contained within the backticks
+# This will print "/tmp" as the CWD not "/home"
 print("CWD is not /home: {}".format(-`cd /home`.cwd))
 
-# This will find text file in /tmp/, not /mnt/data
-w=`find . -name '*.txt'`
+# This will find text file in /tmp/, not /home
+w = `find . -name '*.txt'`
 for l in w.stdout:
     print("File: {}".format(l))
 
 
+# This will print the output from the tar commands
 print(`echo "BLAH!" > /tmp/blah.txt && tar -zcvf /tmp/blah.tar.gz /tmp/blah.txt`.stderr)
-print(-`echo "hello!"`.stdout[0])
+
+# This will print just the first line from the command's output
+print(`cat file.txt`.stdout[0])
 
 # Example of more than one command in a statement line
 if len(`ls -lrt`.stdout) > 0 or len(-`cd /tmp`.stdout) > 0:
@@ -21,27 +31,27 @@ if len(`ls -lrt`.stdout) > 0 or len(-`cd /tmp`.stdout) > 0:
 
 
 # Example of receiving a Watiba object and operating from that
+# and demonstrating a command from a Python variable
 cmd = "tar -zcvf /tmp/watiba_test.tar.gz /mnt/data/git/watiba/src"
 results = `$cmd`
 if results.exit_code == 0:
     for l in results.stderr:
         print(l)
 
-# read the output example 2
+# Print the files from the CWD, which is still /tmp from above (context)
 #  Iterate on the stdout property
 for l in `ls -lrt`.stdout:
     print(l)
 
-# example of a failed command to see its exit code
-xc = `lsvv -lrt`.exit_code
-print("Return code: {}".format(xc))
+# Example of printing the exit code of a failed commands
+print("Return code: {}".format(`badcmd`.exit_code))
 
-# another example
-print("Return code: {}".format(`ls gg`.exit_code))
 
+# Demonstrate context.  CWD is still /tmp
 print(`pwd`.cwd)
 
-# Experimental promise
+# Running a command asynchonously with the outer code
+# looking for the creation of a file to signal its completion
 print("running async test")
 `rm /tmp/done`
 w_async(`ls -lrt`):
