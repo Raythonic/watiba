@@ -2,7 +2,7 @@ import sys
 import re
 
 """
-Watiba complier.  Watiba commands are BASH embedded commands between backtick characters (i.e. `), like traditional Bash captures.
+Watiba pre-complier.  Watiba commands are BASH embedded commands between backtick characters (i.e. `), like traditional Bash captures.
 
 Examples:
   example1.wt
