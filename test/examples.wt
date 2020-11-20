@@ -66,14 +66,14 @@ while not os.path.exists("/tmp/done"):
 #######################################################
 # Running a command asynchronously with the outer code
 # looking the promise to resolve (which is done by the resolver)
-prom = spawn `ls -lrt`:
+my_promise = spawn `ls -lrt`:
     # This is the resolver callback block
     promise.set_resolved()
     print("Spawned command done!")
     print("results {}".format(promise.output.stdout))
     `touch /tmp/done`
 
-while not prom.resolved():
+while not my_promise.resolved():
     `sleep 3`
 
 print("test complete.")

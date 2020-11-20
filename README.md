@@ -98,20 +98,48 @@ subsequent commands.
 
 ### Command Results
 The results of the command issued in backticks are available in the properties
-of the object returned by Watiba.  Treat the backticked command as a normal
+of the object returned by Watiba in an object.  Treat the backticked command as a normal
 Python object.  Following are its properties:
- 
+
 - stdout - array of output lines from the command normalized for display
 - stderr - array of standard error output lines from the command normalized for display
 - exit_code - integer exit code value from command
 - cwd - current working directory after command was executed
 
 
-## Asynchronous Spawning
+## Asynchronous Spawning and Promises
 Shell commands can be executed asynchronously with a defined resolver callback block.  The resolver is
 a callback block that follows the Watiba _spawn_ statement.  The spawn feature is executed
-when a ```spawn `cmd`: statements``` code block is found. The resolver is passed the results in
+when a ```spawn `cmd`: statements``` code block is encountered. The resolver is passed the results in
 argument "results".  (This structure contains the properties defined in "Command Results" of this README.) 
+The _spawn_ expression returns a _promise_ object that can be used by the resolver to signal outer code that
+the spawned command is complete.  The promise object is passed to the resolver in variable _promise_.  The resolver
+signals completion with ```promise.set_resolved()``` and outer code can check its state with a call to _resolved()_
+on the returned promise object.  Output from the command is found in _promise.output_
+
+Spawn with promise example:
+```
+my_promise = spawn `tar -zcvf tarball.tar.gz /tmp`:
+    promise.set_resolved()
+
+    # The command results are found in promise.output
+    print("Command exit code: {}".format(promise.output.exit_code))
+    print("Command stdout: {}".format(promise.output.stdout))
+    print("Tar completed.  Output follows...")
+    for l in promise.output.stderr:
+        print(l)
+
+while not my_promise.resolved():
+    `sleep 3`
+```
+## Results from Spawned Command
+Spawned commands return their results in the _promise.output_ reference of the _promise_ object passed to
+the resolver block.  The result properties can then be accessed as followed:
+ 
+- promise.output.stdout - array of output lines from the command normalized for display
+- promise.output.stderr - array of standard error output lines from the command normalized for display
+- promise.output.exit_code - integer exit code value from command
+- promise.output.cwd - current working directory after command was executed
 
 _Notes:_
 1. Watiba backticked commands can exist within the resolver 
@@ -125,29 +153,37 @@ shell commands, it must be a complete command.
 For example, this is not supported:
 ```
 dir = "/tmp"
-spawn `ls -lrt dir`:
-    print(results.stdout)
+p = spawn `ls -lrt dir`:
+    promise.set_resolved()
+    print("Exit code: {}".format(promise.output.exit_code))
+    print(promise.output.stdout)
 
 # Attempting to access a Python variable with the dollar sign is not supported
-spawn `ls -lrt $dir`:
-    print(results.stdout)
+p = spawn `ls -lrt $dir`:
+    promise.set_resolved()
+    print("Exit code: {}".format(promise.output.exit_code))
+    print(promise.output.stdout)
 ```
 
 However, this is supported because the variable is a complete command:
 ```
 dir = "ls -lrt /tmp"
-spawn `$dir`:
-    print(results.stdout)
+p = spawn `$dir`:
+    promise.set_resolved()
+    print(promise.output.stdout)
 ```
 
 Simple example.  _Note_: This code snippet _likely_ terminates before the resolver block gets executed.  Therefore, the
 print statements are not _likely_ to show.  It's an issue of timing.
+
+_note_: The promise object does not have to be used if you don't want to. It's still passed to the resolver, though.
+ This demonstrates that.
 ```
 #!/usr/bin/python3
 
 # run "date" command asynchronously 
 spawn `date`:
-    for l in results.stdout:
+    for l in promise.output.stdout:
         print(l)
 
 ```
