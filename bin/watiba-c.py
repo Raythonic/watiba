@@ -1,10 +1,10 @@
 #!/bin/python3
-versions = ["Watiba 0.0.74", "Python 3.8"]
+versions = ["Watiba 0.0.76", "Python 3.8"]
 import sys
 import re
 
 """
-Watiba complier.  Watiba are BASH embedded commands between escape characters (i.e. `), like traditional Bash.
+Watiba pre-complier.  Watiba commands are BASH embedded commands between backtick characters (i.e. `), like traditional Bash captures.
 
 Examples:
   example1.wt
