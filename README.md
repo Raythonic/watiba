@@ -107,7 +107,7 @@ Python object.  Following are its properties:
 - cwd - current working directory after command was executed
 
 
-## Asynchronously Spawning
+## Asynchronous Spawning
 Shell commands can be executed asynchronously with a defined resolver callback block.  The resolver is
 a callback block that follows the Watiba _spawn_ statement.  The spawn feature is executed
 when a ```spawn `cmd`: statements``` code block is found. The resolver is passed the results in
