@@ -33,8 +33,8 @@ class Compiler:
         self.async_call = []
         self.indentation_count = -1
 
-    # Handle w_async() code blocks
-    def async_handler(self, parms):
+    # Handle spawn code blocks
+    def spawn_handler(self, parms):
 
         # Build the async call that will be located just after the resolver block
         quote_style = "'" if "'" not in parms["match"].group(1) else '"'
@@ -74,8 +74,8 @@ class Compiler:
             self.indentation_count = len(s) - len(s.lstrip())
 
         # Async expressions
-        async_exp_self = "^self.w_async\(`(\S.*)`\):$"
-        async_exp = "^w_async\(`(\S.*)`\):$"
+        async_exp_self = "^self.spawn `(\S.*)`:$"
+        async_exp = "^spawn `(\S.*)`:$"
 
         # Backticks expression
         backticks_exp = ".*?([\-])?`(\S.*?)`.*?"
@@ -86,11 +86,11 @@ class Compiler:
         # First check for async promises
         m = re.search(async_exp_self, s.strip())
         if m:
-            return self.async_handler({"match":m, "stmt":s, "prefix":"self."})
+            return self.spawn_handler({"match":m, "stmt":s, "prefix":"self."})
 
         m = re.search(async_exp, s.strip())
         if m:
-            return self.async_handler({"match":m, "stmt":s, "prefix":""})
+            return self.spawn_handler({"match":m, "stmt":s, "prefix":""})
 
         # Flag for Watiba CWD tracking
         context = True
