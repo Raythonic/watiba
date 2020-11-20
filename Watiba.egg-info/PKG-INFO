@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: Watiba
-Version: 0.0.74
+Version: 0.0.76
 Summary: Python syntactical sugar for embedded shell commands
 Home-page: https://github.com/Raythonic/watiba
 Author: Ray Walker
@@ -28,8 +28,8 @@ Description: # Watiba
         This loop will display the file list from /tmp. The `ls -lrt` is run in the 
         context of previous `cd /tmp`.  
         
-        Commands can also be Python variables. This is denoted by prepending a dollar sign on the
-        variable name within backticks. A complete example:
+        Commands can also be Python variables only if the entire command is within the variable. This is denoted by 
+        prepending a dollar sign on the variable name within backticks. A complete example:
         
         ```
         #!/usr/bin/python3
@@ -49,8 +49,31 @@ Description: # Watiba
         ```
         
         #### Commands with Variables
-        Commands within backticks cannot contain snippets of Python code or variables.  They must be pure shell commands.  
-        However, command strings can be constructed with Python variables in the typical ways.  For example:
+        Commands within backticks cannot contain snippets of Python code or Python variables. They must be pure shell commands.   
+        
+        For example, these constructs are not supported:
+         ```
+        file_name = "blah.txt"
+        
+        # Python variable within backticks
+        `touch file_name`  # NOT SUPPORTED!
+        
+        # Attempting to access Python variable with dollar sign
+        `touch $file_name` # NOT SUPPORTED!
+        
+        # Mixed shell and Python statements within backticks
+        `if x not in l: ls -lrt x` # NOT SUPPORTED!
+        ```
+        
+        But a full command expressed in a Python variable can be executed like this:
+        ```
+        touch_cmd = "touch /tmp/blah.txt"
+        
+        # Command variable within backticks
+        `$touch_cmd`  # SUCCESS! A single Python variable containing the command is supported
+        ```
+        
+        Command strings can be constructed with straight Python code and then executed in backticks:
         ```
         in_file = "some_file.txt"
         my_cmd = "cat {}".format(in_file)
@@ -93,15 +116,40 @@ Description: # Watiba
         
         
         ## Watiba Async
-        Shell commands can be executed asynchronously with a defined resolver.  The resolver is a
+        Shell commands can be executed asynchronously with a defined resolver.  The resolver is
         a callback block that follows the Watiba async statement.  The async feature is executed
         when a ```w_async(`cmd`): statements``` code block is found. The resolver is passed the results in
         argument "results".  (This structure contains the properties defined in "Command Results" of this README.) 
         
-        Watiba backticked commands can exist within the resolver as well as other w_async() blocks.
+        _Notes:_
+        1. Watiba backticked commands can exist within the resolver 
+        2. Other w_async() blocks can be embedded within a resolver (recursion allowed)
+        3. The command within the w_async() definition can be a variable
+        4. The leading dash to ignore CWD _cannot_ be used in the w_async() command
+        
+        The backticked command in the ```w_async(`cmd`):``` can be a Python variable, but as with all backticked
+        shell commands, it must be a complete command.
+        
+        For example, this is not supported:
+        ```
+        dir = "/tmp"
+        w_async(`ls -lrt dir`):
+            print(results.stdout)
+        
+        # Attempting to access a Python variable with the dollar sign is not supported
+        w_async(`ls -lrt $dir`):
+            print(results.stdout)
+        ```
+        
+        However, this is supported because the variable is a complete command:
+        ```
+        dir = "ls -lrt /tmp"
+        w_async(`$dir`):
+            print(results.stdout)
+        ```
         
         Simple example.  _Note_: This code snippet _likely_ terminates before the resolver block gets executed.  Therefore, the
-        print statements are not _likely_ to show.
+        print statements are not _likely_ to show.  It's an issue of timing.
         ```
         #!/usr/bin/python3
         
@@ -109,6 +157,17 @@ Description: # Watiba
         w_async(`date`):
             for l in results.stdout:
                 print(l)
+        
+        ```
+        
+        Simple example with the shell command as a Python variable.
+        ```
+        #!/usr/bin/python3
+        
+        # run "date" command asynchronously 
+        d = 'date "+%Y/%m/%d"'
+        w_async(`$d`):
+            print(results.stdout[0])
         
         ```
         Example with embedded backticked commands
