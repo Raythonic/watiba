@@ -290,7 +290,14 @@ if cmd_results.exit_code == 0:
 for l in `cat blah.txt`.stdout:
     print(l)
 
-# example of a failed command to see its exit code
+# Example of a failed command to see its exit code
 xc = `lsvv -lrt`.exit_code
 print("Return code: {}".format(xc))
+
+# Example of running a command asynchronously and using the resolver callback code block
+w_async(`cd /tmp && tar -zxvf tarball.tar.gz`):
+    for l in results.stderr:
+        print(l)
+print("This prints before the tar output.")
+`sleep 5`  # Pause for 5 seconds so async can complete
 ```
