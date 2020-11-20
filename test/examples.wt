@@ -50,18 +50,30 @@ print("Return code: {}".format(`badcmd`.exit_code))
 # Demonstrate context.  CWD is still /tmp
 print(`pwd`.cwd)
 
-# Running a command asynchonously with the outer code
+# Running a command asynchronously with the outer code
 # looking for the creation of a file to signal its completion
 print("running spawn test")
 `rm /tmp/done`
 
 spawn `ls -lrt`:
     # This is the resolver callback block
-    print("Spawn command done!")
-    print("results {}".format(results.stdout))
+    print("Spawned command done!")
+    print("results {}".format(promise.output.stdout))
     `touch /tmp/done`
 
 while not os.path.exists("/tmp/done"):
+    `sleep 3`
+#######################################################
+# Running a command asynchronously with the outer code
+# looking the promise to resolve (which is done by the resolver)
+prom = spawn `ls -lrt`:
+    # This is the resolver callback block
+    promise.set_resolved()
+    print("Spawned command done!")
+    print("results {}".format(promise.output.stdout))
+    `touch /tmp/done`
+
+while not prom.resolved():
     `sleep 3`
 
 print("test complete.")
