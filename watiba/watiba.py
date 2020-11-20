@@ -26,7 +26,13 @@ class WTOutput(Exception):
 class WTPromise(Exception):
     def __init__(self):
         self.output = WTOutput()
-        self.resolve = None
+        self.resolution = False
+
+    def resolved(self):
+        return self.resolution()
+
+    def set_resolved(self):
+        self.resolution = True
 
 # Singleton object with no side effects
 # Executes the command an returns a new WTOutput object
@@ -71,7 +77,7 @@ class Watiba(Exception):
         def run_command(cmd, resolver):
             self.promise.output = self.bash(cmd)
             self.resolve = True
-            resolver(self.promise.output)
+            resolver(self.promise)
         try:
             self.promise = WTPromise()
             t = threading.Thread(target=run_command, args=(command, resolver,))
