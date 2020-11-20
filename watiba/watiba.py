@@ -67,7 +67,7 @@ class Watiba(Exception):
         out.cwd = os.getcwd()
         return out
 
-    def w_async(self, command, resolver):
+    def spawn(self, command, resolver):
         def run_command(cmd, resolver):
             self.promise.output = self.bash(cmd)
             self.resolve = True
