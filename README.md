@@ -185,11 +185,6 @@ spawn `date`:
     return True
 
 ```
-_Notes_: 
-1. This code snippet _likely_ terminates before the resolver block gets executed.  Therefore, the
-print statements are not _likely_ to show.  It's an issue of timing.
-2. The promise object does not have to be used if you don't want to in the outer code.  Just don't assign it. 
-It's still passed to the resolver, though.
 
 Simple example with the shell command as a Python variable:
 ```
