@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: Watiba
-Version: 0.0.108
+Version: 0.0.109
 Summary: Python syntactical sugar for embedded shell commands
 Home-page: https://github.com/Raythonic/watiba
 Author: Ray Walker
@@ -126,6 +126,8 @@ Description: # Watiba
         The promise object is passed to the resolver in variable _promise_.  The outer code can check its state with a call 
         to _resolved()_ on the *returned* promise object.  Output from the command is found in _promise.output_
         
+        The resolver must return True to set the promise to resolved, or False to leave it unresolved.
+        
         Spawn with promise example:
         ```
         my_promise = spawn `tar -zcvf tarball.tar.gz /tmp`:
@@ -135,6 +137,7 @@ Description: # Watiba
             print("Tar completed.  Output follows...")
             for l in promise.output.stderr:
                 print(l)
+            return True
         
         # Sleep until promise is resolved
         while not my_promise.resolved():
@@ -168,6 +171,7 @@ Description: # Watiba
         p = spawn `$dir`:
             # Outcome found in argument "promise"
             print(promise.output.stdout)
+            return True
         
         # Wait until promise is resolved
         while not p.resolved():
@@ -186,6 +190,7 @@ Description: # Watiba
         spawn `date`:
             for l in promise.output.stdout:
                 print(l)
+            return True
         
         ```
         _Notes_: 
@@ -201,7 +206,8 @@ Description: # Watiba
         # run "date" command asynchronously 
         d = 'date "+%Y/%m/%d"'
         spawn `$d`:
-            print(results.stdout[0])
+            print(promise.output.stdout[0])
+            return True
         
         ```
         Example with shell commands executed within resolver block:
@@ -214,12 +220,13 @@ Description: # Watiba
         
         # run "ls -lrt" command asynchronously 
         spawn `ls -lrt`:
-            print("Exit code: {}".format(results.exit_code))
-            print("CWD: {}".format(results.cwd))
-            print("STDERR: {}".format(results.stderr))
-            for l in results.stdout:
+            print("Exit code: {}".format(promise.output.exit_code))
+            print("CWD: {}".format(promise.output.cwd))
+            print("STDERR: {}".format(promise.output.stderr))
+            for l in promise.output.stdout:
                 print(l)
             `touch /tmp/done`
+            return True
         
         # Pause until spawn command is complete
         while not os.path.exists("/tmp/done"):
@@ -228,7 +235,30 @@ Description: # Watiba
         print("complete")
         
         ```
+        #### Passing Arguments to the Resolver
+        Arguments can be passed to the resolver with the ```spawn args(args)``` expression.  Set this expression before
+        the spawned command.  This expression takes one parameter and it _must_ be a Python dictionary.  The args are passed
+        to the resolver in the promise object variable _promise.spawn_args_  
         
+        Example:
+        ```
+        # Meaningless arguments for the sake of demonstration
+        my_args = {"log_file": "/var/logs/blah.log",
+                    "count": some_counter}
+        
+        # Pass my args to the command to be spawned
+        spawn args(my_args)
+        
+        # Other Python code can be here if wanted...bogus statement for demonstration
+        do_nothing = True
+        
+        # run "date" command asynchronously passing the args from "spawn args()"
+        d = 'date "+%Y/%m/%d"'
+        spawn `$d`:
+            print("Arguments passed to me: {}".format(promise.spawn_args))
+            print(promise.output.stdout[0])
+            return True
+        ```
         
         # Installation
         ## PIP
