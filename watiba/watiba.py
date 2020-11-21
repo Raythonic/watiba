@@ -26,7 +26,7 @@ class WTOutput(Exception):
 class WTPromise(Exception):
     def __init__(self):
         self.output = WTOutput()
-        self.spawn_args = {}
+        self.args = {}
         self.resolution = False
 
     def resolved(self):
@@ -73,8 +73,13 @@ class Watiba(Exception):
 
     def spawn(self, command, resolver, spawn_args):
         def run_command(cmd, resolver, spawn_args):
+            # Execute the command in a new thread
             self.promise.output = self.bash(cmd)
-            self.promise.spawn_args = spawn_args
+
+            # Pass any spawn args to the resolver
+            self.promise.args = spawn_args
+
+            # Call the resolver and use its return value for promise resolution
             self.promise.resolution = resolver(self.promise)
         try:
             self.promise = WTPromise()

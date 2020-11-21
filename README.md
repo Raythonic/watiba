@@ -118,6 +118,8 @@ The _spawn_ expression returns a _promise_ object that can be used by the outer 
 The promise object is passed to the resolver in variable _promise_.  The outer code can check its state with a call 
 to _resolved()_ on the *returned* promise object.  Output from the command is found in _promise.output_
 
+The resolver must return True to set the promise to resolved, or False to leave it unresolved.
+
 Spawn with promise example:
 ```
 my_promise = spawn `tar -zcvf tarball.tar.gz /tmp`:
@@ -127,6 +129,7 @@ my_promise = spawn `tar -zcvf tarball.tar.gz /tmp`:
     print("Tar completed.  Output follows...")
     for l in promise.output.stderr:
         print(l)
+    return True
 
 # Sleep until promise is resolved
 while not my_promise.resolved():
@@ -160,6 +163,7 @@ dir = "ls -lrt /tmp"
 p = spawn `$dir`:
     # Outcome found in argument "promise"
     print(promise.output.stdout)
+    return True
 
 # Wait until promise is resolved
 while not p.resolved():
@@ -178,6 +182,7 @@ Simple example.
 spawn `date`:
     for l in promise.output.stdout:
         print(l)
+    return True
 
 ```
 _Notes_: 
@@ -193,7 +198,8 @@ Simple example with the shell command as a Python variable:
 # run "date" command asynchronously 
 d = 'date "+%Y/%m/%d"'
 spawn `$d`:
-    print(results.stdout[0])
+    print(promise.output.stdout[0])
+    return True
 
 ```
 Example with shell commands executed within resolver block:
@@ -206,12 +212,13 @@ print("Running Watiba spawn with wait")
 
 # run "ls -lrt" command asynchronously 
 spawn `ls -lrt`:
-    print("Exit code: {}".format(results.exit_code))
-    print("CWD: {}".format(results.cwd))
-    print("STDERR: {}".format(results.stderr))
-    for l in results.stdout:
+    print("Exit code: {}".format(promise.output.exit_code))
+    print("CWD: {}".format(promise.output.cwd))
+    print("STDERR: {}".format(promise.output.stderr))
+    for l in promise.output.stdout:
         print(l)
     `touch /tmp/done`
+    return True
 
 # Pause until spawn command is complete
 while not os.path.exists("/tmp/done"):
@@ -220,7 +227,30 @@ while not os.path.exists("/tmp/done"):
 print("complete")
 
 ```
+#### Passing Arguments to the Resolver
+Arguments can be passed to the resolver with the ```spawn args(args)``` expression.  Set this expression before
+the spawned command.  This expression takes one parameter and it _must_ be a Python dictionary.  The args are passed
+to the resolver in the promise object variable _promise.args_  
 
+Example:
+```
+# Meaningless arguments for the sake of demonstration
+my_args = {"log_file": "/var/logs/blah.log",
+            "count": some_counter}
+
+# Pass my args to the command to be spawned
+spawn args(my_args)
+
+# Other Python code can be here if wanted...bogus statement for demonstration
+do_nothing = True
+
+# run "date" command asynchronously passing the args from "spawn args()"
+d = 'date "+%Y/%m/%d"'
+spawn `$d`:
+    print("Arguments passed to me: {}".format(promise.args))
+    print(promise.output.stdout[0])
+    return True
+```
 
 # Installation
 ## PIP
