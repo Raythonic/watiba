@@ -68,7 +68,6 @@ while not os.path.exists("/tmp/done"):
 # looking the promise to resolve (which is done by the resolver)
 my_promise=spawn `ls -lrt`:
     # This is the resolver callback block
-    promise.set_resolved()
     print("Spawned command done!")
     print("results {}".format(promise.output.stdout))
     `touch /tmp/done`
