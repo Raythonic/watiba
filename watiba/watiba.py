@@ -71,8 +71,8 @@ class Watiba(Exception):
         out.cwd = os.getcwd()
         return out
 
-    def spawn(self, command, resolver):
-        def run_command(cmd, resolver, spawn_args):
+    def spawn(self, command, resolver, spawn_args):
+        def run_command(cmd, resolver):
             # Execute the command in a new thread
             self.promise.output = self.bash(cmd)
 
