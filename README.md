@@ -43,7 +43,7 @@ if __name__ == "__main__":
 #### Commands Expressed as Variables
 Commands within backticks can _be_ a variable, but cannot contain snippets of Python code or Python variables. 
 The statement within the backticks _must_ be either a pure shell command or a Python variable containing a pure
-shell command.  To execute command in a Python variable, prefix the variable name between backticks with a dollar sign.
+shell command.  To execute commands in a Python variable, prefix the variable name between backticks with a dollar sign.
 
 A command expressed in a Python variable can be executed like this:
 ```
