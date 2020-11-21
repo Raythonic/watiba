@@ -135,7 +135,7 @@ while not my_promise.resolved():
 # Once the promise is resolved, the command output is available
 print("Command exit code: {}".format(my_promise.output.exit_code))
 ```
-## Results from Spawned Command
+### Results from Spawned Command
 Spawned commands return their results in the _promise.output_ reference of the _promise_ object passed to
 the resolver block, and in the spawn statement if there is an assignment in that spawn statement.  
 The result properties can then be accessed as followed:
@@ -158,13 +158,18 @@ _promise_.
 ```
 dir = "ls -lrt /tmp"
 p = spawn `$dir`:
+    # Outcome found in argument "promise"
     print(promise.output.stdout)
+
+# Wait until promise is resolved
+while not p.resolved():
+    print("Command not finished")
+    `sleep 5`
+
+ print("Command completed.")
 ```
 
-Simple example.  _Note_: This code snippet _likely_ terminates before the resolver block gets executed.  Therefore, the
-print statements are not _likely_ to show.  It's an issue of timing.
-
-_Note_: The promise object does not have to be used if you don't want to. It's still passed to the resolver, though.
+Simple example.  
 
 ```
 #!/usr/bin/python3
@@ -175,6 +180,11 @@ spawn `date`:
         print(l)
 
 ```
+_Notes_: 
+1. This code snippet _likely_ terminates before the resolver block gets executed.  Therefore, the
+print statements are not _likely_ to show.  It's an issue of timing.
+2. The promise object does not have to be used if you don't want to in the outer code.  Just don't assign it. 
+It's still passed to the resolver, though.
 
 Simple example with the shell command as a Python variable:
 ```
