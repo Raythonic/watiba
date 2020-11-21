@@ -31,9 +31,6 @@ class WTPromise(Exception):
     def resolved(self):
         return self.resolution
 
-    def set_resolved(self):
-        self.resolution = True
-
 # Singleton object with no side effects
 # Executes the command an returns a new WTOutput object
 class Watiba(Exception):
