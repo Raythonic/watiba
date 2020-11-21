@@ -60,6 +60,7 @@ spawn `ls -lrt`:
     print("1 Spawned command done!")
     #print("results {}".format(promise.output.stdout))
     `touch /tmp/done`
+    return True
 
 while not os.path.exists("/tmp/done"):
     print("1 Promise not resolved")
@@ -72,6 +73,7 @@ my_promise=spawn `ls -lrt`:
     print("2 Spawned command done!")
     #print("results {}".format(promise.output.stdout))
     `touch /tmp/done`
+    return True
 
 while not my_promise.resolved():
     print("2 Promise not resolved: {}".format(my_promise.resolved()))
@@ -87,5 +89,6 @@ spawn args(args)
 
 p = spawn `echo "hello"`:
     args = promise.args
+    return True
 
 print("test complete.")
