@@ -34,6 +34,7 @@ class Compiler:
         self.resolver_count = 1
         self.async_call = []
         self.indentation_count = -1
+        self.spawn_args = {}
 
     # Handle spawn code blocks
     def spawn_handler(self, parms):
@@ -50,7 +51,8 @@ class Compiler:
         promise_assign = parms["match"].group(1) if parms["match"].group(1) else ""
 
         # Queue up asyc call which is executed (spit out) at the end of the w_async block
-        self.async_call.append("{}_watiba_.spawn({}{}, {})".format(promise_assign, self_prefix, cmd, resolver_name))
+        self.async_call.append("{}_watiba_.spawn({}{}, {}, {})".format(promise_assign, self_prefix, cmd, resolver_name, self.spawn_args))
+        self.spawn_args = {}
 
         # Track the indentation level at the time we hit the w_async statement
         #   This way we know when to spit out the async call at the end of the block
