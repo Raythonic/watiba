@@ -76,7 +76,7 @@ class Watiba(Exception):
             self.promise.output = self.bash(cmd)
             self.promise.spawn_args = spawn_args
             resolver(self.promise)
-            self.resolution = True
+            self.promise.resolution = True
         try:
             self.promise = WTPromise()
             t = threading.Thread(target=run_command, args=(command, resolver, spawn_args, ))
