@@ -83,9 +83,7 @@ while not my_promise.resolved():
 # Pass arguments to resolver
 global_counter = 0
 print("Testing spawn args")
-args = {"count": global_counter + 1,
-        "log": "/var/log/blah.log"}
-spawn args(args)
+spawn args({"count": global_counter + 1, "log": "/var/log/blah.log"})
 
 p = spawn `echo "hello"`:
     print("Args passed to me: {}".format(promise.args))

@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: Watiba
-Version: 0.0.113
+Version: 0.0.114
 Summary: Python syntactical sugar for embedded shell commands
 Home-page: https://github.com/Raythonic/watiba
 Author: Ray Walker
@@ -51,7 +51,7 @@ Description: # Watiba
         #### Commands Expressed as Variables
         Commands within backticks can _be_ a variable, but cannot contain snippets of Python code or Python variables. 
         The statement within the backticks _must_ be either a pure shell command or a Python variable containing a pure
-        shell command.  To execute command in a Python variable, prefix the variable name between backticks with a dollar sign.
+        shell command.  To execute commands in a Python variable, prefix the variable name between backticks with a dollar sign.
         
         A command expressed in a Python variable can be executed like this:
         ```
