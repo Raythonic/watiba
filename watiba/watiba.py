@@ -24,9 +24,9 @@ class WTOutput(Exception):
 
 # The object returned to the caller of _watiba_
 class WTPromise(Exception):
-    def __init__(self):
+    def __init__(self, args):
         self.output = WTOutput()
-        self.args = {}
+        self.args = args
         self.resolution = False
 
     def resolved(self):
@@ -76,13 +76,10 @@ class Watiba(Exception):
             # Execute the command in a new thread
             self.promise.output = self.bash(cmd)
 
-            # Pass any spawn args to the resolver
-            self.promise.args = spawn_args
-
             # Call the resolver and use its return value for promise resolution
             self.promise.resolution = resolver(self.promise)
         try:
-            self.promise = WTPromise()
+            self.promise = WTPromise(spawn_args)
             t = threading.Thread(target=run_command, args=(command, resolver, spawn_args, ))
             t.start()
         except:
