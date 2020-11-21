@@ -360,7 +360,7 @@ print("Return code: {}".format(xc))
 
 # Example of running a command asynchronously and using the resolver callback code block
 spawn `cd /tmp && tar -zxvf tarball.tar.gz`:
-    for l in results.stderr:
+    for l in promise.output.stderr:
         print(l)
 print("This prints before the tar output.")
 `sleep 5`  # Pause for 5 seconds so spawn can complete
