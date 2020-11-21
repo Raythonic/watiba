@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: Watiba
-Version: 0.0.109
+Version: 0.0.110
 Summary: Python syntactical sugar for embedded shell commands
 Home-page: https://github.com/Raythonic/watiba
 Author: Ray Walker
@@ -238,7 +238,7 @@ Description: # Watiba
         #### Passing Arguments to the Resolver
         Arguments can be passed to the resolver with the ```spawn args(args)``` expression.  Set this expression before
         the spawned command.  This expression takes one parameter and it _must_ be a Python dictionary.  The args are passed
-        to the resolver in the promise object variable _promise.spawn_args_  
+        to the resolver in the promise object variable _promise.args_  
         
         Example:
         ```
@@ -255,7 +255,7 @@ Description: # Watiba
         # run "date" command asynchronously passing the args from "spawn args()"
         d = 'date "+%Y/%m/%d"'
         spawn `$d`:
-            print("Arguments passed to me: {}".format(promise.spawn_args))
+            print("Arguments passed to me: {}".format(promise.args))
             print(promise.output.stdout[0])
             return True
         ```
