@@ -74,11 +74,12 @@ my_promise=spawn `ls -lrt`:
     `touch /tmp/done`
 
 while not my_promise.resolved():
-    print("2 Promise not resolved")
+    print("2 Promise not resolved: {}".format(my_promise.resolved()))
     `sleep 3`
 
 ########################################################
 # Pass arguments to resolver
+global_counter = 0
 print("Testing spawn args")
 args = {"count": global_counter + 1,
         "log": "/var/log/blah.log"}
