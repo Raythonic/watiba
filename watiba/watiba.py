@@ -71,7 +71,7 @@ class Watiba(Exception):
         out.cwd = os.getcwd()
         return out
 
-    def spawn(self, command, resolver, spawn_args):
+    def spawn(self, command, resolver):
         def run_command(cmd, resolver, spawn_args):
             # Execute the command in a new thread
             self.promise.output = self.bash(cmd)
@@ -80,7 +80,7 @@ class Watiba(Exception):
             self.promise.resolution = resolver(self.promise)
         try:
             self.promise = WTPromise(spawn_args)
-            t = threading.Thread(target=run_command, args=(command, resolver, spawn_args, ))
+            t = threading.Thread(target=run_command, args=(command, resolver, ))
             t.start()
         except:
             print("ERROR.  w_async thread execution failed. {}".format(command))
