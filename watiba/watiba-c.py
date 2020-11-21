@@ -93,7 +93,7 @@ class Compiler:
         m = re.search(spawn_args_exp, s.strip())
         if m:
             self.spawn_args = m.group(1)
-            return
+            return ""
 
         # First check for async promises
         m = re.search(spawn_exp_self, s.strip())
