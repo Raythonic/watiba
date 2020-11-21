@@ -1,5 +1,5 @@
 #!/bin/python3
-versions = ["Watiba 0.0.91", "Python 3.8"]
+versions = ["Watiba 0.0.93", "Python 3.8"]
 import sys
 import re
 
@@ -34,7 +34,7 @@ class Compiler:
         self.resolver_count = 1
         self.async_call = []
         self.indentation_count = -1
-        self.spawn_args = {}
+        self.spawn_args = "{}"
 
     # Handle spawn code blocks
     def spawn_handler(self, parms):
@@ -52,7 +52,7 @@ class Compiler:
 
         # Queue up asyc call which is executed (spit out) at the end of the w_async block
         self.async_call.append("{}_watiba_.spawn({}{}, {}, {})".format(promise_assign, self_prefix, cmd, resolver_name, self.spawn_args))
-        self.spawn_args = {}
+        self.spawn_args = "{}"
 
         # Track the indentation level at the time we hit the w_async statement
         #   This way we know when to spit out the async call at the end of the block
@@ -71,6 +71,9 @@ class Compiler:
         # Take a copy of initial generated code
         output = self.output.copy()
 
+        # Remove initial statements so they're not generated for every shell commands
+        self.output = []
+
         # Copy the statement to a local variable
         s = str(stmt)
 
@@ -80,22 +83,26 @@ class Compiler:
             self.async_call = []
             self.indentation_count = len(s) - len(s.lstrip())
 
-        # Async expressions
-        async_exp_self = "^(\S.*)?self.spawn `(\S.*)`:$"
-        async_exp = "^(\S.*)?spawn `(\S.*)`:$"
+        # Spawn expressions
+        spawn_args_exp = "^spawn args\((\S.*)\)$"
+        spawn_exp_self = "^(\S.*)?self.spawn `(\S.*)`:$"
+        spawn_exp = "^(\S.*)?spawn `(\S.*)`:$"
 
         # Backticks expression
         backticks_exp = ".*?([\-])?`(\S.*?)`.*?"
 
-        # Remove initial statements so they're not generated for every shell commands
-        self.output = []
+        # Check for spawn arguments
+        m = re.search(spawn_args_exp, s.strip())
+        if m:
+            self.spawn_args = m.group(1)
+            return
 
         # First check for async promises
-        m = re.search(async_exp_self, s.strip())
+        m = re.search(spawn_exp_self, s.strip())
         if m:
             return self.spawn_handler({"match":m, "stmt":s, "prefix":"self."})
 
-        m = re.search(async_exp, s.strip())
+        m = re.search(spawn_exp, s.strip())
         if m:
             return self.spawn_handler({"match":m, "stmt":s, "prefix":""})
 

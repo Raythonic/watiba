@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: Watiba
-Version: 0.0.91
+Version: 0.0.93
 Summary: Python syntactical sugar for embedded shell commands
 Home-page: https://github.com/Raythonic/watiba
 Author: Ray Walker
@@ -120,31 +120,33 @@ Description: # Watiba
         ## Asynchronous Spawning and Promises
         Shell commands can be executed asynchronously with a defined resolver callback block.  The resolver is
         a callback block that follows the Watiba _spawn_ statement.  The spawn feature is executed
-        when a ```spawn `cmd`: statements``` code block is encountered. The resolver is passed the results in
-        argument "results".  (This structure contains the properties defined in "Command Results" of this README.) 
-        The _spawn_ expression returns a _promise_ object that can be used by the resolver to signal outer code that
-        the spawned command is complete.  The promise object is passed to the resolver in variable _promise_.  The resolver
-        signals completion with ```promise.set_resolved()``` and outer code can check its state with a call to _resolved()_
-        on the returned promise object.  Output from the command is found in _promise.output_
+        when a ```spawn `cmd`: statements``` code block is encountered. The resolver is passed the results in the promise object. 
+        (This structure contains the properties defined in "Results from Spawned Command" of this README.) 
+        The _spawn_ expression returns a _promise_ object that can be used by the outer code to check for resolution.  
+        The promise object is passed to the resolver in variable _promise_.  The outer code can check its state with a call 
+        to _resolved()_ on the *returned* promise object.  Output from the command is found in _promise.output_
         
         Spawn with promise example:
         ```
         my_promise = spawn `tar -zcvf tarball.tar.gz /tmp`:
-            promise.set_resolved()
-        
             # The command results are found in promise.output
-            print("Command exit code: {}".format(promise.output.exit_code))
+        
             print("Command stdout: {}".format(promise.output.stdout))
             print("Tar completed.  Output follows...")
             for l in promise.output.stderr:
                 print(l)
         
+        # Sleep until promise is resolved
         while not my_promise.resolved():
             `sleep 3`
+        
+        # Once the promise is resolved, the command output is available
+        print("Command exit code: {}".format(my_promise.output.exit_code))
         ```
-        ## Results from Spawned Command
+        ### Results from Spawned Command
         Spawned commands return their results in the _promise.output_ reference of the _promise_ object passed to
-        the resolver block.  The result properties can then be accessed as followed:
+        the resolver block, and in the spawn statement if there is an assignment in that spawn statement.  
+        The result properties can then be accessed as followed:
          
         - promise.output.stdout - array of output lines from the command normalized for display
         - promise.output.stderr - array of standard error output lines from the command normalized for display
@@ -155,50 +157,42 @@ Description: # Watiba
         1. Watiba backticked commands can exist within the resolver 
         2. Other _spawn_ blocks can be embedded within a resolver (recursion allowed)
         3. The command within the _spawn_ definition can be a variable
+            (The same rules apply as for all backticked shell commands)
         4. The leading dash to ignore CWD _cannot_ be used in the _spawn_ command
+        5. The _promise.output_ object is not available until _promise.resolved()_ returns True
         
-        The backticked command in the ```spawn `cmd`:``` can be a Python variable, but as with all backticked
-        shell commands, it must be a complete command.
-        
-        For example, this is not supported:
-        ```
-        dir = "/tmp"
-        p = spawn `ls -lrt dir`:
-            promise.set_resolved()
-            print("Exit code: {}".format(promise.output.exit_code))
-            print(promise.output.stdout)
-        
-        # Attempting to access a Python variable with the dollar sign is not supported
-        p = spawn `ls -lrt $dir`:
-            promise.set_resolved()
-            print("Exit code: {}".format(promise.output.exit_code))
-            print(promise.output.stdout)
-        ```
-        
-        However, this is supported because the variable is a complete command:
+        Example of a promise returned in the spawn assignment, to variable _p_, and passed to the resolver in argument
+        _promise_.
         ```
         dir = "ls -lrt /tmp"
         p = spawn `$dir`:
-            promise.set_resolved()
+            # Outcome found in argument "promise"
             print(promise.output.stdout)
+        
+        # Wait until promise is resolved
+        while not p.resolved():
+            print("Command not finished")
+            `sleep 5`
+        
+         print("Command completed.")
         ```
         
-        Simple example.  _Note_: This code snippet _likely_ terminates before the resolver block gets executed.  Therefore, the
-        print statements are not _likely_ to show.  It's an issue of timing.
+        Simple example.  
         
-        _Note_: The promise object does not have to be used if you don't want to. It's still passed to the resolver, though.
-        However, it's best practice to always set the promise to resolved so its state is properly reflected.
-         This demonstrates that.
         ```
         #!/usr/bin/python3
         
         # run "date" command asynchronously 
         spawn `date`:
-            promise.set_resolved()
             for l in promise.output.stdout:
                 print(l)
         
         ```
+        _Notes_: 
+        1. This code snippet _likely_ terminates before the resolver block gets executed.  Therefore, the
+        print statements are not _likely_ to show.  It's an issue of timing.
+        2. The promise object does not have to be used if you don't want to in the outer code.  Just don't assign it. 
+        It's still passed to the resolver, though.
         
         Simple example with the shell command as a Python variable:
         ```
