@@ -26,6 +26,7 @@ class WTOutput(Exception):
 class WTPromise(Exception):
     def __init__(self):
         self.output = WTOutput()
+        self.spawn_args = {}
         self.resolution = False
 
     def resolved(self):
@@ -70,14 +71,15 @@ class Watiba(Exception):
         out.cwd = os.getcwd()
         return out
 
-    def spawn(self, command, resolver):
-        def run_command(cmd, resolver):
+    def spawn(self, command, resolver, spawn_args):
+        def run_command(cmd, resolver, spawn_args):
             self.promise.output = self.bash(cmd)
-            self.resolve = True
+            self.promise.spawn_args = spawn_args
             resolver(self.promise)
+            self.resolve = True
         try:
             self.promise = WTPromise()
-            t = threading.Thread(target=run_command, args=(command, resolver,))
+            t = threading.Thread(target=run_command, args=(command, resolver, spawn_args, ))
             t.start()
         except:
             print("ERROR.  w_async thread execution failed. {}".format(command))
