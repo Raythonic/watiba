@@ -11,7 +11,7 @@ from subprocess import Popen, PIPE, STDOUT
 import re
 import os
 import threading
-from sys import stderr
+import time
 
 
 # The object returned to the caller of _watiba_
@@ -31,6 +31,10 @@ class WTPromise(Exception):
 
     def resolved(self):
         return self.resolution
+
+    def join(self):
+        while not self.resolution:
+            time.sleep(1)
 
 # Singleton object with no side effects
 # Executes the command an returns a new WTOutput object
@@ -86,4 +90,3 @@ class Watiba(Exception):
             print("ERROR.  w_async thread execution failed. {}".format(command))
 
         return self.promise
-
