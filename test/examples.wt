@@ -89,4 +89,7 @@ p = spawn `echo "hello"`:
     print("Args passed to me: {}".format(promise.args))
     return True
 
+# Wait for promise to resolve
+p.join()
+
 print("test complete.")

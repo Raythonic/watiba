@@ -120,6 +120,9 @@ to _resolved()_ on the *returned* promise object.  Output from the command is fo
 
 The resolver must return True to set the promise to resolved, or False to leave it unresolved.
 
+The outer code creating the spawned command can synchronize with it by calling the _.join()_ method on the promise
+object.
+
 Spawn with promise example:
 ```
 my_promise = spawn `tar -zcvf tarball.tar.gz /tmp`:
@@ -132,8 +135,7 @@ my_promise = spawn `tar -zcvf tarball.tar.gz /tmp`:
     return True
 
 # Sleep until promise is resolved
-while not my_promise.resolved():
-    `sleep 3`
+my_promise.join()
 
 # Once the promise is resolved, the command output is available
 print("Command exit code: {}".format(my_promise.output.exit_code))
