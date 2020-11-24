@@ -1,8 +1,5 @@
 #!/bin/python3
-versions = ["Watiba 0.1.2", "Python 3.8"]
-import sys
-import re
-
+versions = ["Watiba 0.1.3", "Python 3.8"]
 """
 Watiba pre-complier.  Watiba commands are BASH embedded commands between backtick characters (i.e. `), like traditional Bash captures.
 
@@ -10,7 +7,7 @@ Examples:
   example1.wt
     for line in `ls -lrt`.stdout:
         print(line)
-    
+
     w = `cd /tmp && tar -zxvf blah.zip`
     if w.exit_code != 0:
         for l in w.stderr:
@@ -42,7 +39,9 @@ class Compiler:
 
         # Build the async call that will be located just after the resolver block
         quote_style = "'" if "'" not in parms["match"].group(2) else '"'
-        cmd = parms["match"].group(2) if parms["match"].group(2)[0] == "$" else "{}{}{}".format(quote_style, parms["match"].group(2), quote_style)
+        cmd = parms["match"].group(2) if parms["match"].group(2)[0] == "$" else "{}{}{}".format(quote_style,
+                                                                                                parms["match"].group(2),
+                                                                                                quote_style)
         resolver_name = "{}__watiba_resolver_{}__".format(parms["prefix"], self.resolver_count)
         self.resolver_count += 1
 
@@ -52,7 +51,8 @@ class Compiler:
         promise_assign = parms["match"].group(1) if parms["match"].group(1) else ""
 
         # Queue up asyc call which is executed (spit out) at the end of the w_async block
-        self.async_call.append("{}_watiba_.spawn({}{}, {}, {})".format(promise_assign, self_prefix, cmd, resolver_name, self.spawn_args))
+        self.async_call.append(
+            "{}_watiba_.spawn({}{}, {}, {})".format(promise_assign, self_prefix, cmd, resolver_name, self.spawn_args))
         self.spawn_args = "{}"
 
         # Track the indentation level at the time we hit the w_async statement
@@ -70,14 +70,13 @@ class Compiler:
 
     # Generator for spawn in class
     def spawn_handler_self(self, parms):
-        self.output.append(self.spawn_handler({"match":parms["match"],
-                                   "statement": parms["statement"],
-                                   "prefix": "self."}))
+        self.output.append(self.spawn_handler({"match": parms["match"],
+                                               "statement": parms["statement"],
+                                               "prefix": "self."}))
 
     # Generator for spawn args statement.  (S is not used)
     def spawn_args_handler(self, parms):
         self.spawn_args = parms["match"].group(1)
-
 
     def backticks_hander(self, parms):
         s = str(parms["statement"])
@@ -126,14 +125,13 @@ class Compiler:
                        ".*?([\-])?`(\S.*?)`.*?": self.backticks_handler
                        }
 
-
         # Check the statement for a Watiba expresion
         for ex in expressions:
             m = re.search(ex, s.strip())
 
             # We have a Watiba expression. Generate the code.
             if m:
-                return expressions[ex]({"match":m, "statement": s, "pattern":ex})
+                return expressions[ex]({"match": m, "statement": s, "pattern": ex})
 
 
 if __name__ == "__main__":
@@ -166,4 +164,3 @@ if __name__ == "__main__":
 
     # Flush out any queued async statement calls
     c.flush()
-
