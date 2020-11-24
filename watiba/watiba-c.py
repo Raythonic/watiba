@@ -34,14 +34,15 @@ class Compiler:
         self.spawn_call = []
         self.indentation_count = -1
         self.spawn_args = "{}"
-        self.expressions = {"^spawn args\((\S.*)\)$": self.spawn_args_handler,
-                       "^(\S.*)?self.spawn `(\S.*)`:$": self.spawn_handler_self,
-                       "^(\S.*)?spawn `(\S.*)`:$": self.spawn_handler,
-                       ".*?([\-])?`(\S.*?)`.*?": self.backticks_handler
-                       }
+        self.expressions = {
+                    "^spawn args\((\S.*)\)$": self.spawn_args_generator,
+                    "^(\S.*)?self.spawn `(\S.*)`:$": self.spawn_generator_self,
+                    "^(\S.*)?spawn `(\S.*)`:$": self.spawn_generator,
+                    ".*?([\-])?`(\S.*?)`.*?": self.backticks_generator
+                    }
 
     # Handle spawn code blocks
-    def spawn_handler(self, parms):
+    def spawn_generator(self, parms):
 
         # Build the spawn call that will be located just after the resolver block
         quote_style = "'" if "'" not in parms["match"].group(2) else '"'
@@ -75,19 +76,20 @@ class Compiler:
             print(self.spawn_call.pop())
 
     # Generator for spawn in class
-    def spawn_handler_self(self, parms):
-        self.output.append(self.spawn_handler({"match": parms["match"],
+    def spawn_generator_self(self, parms):
+        self.output.append(self.spawn_generator({"match": parms["match"],
                                                "statement": parms["statement"],
                                                "prefix": "self."}))
 
     # Generator for spawn args statement.  (S is not used)
-    def spawn_args_handler(self, parms):
+    def spawn_args_generator(self, parms):
         self.spawn_args = parms["match"].group(1)
 
+    # Generator for `cmd` expressions
     def backticks_hander(self, parms):
         s = str(parms["statement"])
 
-        # Run through the statement and replace backticked shell commands with Watiba function calls
+        # Run through the statement and replace all backticked shell commands with Watiba function calls
         m = parms["match"]
         while m:
             # This flag control Watiba's CWD tracking
@@ -117,7 +119,7 @@ class Compiler:
         s = str(stmt)
 
         # Spit out spawn call if it's queued up
-        if len(self.spawn_call) > 0 and len(s) - len(s.lstrip()) <= self.indentation_count:
+        if len(s) - len(s.lstrip()) <= self.indentation_count:
             self.flush()
             self.indentation_count = len(s) - len(s.lstrip())
 
