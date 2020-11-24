@@ -14,7 +14,7 @@ import threading
 import time
 
 
-# The object returned to the caller of _watiba_
+# The object returned to the caller of _watiba_ for command results
 class WTOutput(Exception):
     def __init__(self):
         self.stdout = []
@@ -22,7 +22,7 @@ class WTOutput(Exception):
         self.exit_code = 0
         self.cwd = "."
 
-# The object returned to the caller of _watiba_
+# The object returned for Watbia thread spawns
 class WTPromise(Exception):
     def __init__(self, args):
         self.output = WTOutput()
@@ -83,8 +83,13 @@ class Watiba(Exception):
             # Call the resolver and use its return value for promise resolution
             self.promise.resolution = resolver(self.promise)
         try:
+            # Create a new promise object
             self.promise = WTPromise(spawn_args)
+
+            # Create a new thread
             t = threading.Thread(target=run_command, args=(command, resolver, ))
+
+            # Run the command and call the resolver
             t.start()
         except:
             print("ERROR.  w_async thread execution failed. {}".format(command))
