@@ -59,7 +59,7 @@ class Compiler:
         #   This way we know when to spit out the async call at the end of the block
         self.indentation_count = len(parms["statement"]) - len(parms["statement"].lstrip())
 
-        # Convert w_async(`cmd`, resolver) statement to proper Python function definition
+        # Convert spawn `cmd`: statement to proper Python function definition
         self.output.append(["def {}(promise):".format(resolver_name)])
 
     # Flush out any queue async calls that are located after the resolver block
