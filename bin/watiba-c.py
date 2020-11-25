@@ -1,5 +1,5 @@
 #!/bin/python3
-versions = ["Watiba 0.1.6", "Python 3.8"]
+versions = ["Watiba 0.1.8", "Python 3.8"]
 import re
 import sys
 
@@ -43,6 +43,13 @@ class Compiler:
                     ".*?([\-])?`(\S.*?)`.*?": self.backticks_generator
                     }
 
+
+    # Flush out any queue spawn calls that are located after the resolver block
+    def flush(self):
+        # Spit out spawn calls if they're queued up
+        while len(self.spawn_call) > 0:
+            print(self.spawn_call.pop())
+
     # Handle spawn code blocks
     def spawn_generator(self, parms):
 
@@ -70,12 +77,6 @@ class Compiler:
 
         # Convert spawn `cmd`: statement to proper Python function definition
         self.output.append(["def {}(promise):".format(resolver_name)])
-
-    # Flush out any queue spawn calls that are located after the resolver block
-    def flush(self):
-        # Spit out spawn calls if they're queued up
-        while len(self.spawn_call) > 0:
-            print(self.spawn_call.pop())
 
     # Generator for spawn in class
     def spawn_generator_self(self, parms):
@@ -131,7 +132,9 @@ class Compiler:
 
             # We have a Watiba expression. Generate the code.
             if m:
-                return self.expressions[ex]({"match": m, "statement": s, "pattern": ex})
+                return self.expressions[ex]({"match": m, "statement": s, "prefix": "", "pattern": ex})
+
+        return stmt
 
 
 if __name__ == "__main__":
