@@ -1,5 +1,5 @@
 #!/bin/python3
-versions = ["Watiba 0.1.4", "Python 3.8"]
+versions = ["Watiba 0.1.5", "Python 3.8"]
 import re
 import sys
 
@@ -33,14 +33,20 @@ class Compiler:
                        "{} = watiba.Watiba()".format(watiba_ref)
                        ]
         self.resolver_count = 1
-        self.async_call = []
+        self.spawn_call = []
         self.indentation_count = -1
         self.spawn_args = "{}"
+        self.expressions = {
+                    "^spawn args\((\S.*)\)$": self.spawn_args_generator,
+                    "^(\S.*)?self.spawn `(\S.*)`:$": self.spawn_generator_self,
+                    "^(\S.*)?spawn `(\S.*)`:$": self.spawn_generator,
+                    ".*?([\-])?`(\S.*?)`.*?": self.backticks_generator
+                    }
 
     # Handle spawn code blocks
-    def spawn_handler(self, parms):
+    def spawn_generator(self, parms):
 
-        # Build the async call that will be located just after the resolver block
+        # Build the spawn call that will be located just after the resolver block
         quote_style = "'" if "'" not in parms["match"].group(2) else '"'
         cmd = parms["match"].group(2) if parms["match"].group(2)[0] == "$" else "{}{}{}".format(quote_style,
                                                                                                 parms["match"].group(2),
@@ -53,48 +59,46 @@ class Compiler:
         # Include promise return if there's an assignment on the stmt
         promise_assign = parms["match"].group(1) if parms["match"].group(1) else ""
 
-        # Queue up asyc call which is executed (spit out) at the end of the w_async block
-        self.async_call.append(
+        # Queue up asyc call which is executed (spit out) at the end of the w_spawn block
+        self.spawn_call.append(
             "{}_watiba_.spawn({}{}, {}, {})".format(promise_assign, self_prefix, cmd, resolver_name, self.spawn_args))
         self.spawn_args = "{}"
 
-        # Track the indentation level at the time we hit the w_async statement
-        #   This way we know when to spit out the async call at the end of the block
+        # Track the indentation level at the time we hit the w_spawn statement
+        #   This way we know when to spit out the spawn call at the end of the block
         self.indentation_count = len(parms["statement"]) - len(parms["statement"].lstrip())
 
         # Convert spawn `cmd`: statement to proper Python function definition
         self.output.append(["def {}(promise):".format(resolver_name)])
 
-    # Flush out any queue async calls that are located after the resolver block
+    # Flush out any queue spawn calls that are located after the resolver block
     def flush(self):
-        # Spit out async calls if they're queued up
-        while len(self.async_call) > 0:
-            print(self.async_call.pop())
+        # Spit out spawn calls if they're queued up
+        while len(self.spawn_call) > 0:
+            print(self.spawn_call.pop())
 
     # Generator for spawn in class
-    def spawn_handler_self(self, parms):
-        self.output.append(self.spawn_handler({"match": parms["match"],
+    def spawn_generator_self(self, parms):
+        self.output.append(self.spawn_generator({"match": parms["match"],
                                                "statement": parms["statement"],
                                                "prefix": "self."}))
 
     # Generator for spawn args statement.  (S is not used)
-    def spawn_args_handler(self, parms):
+    def spawn_args_generator(self, parms):
         self.spawn_args = parms["match"].group(1)
 
+    # Generator for `cmd` expressions
     def backticks_hander(self, parms):
         s = str(parms["statement"])
 
-        # Flag for Watiba CWD tracking
-        context = True
-
-        # Run through the statement and replace backticked shell commands with Watiba function calls
+        # Run through the statement and replace all backticked shell commands with Watiba function calls
         m = parms["match"]
         while m:
             # This flag control Watiba's CWD tracking
             context = False if m.group(1) == "-" else True
             cmd = m.group(2)
 
-            # Make sure the string to be replaced as a dash or not
+            # Make sure the string to be replaced includes the dash if needed
             repl_str = "{}`{}`".format("-" if not context else "", cmd)
 
             # Replace the backticked commands with a Watiba function call
@@ -116,25 +120,18 @@ class Compiler:
         # Copy the statement to a local variable
         s = str(stmt)
 
-        # Spit out async call if it's queued up
-        if len(self.async_call) > 0 and len(s) - len(s.lstrip()) <= self.indentation_count:
-            self.output.append(self.async_call.pop())
-            self.async_call = []
+        # Spit out spawn call if it's queued up
+        if len(s) - len(s.lstrip()) <= self.indentation_count:
+            self.flush()
             self.indentation_count = len(s) - len(s.lstrip())
 
-        expressions = {"^spawn args\((\S.*)\)$": self.spawn_args_handler,
-                       "^(\S.*)?self.spawn `(\S.*)`:$": self.spawn_handler_self,
-                       "^(\S.*)?spawn `(\S.*)`:$": self.spawn_handler,
-                       ".*?([\-])?`(\S.*?)`.*?": self.backticks_handler
-                       }
-
         # Check the statement for a Watiba expresion
-        for ex in expressions:
+        for ex in self.expressions:
             m = re.search(ex, s.strip())
 
             # We have a Watiba expression. Generate the code.
             if m:
-                return expressions[ex]({"match": m, "statement": s, "pattern": ex})
+                return self.expressions[ex]({"match": m, "statement": s, "pattern": ex})
 
 
 if __name__ == "__main__":
@@ -165,5 +162,5 @@ if __name__ == "__main__":
                     print(o)
                 c.output = []
 
-    # Flush out any queued async statement calls
+    # Flush out any queued spawn statement calls
     c.flush()
