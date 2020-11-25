@@ -1,5 +1,5 @@
 #!/bin/python3
-versions = ["Watiba 0.1.9", "Python 3.8"]
+versions = ["Watiba 0.1.10", "Python 3.8"]
 import re
 import sys
 
@@ -76,7 +76,7 @@ class Compiler:
         self.indentation_count = len(parms["statement"]) - len(parms["statement"].lstrip())
 
         # Convert spawn `cmd`: statement to proper Python function definition
-        self.output.append(["def {}(promise):".format(resolver_name)])
+        self.output.append("def {}(promise):".format(resolver_name))
 
     # Generator for spawn in class
     def spawn_generator_self(self, parms):
