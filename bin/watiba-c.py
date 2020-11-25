@@ -1,5 +1,5 @@
 #!/bin/python3
-versions = ["Watiba 0.1.8", "Python 3.8"]
+versions = ["Watiba 0.1.9", "Python 3.8"]
 import re
 import sys
 
@@ -134,7 +134,7 @@ class Compiler:
             if m:
                 return self.expressions[ex]({"match": m, "statement": s, "prefix": "", "pattern": ex})
 
-        return stmt
+        self.output.append(stmt)
 
 
 if __name__ == "__main__":
