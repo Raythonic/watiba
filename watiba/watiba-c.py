@@ -132,6 +132,8 @@ class Compiler:
             if m:
                 return self.expressions[ex]({"match": m, "statement": s, "prefix": "", "pattern": ex})
 
+        return stmt
+
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
