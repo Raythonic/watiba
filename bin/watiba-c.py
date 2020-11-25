@@ -1,5 +1,5 @@
 #!/bin/python3
-versions = ["Watiba 0.1.14", "Python 3.8"]
+versions = ["Watiba 0.1.15", "Python 3.8"]
 import re
 import sys
 
@@ -68,7 +68,7 @@ class Compiler:
 
         # Queue up asyc call which is executed (spit out) at the end of the w_spawn block
         self.spawn_call.append(
-            "{}{}_watiba_.spawn({}{}, {}, {})".format(parms["indention"], promise_assign, self_prefix, cmd, resolver_name, self.spawn_args))
+            "{}{}_watiba_.spawn({}{}, {}, {})".format(parms["indentation"], promise_assign, self_prefix, cmd, resolver_name, self.spawn_args))
         self.spawn_args = "{}"
 
         # Track the indentation level at the time we hit the w_spawn statement
@@ -76,7 +76,7 @@ class Compiler:
         self.indentation_count = len(parms["statement"]) - len(parms["statement"].lstrip())
 
         # Convert spawn `cmd`: statement to proper Python function definition
-        self.output.append("{}def {}(promise):".format(parms["indention"], resolver_name))
+        self.output.append("{}def {}(promise):".format(parms["indentation"], resolver_name))
 
     # Generator for spawn in class
     def spawn_generator_self(self, parms):
