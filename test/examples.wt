@@ -65,10 +65,11 @@ spawn `ls -lrt`:
 while not os.path.exists("/tmp/done"):
     print("1 Promise not resolved")
     `sleep 3`
+
 #######################################################
 # Running a command asynchronously with the outer code
 # looking the promise to resolve (which is done by the resolver)
-my_promise=spawn `ls -lrt`:
+my_promise = spawn `ls -lrt`:
     # This is the resolver callback block
     print("2 Spawned command done!")
     #print("results {}".format(promise.output.stdout))
