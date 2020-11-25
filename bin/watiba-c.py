@@ -1,5 +1,5 @@
 #!/bin/python3
-versions = ["Watiba 0.1.5", "Python 3.8"]
+versions = ["Watiba 0.1.6", "Python 3.8"]
 import re
 import sys
 
@@ -88,7 +88,7 @@ class Compiler:
         self.spawn_args = parms["match"].group(1)
 
     # Generator for `cmd` expressions
-    def backticks_hander(self, parms):
+    def backticks_generator(self, parms):
         s = str(parms["statement"])
 
         # Run through the statement and replace all backticked shell commands with Watiba function calls
