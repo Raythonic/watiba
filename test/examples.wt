@@ -66,6 +66,14 @@ while not os.path.exists("/tmp/done"):
     print("1 Promise not resolved")
     `sleep 3`
 
+
+#######################################################
+for dir in `ls -d *`.stdout:
+    tar = "tar -zcvf {}.tar.gz {}"
+    spawn args({"dir": dir})
+    spawn `$tar`:
+        print("{} tar complete".format(promise.args["dir"]))
+
 #######################################################
 # Running a command asynchronously with the outer code
 # looking the promise to resolve (which is done by the resolver)
