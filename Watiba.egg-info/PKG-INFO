@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: Watiba
-Version: 0.1.25
+Version: 0.1.26
 Summary: Python syntactical sugar for embedded shell commands
 Home-page: https://github.com/Raythonic/watiba
 Author: Ray Walker
@@ -118,28 +118,50 @@ Description: # Watiba
         
         
         ## Asynchronous Spawning and Promises
-        Shell commands can be executed asynchronously with a defined resolver callback block.  The resolver is
-        a callback block that follows the Watiba _spawn_ statement.  The spawn feature is executed
-        when a ```spawn `cmd`: statements``` code block is encountered. The resolver is passed the results in the promise object. 
-        (This structure contains the properties defined in "Results from Spawned Command" of this README.) 
-        The _spawn_ expression returns a _promise_ object that can be used by the outer code to check for resolution.  
+        Shell commands can be executed asynchronously with a defined resolver callback block.
+        The resolver is a callback block that follows the Watiba _spawn_ expression.  The spawn feature is executed
+        when a ```spawn args() `cmd`: resolver block``` code block is encountered. The resolver is passed the results in the promise object. 
+        (The promise structure contains the properties defined in "Results from Spawned Command" of this README.) 
+        The _spawn_ expression returns a _promise_ object that can be used by the outer code to check for resolution. 
         The promise object is passed to the resolver in variable _promise_.  The outer code can check its state with a call 
         to _resolved()_ on the *returned* promise object.  Output from the command is found in _promise.output_
         
-        The resolver must return True to set the promise to resolved, or False to leave it unresolved.
-        
-        The outer code creating the spawned command can synchronize with it by calling the _.join()_ method on the promise
+        _Notes:_
+        1. Arguments can be passed to the resolver with the _args()_ parameter.  The argument parameter must be a single
+        dictionary object.
+        2. The resolver must return True to set the promise to resolved, or False to leave it unresolved.
+        3. The outer code creating the spawned command can synchronize with it by calling the _.join()_ method on the promise
         object.
+        
+        *Spawn expression syntax*
+        p = spawn args(a) \`cmd\`:
+            resolver block
+        
+        For spawns within class definitions
+        p = self.spawn args(a) \`cmd\`:
+            resolver block
         
         Spawn with promise example:
         ```
-        my_promise = spawn `tar -zcvf tarball.tar.gz /tmp`:
-            # The command results are found in promise.output
+        # Parms dictionary passed to resolver
+        a = {"msg": "Hello there"}
         
+        # Spawn argment and callback resolver block
+        my_promise = spawn args(a) `tar -zcvf tarball.tar.gz /tmp`:
+            # This is the resolver block
+        
+            # Get args passed to resolver
+            print(promise.args["msg"])
+        
+            # The command results are found in promise.output
             print("Command stdout: {}".format(promise.output.stdout))
             print("Tar completed.  Output follows...")
+        
+            # Tar output in stderr
             for l in promise.output.stderr:
                 print(l)
+        
+            # Promise resolved
             return True
         
         # Sleep until promise is resolved
@@ -150,7 +172,7 @@ Description: # Watiba
         ```
         ### Results from Spawned Command
         Spawned commands return their results in the _promise.output_ reference of the _promise_ object passed to
-        the resolver block, and in the spawn statement if there is an assignment in that spawn statement.  
+        the resolver block, and in the spawn expression if there is an assignment in that spawn expression.  
         The result properties can then be accessed as followed:
          
         - promise.output.stdout - array of output lines from the command normalized for display
@@ -170,7 +192,7 @@ Description: # Watiba
         _promise_.
         ```
         dir = "ls -lrt /tmp"
-        p = spawn `$dir`:
+        p = spawn args() `$dir`:
             # Outcome found in argument "promise"
             print(promise.output.stdout)
             return True
@@ -189,7 +211,7 @@ Description: # Watiba
         #!/usr/bin/python3
         
         # run "date" command asynchronously 
-        spawn `date`:
+        spawn args() `date`:
             for l in promise.output.stdout:
                 print(l)
             return True
@@ -202,7 +224,7 @@ Description: # Watiba
         
         # run "date" command asynchronously 
         d = 'date "+%Y/%m/%d"'
-        spawn `$d`:
+        spawn args() `$d`:
             print(promise.output.stdout[0])
             return True
         
@@ -216,7 +238,7 @@ Description: # Watiba
         `rm /tmp/done`
         
         # run "ls -lrt" command asynchronously 
-        spawn `ls -lrt`:
+        spawn args() `ls -lrt`:
             print("Exit code: {}".format(promise.output.exit_code))
             print("CWD: {}".format(promise.output.cwd))
             print("STDERR: {}".format(promise.output.stderr))
@@ -231,30 +253,6 @@ Description: # Watiba
         
         print("complete")
         
-        ```
-        #### Passing Arguments to the Resolver
-        Arguments can be passed to the resolver with the ```spawn args(args)``` expression.  Set this expression before
-        the spawned command.  This expression takes one parameter and it _must_ be a Python dictionary.  The args are passed
-        to the resolver in the promise object variable _promise.args_  
-        
-        Example:
-        ```
-        # Meaningless arguments for the sake of demonstration
-        my_args = {"log_file": "/var/logs/blah.log",
-                    "count": some_counter}
-        
-        # Pass my args to the command to be spawned
-        spawn args(my_args)
-        
-        # Other Python code can be here if wanted...bogus statement for demonstration
-        do_nothing = True
-        
-        # run "date" command asynchronously passing the args from "spawn args()"
-        d = 'date "+%Y/%m/%d"'
-        spawn `$d`:
-            print("Arguments passed to me: {}".format(promise.args))
-            print(promise.output.stdout[0])
-            return True
         ```
         
         # Installation
