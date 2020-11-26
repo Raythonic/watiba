@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: Watiba
-Version: 0.1.28
+Version: 0.1.29
 Summary: Python syntactical sugar for embedded shell commands
 Home-page: https://github.com/Raythonic/watiba
 Author: Ray Walker
@@ -127,37 +127,59 @@ Description: # Watiba
         to _resolved()_ on the *returned* promise object.  Output from the command is found in _promise.output_
         
         _Notes:_
-        1. Arguments can be passed to the resolver with the _args()_ parameter.  The argument parameter must be a single
-        dictionary object.
+        1. Arguments can be passed to the resolver by specifying a trailing variable name after the command. The
+         argument parameter must be a single dictionary object.
         2. The resolver must return True to set the promise to resolved, or False to leave it unresolved.
         3. The outer code creating the spawned command can synchronize with it by calling the _.join()_ method on the promise
         object.
         
-        *Spawn expression syntax*
-        p = spawn args(a) \`cmd\`:
-            resolver block
         
-        For spawns within class definitions
-        p = self.spawn args(a) \`cmd\`:
+        **Spawn syntax**
+        ```
+        my_promise = spawn `cmd` args_dict:
+            args_dict passed in args_dict 
             resolver block
+            return resolved or unresolved (True or False)
+         ```
+            
+        _For spawns within class definitions_:
+        ```
+        my_promise = self.spawn `cmd` args_dict:
+            args_dict passed in args_dict 
+            resolver block
+            return resolved or unresolved (True or False)
+        ```
+            
+        _Spawn with resolver arguments omitted_:
+        ```
+        my_promise = spawn `cmd`:
+            resolver block
+            return resolved or unresolved (True or False)
+        ```
+                
+        _For spawns within class definitions resolver arguments omitted_:
+        ```
+        my_promise = self.spawn `cmd`:
+            resolver block
+            return resolved or unresolved (True or False)
+        ```
         
-        Spawn with promise example:
+        _Expanded example_:
         ```
         # Parms dictionary passed to resolver
-        a = {"msg": "Hello there"}
+        my_args = {"msg": "tar command completed.  Output follows:"}
         
         # Spawn argment and callback resolver block
-        my_promise = spawn args(a) `tar -zcvf tarball.tar.gz /tmp`:
+        my_promise = spawn `tar -zcvf tarball.tar.gz /tmp` my_args:
             # This is the resolver block
         
-            # Get args passed to resolver
+            # Get my_args passed to resolver
             print(promise.args["msg"])
         
             # The command results are found in promise.output
             print("Command stdout: {}".format(promise.output.stdout))
-            print("Tar completed.  Output follows...")
         
-            # Tar output in stderr
+            # Tar's output in STDERR
             for l in promise.output.stderr:
                 print(l)
         
@@ -192,7 +214,7 @@ Description: # Watiba
         _promise_.
         ```
         dir = "ls -lrt /tmp"
-        p = spawn args() `$dir`:
+        p = spawn `$dir`:
             # Outcome found in argument "promise"
             print(promise.output.stdout)
             return True
@@ -211,7 +233,7 @@ Description: # Watiba
         #!/usr/bin/python3
         
         # run "date" command asynchronously 
-        spawn args() `date`:
+        spawn `date`:
             for l in promise.output.stdout:
                 print(l)
             return True
@@ -224,7 +246,7 @@ Description: # Watiba
         
         # run "date" command asynchronously 
         d = 'date "+%Y/%m/%d"'
-        spawn args() `$d`:
+        spawn `$d`:
             print(promise.output.stdout[0])
             return True
         
@@ -238,7 +260,7 @@ Description: # Watiba
         `rm /tmp/done`
         
         # run "ls -lrt" command asynchronously 
-        spawn args() `ls -lrt`:
+        spawn `ls -lrt`:
             print("Exit code: {}".format(promise.output.exit_code))
             print("CWD: {}".format(promise.output.cwd))
             print("STDERR: {}".format(promise.output.stderr))
@@ -373,8 +395,7 @@ Description: # Watiba
         # Demonstrates spawns within resolvers
         for dir in `ls -d *`.stdout:
             tar = "tar -zcvf {}.tar.gz {}"
-            spawn args({"dir": dir})
-            prom = spawn `$tar`:
+            prom = spawn `$tar` {"dir": dir}:
                 print("{} tar complete".format(promise.args["dir"]))
                 mv = "mv -r {}/* /tmp/.".format(promise.args["dir"])
                 spawn `$mv`:

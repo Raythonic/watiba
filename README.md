@@ -119,37 +119,59 @@ The promise object is passed to the resolver in variable _promise_.  The outer c
 to _resolved()_ on the *returned* promise object.  Output from the command is found in _promise.output_
 
 _Notes:_
-1. Arguments can be passed to the resolver with the _args()_ parameter.  The argument parameter must be a single
-dictionary object.
+1. Arguments can be passed to the resolver by specifying a trailing variable name after the command. The
+ argument parameter must be a single dictionary object.
 2. The resolver must return True to set the promise to resolved, or False to leave it unresolved.
 3. The outer code creating the spawned command can synchronize with it by calling the _.join()_ method on the promise
 object.
 
-*Spawn expression syntax*
-p = spawn args(a) \`cmd\`:
-    resolver block
 
-For spawns within class definitions
-p = self.spawn args(a) \`cmd\`:
+**Spawn syntax**
+```
+my_promise = spawn `cmd` args_dict:
+    args_dict passed in args_dict 
     resolver block
+    return resolved or unresolved (True or False)
+ ```
+    
+_For spawns within class definitions_:
+```
+my_promise = self.spawn `cmd` args_dict:
+    args_dict passed in args_dict 
+    resolver block
+    return resolved or unresolved (True or False)
+```
+    
+_Spawn with resolver arguments omitted_:
+```
+my_promise = spawn `cmd`:
+    resolver block
+    return resolved or unresolved (True or False)
+```
+        
+_For spawns within class definitions resolver arguments omitted_:
+```
+my_promise = self.spawn `cmd`:
+    resolver block
+    return resolved or unresolved (True or False)
+```
 
-Spawn with promise example:
+_Expanded example_:
 ```
 # Parms dictionary passed to resolver
-a = {"msg": "Hello there"}
+my_args = {"msg": "tar command completed.  Output follows:"}
 
 # Spawn argment and callback resolver block
-my_promise = spawn args(a) `tar -zcvf tarball.tar.gz /tmp`:
+my_promise = spawn `tar -zcvf tarball.tar.gz /tmp` my_args:
     # This is the resolver block
 
-    # Get args passed to resolver
+    # Get my_args passed to resolver
     print(promise.args["msg"])
 
     # The command results are found in promise.output
     print("Command stdout: {}".format(promise.output.stdout))
-    print("Tar completed.  Output follows...")
 
-    # Tar output in stderr
+    # Tar's output in STDERR
     for l in promise.output.stderr:
         print(l)
 
@@ -184,7 +206,7 @@ Example of a promise returned in the spawn assignment, to variable _p_, and pass
 _promise_.
 ```
 dir = "ls -lrt /tmp"
-p = spawn args() `$dir`:
+p = spawn `$dir`:
     # Outcome found in argument "promise"
     print(promise.output.stdout)
     return True
@@ -203,7 +225,7 @@ Simple example.
 #!/usr/bin/python3
 
 # run "date" command asynchronously 
-spawn args() `date`:
+spawn `date`:
     for l in promise.output.stdout:
         print(l)
     return True
@@ -216,7 +238,7 @@ Simple example with the shell command as a Python variable:
 
 # run "date" command asynchronously 
 d = 'date "+%Y/%m/%d"'
-spawn args() `$d`:
+spawn `$d`:
     print(promise.output.stdout[0])
     return True
 
@@ -230,7 +252,7 @@ print("Running Watiba spawn with wait")
 `rm /tmp/done`
 
 # run "ls -lrt" command asynchronously 
-spawn args() `ls -lrt`:
+spawn `ls -lrt`:
     print("Exit code: {}".format(promise.output.exit_code))
     print("CWD: {}".format(promise.output.cwd))
     print("STDERR: {}".format(promise.output.stderr))
@@ -365,8 +387,7 @@ print("This prints before the tar output.")
 # Demonstrates spawns within resolvers
 for dir in `ls -d *`.stdout:
     tar = "tar -zcvf {}.tar.gz {}"
-    spawn args({"dir": dir})
-    prom = spawn `$tar`:
+    prom = spawn `$tar` {"dir": dir}:
         print("{} tar complete".format(promise.args["dir"]))
         mv = "mv -r {}/* /tmp/.".format(promise.args["dir"])
         spawn `$mv`:
