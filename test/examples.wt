@@ -70,8 +70,7 @@ while not os.path.exists("/tmp/done"):
 #######################################################
 for dir in `ls -d *`.stdout:
     tar = "tar -zcvf {}.tar.gz {}"
-    spawn args({"dir": dir})
-    prom = spawn `$tar`:
+    prom = spawn args(dir)  `$tar`:
         print("{} tar complete".format(promise.args["dir"]))
         mv = "mv -r {}/* /tmp/.".format(promise.args["dir"])
 
@@ -84,7 +83,7 @@ for dir in `ls -d *`.stdout:
 #######################################################
 # Running a command asynchronously with the outer code
 # looking the promise to resolve (which is done by the resolver)
-my_promise = spawn `ls -lrt`:
+my_promise = spawn args() `ls -lrt`:
     # This is the resolver callback block
     print("2 Spawned command done!")
     #print("results {}".format(promise.output.stdout))
@@ -99,9 +98,9 @@ while not my_promise.resolved():
 # Pass arguments to resolver
 global_counter = 0
 print("Testing spawn args")
-spawn args({"count": global_counter + 1, "log": "/var/log/blah.log"})
+args = {"count": global_counter + 1, "log": "/var/log/blah.log"}
 
-p = spawn `echo "hello"`:
+p = spawn args(args) `echo "hello"`:
     print("Args passed to me: {}".format(promise.args))
     return True
 
