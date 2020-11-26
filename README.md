@@ -363,7 +363,7 @@ print("This prints before the tar output.")
 `sleep 5`  # Pause for 5 seconds so spawn can complete
 
 # List dirs from CWD, iterate through them, spawn a tar command
-# the within the resolver spawn a move command
+# then within the resolver, spawn a move command
 # Demonstrates spawns within resolvers
 for dir in `ls -d *`.stdout:
     tar = "tar -zcvf {}.tar.gz {}"
