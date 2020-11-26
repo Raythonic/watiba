@@ -1,0 +1,20 @@
+# Experimental async/promise feature
+
+# w_async identifies the command followed by the resolver block
+#  The resolver block is the callback function after the asynchronously command is completed
+w_async(`ls -lrt`):
+    # This is the resolver block
+    print("Async command done!")
+    print("results {}".format(results.stdout))
+
+
+>>> output
+def __watiba_resolver_1__(results):
+    print("Async command done!")
+    print("results {}".format(results.stdout))
+_watiba_.w_async("ls -lrt", watiba_resolver_00000001)
+--or--
+def __watiba_resolver_1__(self, results):
+    print("Async command done!")
+    print("results {}".format(results.stdout))
+_watiba_.w_async("ls -lrt", self.watiba_resolver_00000001)

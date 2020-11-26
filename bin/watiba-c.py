@@ -1,5 +1,5 @@
 #!/bin/python3
-versions = ["Watiba 0.1.18", "Python 3.8"]
+versions = ["Watiba 0.1.25", "Python 3.8"]
 import re
 import sys
 
@@ -36,9 +36,11 @@ class Compiler:
         self.spawn_call = []
         self.indentation_count = -1
         self.spawn_args = "{}"
+
+        # Regex expressions for Watiba commands (order matters otherwise backticks would win over spawn)
         self.expressions = {
                     "^spawn args\((\S.*)\)$": self.spawn_args_generator,
-                    "^(\S.*)?self.spawn `(\S.*)`:$": self.spawn_generator_self,
+                    "^(\S.*)?self.spawn `(\S.*)`:$": self.spawn_generator_with_self,
                     "^(\S.*)?spawn `(\S.*)`:$": self.spawn_generator,
                     ".*?([\-])?`(\S.*?)`.*?": self.backticks_generator
                     }
@@ -55,12 +57,16 @@ class Compiler:
 
         # Build the spawn call that will be located just after the resolver block
         quote_style = "'" if "'" not in parms["match"].group(2) else '"'
-        cmd = parms["match"].group(2) if parms["match"].group(2)[0] == "$" else "{}{}{}".format(quote_style,
-                                                                                                parms["match"].group(2),
+
+        # extract the command and if it's a variable, remove the $ and no quotes, otherwise in quotes
+        cmd = parms["match"].group(2)[1:] if parms["match"].group(2)[0] == "$" else "{}{}{}".format(quote_style,
+                                                                                                parms["match"].group(2)[1:],
                                                                                                 quote_style)
+        # Build the next resolver method name
         resolver_name = "{}__watiba_resolver_{}__".format(parms["prefix"], self.resolver_count)
         self.resolver_count += 1
 
+        # Replace the dot with a comma in "self." if that prefix exists
         self_prefix = "" if parms["prefix"] == "" else parms["prefix"].replace(".", ", ")
 
         # Include promise return if there's an assignment on the stmt
@@ -68,7 +74,13 @@ class Compiler:
 
         # Queue up asyc call which is executed (spit out) at the end of the w_spawn block
         self.spawn_call.append(
-            "{}{}_watiba_.spawn({}{}, {}, {})".format(parms["indentation"], promise_assign, self_prefix, cmd, resolver_name, self.spawn_args))
+            "{}{}_watiba_.spawn({}{}, {}, {})".format(parms["indentation"],
+                                                      promise_assign,
+                                                      self_prefix,
+                                                      cmd,
+                                                      resolver_name,
+                                                      self.spawn_args))
+        # Default args object passed to resolver
         self.spawn_args = "{}"
 
         # Track the indentation level at the time we hit the w_spawn statement
@@ -79,7 +91,7 @@ class Compiler:
         self.output.append("{}def {}(promise):".format(parms["indentation"], resolver_name))
 
     # Generator for spawn in class
-    def spawn_generator_self(self, parms):
+    def spawn_generator_with_self(self, parms):
         self.output.append(self.spawn_generator({"match": parms["match"],
                                                "statement": parms["statement"],
                                                "prefix": "self."}))
@@ -92,7 +104,7 @@ class Compiler:
     def backticks_generator(self, parms):
         s = str(parms["statement"])
 
-        # Run through the statement and replace all backticked shell commands with Watiba function calls
+        # Run through the statement and replace ALL the backticked shell commands with Watiba function calls
         m = parms["match"]
         while m:
             # This flag control Watiba's CWD tracking
@@ -121,7 +133,7 @@ class Compiler:
         # Copy the statement to a local variable
         s = str(stmt)
 
-        # Spit out spawn call if it's queued up
+        # Spit out spawn call if it's queued up (on block breaks)
         if len(s) - len(s.lstrip()) <= self.indentation_count:
             self.flush()
             self.indentation_count = len(s) - len(s.lstrip())
@@ -132,7 +144,13 @@ class Compiler:
 
             # We have a Watiba expression. Generate the code.
             if m:
-                return self.expressions[ex]({"match": m, "statement": s, "prefix": "", "pattern": ex, "indentation":stmt[0:len(stmt) - len(stmt.lstrip())]})
+                return self.expressions[ex](
+                    {"match": m,
+                     "statement": s,
+                     "prefix": "",
+                     "pattern": ex,
+                     "indentation":stmt[0:len(stmt) - len(stmt.lstrip())]}
+                )
 
         self.output.append(stmt)
 
@@ -142,6 +160,7 @@ if __name__ == "__main__":
         print("ERROR. No input file.")
         sys.exit(0)
 
+    # the versions array is generated at build time (see this module in bin/)
     if sys.argv[1] == "version":
         for v in versions:
             print(v)
