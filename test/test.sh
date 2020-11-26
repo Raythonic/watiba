@@ -9,5 +9,6 @@ then
 fi
 
 echo "Testing Watiba"
+# Compile the examples
 bin/watiba-c.py test/examples.wt > tmp/watiba_test.py
 chmod +x tmp/watiba_test.py
