@@ -1,5 +1,5 @@
 #!/bin/python3
-versions = ["Watiba 0.1.15", "Python 3.8"]
+versions = ["Watiba 0.1.16", "Python 3.8"]
 import re
 import sys
 
@@ -132,7 +132,7 @@ class Compiler:
 
             # We have a Watiba expression. Generate the code.
             if m:
-                return self.expressions[ex]({"match": m, "statement": s, "prefix": "", "pattern": ex, "indentation":stmt[len(stmt) - len(stmt.lstrip())]})
+                return self.expressions[ex]({"match": m, "statement": s, "prefix": "", "pattern": ex, "indentation":stmt[0:len(stmt) - len(stmt.lstrip())]})
 
         self.output.append(stmt)
 
