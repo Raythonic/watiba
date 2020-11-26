@@ -110,11 +110,11 @@ Python object.  Following are its properties:
 
 
 ## Asynchronous Spawning and Promises
-Shell commands can be executed asynchronously with a defined resolver callback block.  The resolver is
-a callback block that follows the Watiba _spawn_ statement.  The spawn feature is executed
-when a ```spawn `cmd`: statements``` code block is encountered. The resolver is passed the results in the promise object. 
-(This structure contains the properties defined in "Results from Spawned Command" of this README.) 
-The _spawn_ expression returns a _promise_ object that can be used by the outer code to check for resolution.  
+Shell commands can be executed asynchronously with a defined resolver callback block.
+The resolver is a callback block that follows the Watiba _spawn_ expression.  The spawn feature is executed
+when a ```spawn args() `cmd`: resolver block``` code block is encountered. The resolver is passed the results in the promise object. 
+(The promise structure contains the properties defined in "Results from Spawned Command" of this README.) 
+The _spawn_ expression returns a _promise_ object that can be used by the outer code to check for resolution. 
 The promise object is passed to the resolver in variable _promise_.  The outer code can check its state with a call 
 to _resolved()_ on the *returned* promise object.  Output from the command is found in _promise.output_
 
@@ -125,7 +125,7 @@ dictionary object.
 3. The outer code creating the spawned command can synchronize with it by calling the _.join()_ method on the promise
 object.
 
-*Spawn statement syntax*
+*Spawn expression syntax*
 p = spawn args(a) \`cmd\`:
     resolver block
 
@@ -164,7 +164,7 @@ print("Command exit code: {}".format(my_promise.output.exit_code))
 ```
 ### Results from Spawned Command
 Spawned commands return their results in the _promise.output_ reference of the _promise_ object passed to
-the resolver block, and in the spawn statement if there is an assignment in that spawn statement.  
+the resolver block, and in the spawn expression if there is an assignment in that spawn expression.  
 The result properties can then be accessed as followed:
  
 - promise.output.stdout - array of output lines from the command normalized for display
