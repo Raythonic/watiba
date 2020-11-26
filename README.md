@@ -361,4 +361,19 @@ spawn `cd /tmp && tar -zxvf tarball.tar.gz`:
         print(l)
 print("This prints before the tar output.")
 `sleep 5`  # Pause for 5 seconds so spawn can complete
+
+# List dirs from CWD, iterate through them, spawn a tar command
+# the within the resolver spawn a move command
+# Demonstrates spawns within resolvers
+for dir in `ls -d *`.stdout:
+    tar = "tar -zcvf {}.tar.gz {}"
+    spawn args({"dir": dir})
+    prom = spawn `$tar`:
+        print("{} tar complete".format(promise.args["dir"]))
+        mv = "mv -r {}/* /tmp/.".format(promise.args["dir"])
+        return True
+        spawn `$mv`:
+            print("Move done")
+            return True
+    prom.join()
 ```
