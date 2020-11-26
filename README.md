@@ -158,13 +158,14 @@ my_promise = self.spawn `cmd`:
 
 _Expanded example_:
 ```
+#!/usr/bin/python3
+
 # Parms dictionary passed to resolver
 my_args = {"msg": "tar command completed.  Output follows:"}
 
 # Spawn argment and callback resolver block
 my_promise = spawn `tar -zcvf tarball.tar.gz /tmp` my_args:
-    # This is the resolver block
-
+    # Start of resolver block
     # Get my_args passed to resolver
     print(promise.args["msg"])
 
@@ -178,7 +179,7 @@ my_promise = spawn `tar -zcvf tarball.tar.gz /tmp` my_args:
     # Promise resolved
     return True
 
-# Sleep until promise is resolved
+# Sleep until the promise is resolved
 my_promise.join()
 
 # Once the promise is resolved, the command output is available
