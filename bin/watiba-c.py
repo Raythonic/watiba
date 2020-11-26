@@ -1,5 +1,5 @@
 #!/bin/python3
-versions = ["Watiba 0.1.18", "Python 3.8"]
+versions = ["Watiba ", "Python 3.8"]
 import re
 import sys
 
@@ -35,11 +35,16 @@ class Compiler:
         self.resolver_count = 1
         self.spawn_call = []
         self.indentation_count = -1
-        self.spawn_args = "{}"
+
+        # Regex expressions for Watiba commands (order matters otherwise backticks would win over spawn)
         self.expressions = {
-                    "^spawn args\((\S.*)\)$": self.spawn_args_generator,
-                    "^(\S.*)?self.spawn `(\S.*)`:$": self.spawn_generator_self,
-                    "^(\S.*)?spawn `(\S.*)`:$": self.spawn_generator,
+                    # p = self.spawn `cmd`: block
+                    "^(\S.*)?self.spawn \s*args\((\S.*)?\) \s*`(\S.*)`:$": self.spawn_generator_with_self,
+
+                    # p = spawn `cmd`: block
+                    "^(\S.*)?spawn \s*args\((\S.*)?\) \s*`(\S.*)`:$": self.spawn_generator,
+
+                    # `cmd`
                     ".*?([\-])?`(\S.*?)`.*?": self.backticks_generator
                     }
 
@@ -52,24 +57,39 @@ class Compiler:
 
     # Handle spawn code blocks
     def spawn_generator(self, parms):
+        assign_idx = 1
+        args_idx = 2
+        cmd_idx = 3
 
         # Build the spawn call that will be located just after the resolver block
-        quote_style = "'" if "'" not in parms["match"].group(2) else '"'
-        cmd = parms["match"].group(2) if parms["match"].group(2)[0] == "$" else "{}{}{}".format(quote_style,
-                                                                                                parms["match"].group(2),
+        quote_style = "'" if "'" not in parms["match"].group(cmd_idx) else '"'
+
+        # extract the command and if it's a variable, remove the $ and no quotes, otherwise in quotes
+        cmd = parms["match"].group(cmd_idx)[1:] if parms["match"].group(cmd_idx)[0] == "$" else "{}{}{}".format(quote_style,
+                                                                                                parms["match"].group(cmd_idx)[1:],
                                                                                                 quote_style)
+        # Build the next resolver method name
         resolver_name = "{}__watiba_resolver_{}__".format(parms["prefix"], self.resolver_count)
         self.resolver_count += 1
 
+        # Replace the dot with a comma in "self." if that prefix exists
         self_prefix = "" if parms["prefix"] == "" else parms["prefix"].replace(".", ", ")
 
         # Include promise return if there's an assignment on the stmt
-        promise_assign = parms["match"].group(1) if parms["match"].group(1) else ""
+        promise_assign = parms["match"].group(assign_idx) if parms["match"].group(assign_idx) else ""
+
+        # Add in args if there's any
+        resolver_args = parms["match"].group(args_idx) if parms["match"].group(args_idx) else "{}"
 
         # Queue up asyc call which is executed (spit out) at the end of the w_spawn block
         self.spawn_call.append(
-            "{}{}_watiba_.spawn({}{}, {}, {})".format(parms["indentation"], promise_assign, self_prefix, cmd, resolver_name, self.spawn_args))
-        self.spawn_args = "{}"
+            "{}{}_watiba_.spawn({}{}, {}, {})".format(parms["indentation"],
+                                                      promise_assign,
+                                                      self_prefix,
+                                                      cmd,
+                                                      resolver_name,
+                                                      resolver_args
+                                                      ))
 
         # Track the indentation level at the time we hit the w_spawn statement
         #   This way we know when to spit out the spawn call at the end of the block
@@ -79,20 +99,16 @@ class Compiler:
         self.output.append("{}def {}(promise):".format(parms["indentation"], resolver_name))
 
     # Generator for spawn in class
-    def spawn_generator_self(self, parms):
+    def spawn_generator_with_self(self, parms):
         self.output.append(self.spawn_generator({"match": parms["match"],
                                                "statement": parms["statement"],
                                                "prefix": "self."}))
-
-    # Generator for spawn args statement.  (S is not used)
-    def spawn_args_generator(self, parms):
-        self.spawn_args = parms["match"].group(1)
 
     # Generator for `cmd` expressions
     def backticks_generator(self, parms):
         s = str(parms["statement"])
 
-        # Run through the statement and replace all backticked shell commands with Watiba function calls
+        # Run through the statement and replace ALL the backticked shell commands with Watiba function calls
         m = parms["match"]
         while m:
             # This flag control Watiba's CWD tracking
@@ -121,7 +137,7 @@ class Compiler:
         # Copy the statement to a local variable
         s = str(stmt)
 
-        # Spit out spawn call if it's queued up
+        # Spit out spawn call if it's queued up (on block breaks)
         if len(s) - len(s.lstrip()) <= self.indentation_count:
             self.flush()
             self.indentation_count = len(s) - len(s.lstrip())
@@ -132,7 +148,13 @@ class Compiler:
 
             # We have a Watiba expression. Generate the code.
             if m:
-                return self.expressions[ex]({"match": m, "statement": s, "prefix": "", "pattern": ex, "indentation":stmt[0:len(stmt) - len(stmt.lstrip())]})
+                return self.expressions[ex](
+                    {"match": m,
+                     "statement": s,
+                     "prefix": "",
+                     "pattern": ex,
+                     "indentation":stmt[0:len(stmt) - len(stmt.lstrip())]}
+                )
 
         self.output.append(stmt)
 
@@ -142,6 +164,7 @@ if __name__ == "__main__":
         print("ERROR. No input file.")
         sys.exit(0)
 
+    # the versions array is generated at build time (see this module in bin/)
     if sys.argv[1] == "version":
         for v in versions:
             print(v)
