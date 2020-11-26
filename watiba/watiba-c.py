@@ -37,10 +37,10 @@ class Compiler:
         # Regex expressions for Watiba commands (order matters otherwise backticks would win over spawn)
         self.expressions = {
                     # p = self.spawn `cmd`: block
-                    "^(\S.*)?self.spawn \s*args\((\S.*)?\) \s*`(\S.*)`:$": self.spawn_generator_with_self,
+                    "^(\S.*)?self.spawn \s*`(\S.*)`\s*?(\S.*)?:$": self.spawn_generator_with_self,
 
                     # p = spawn `cmd`: block
-                    "^(\S.*)?spawn \s*args\((\S.*)?\) \s*`(\S.*)`:$": self.spawn_generator,
+                    "^(\S.*)?spawn \s*`(\S.*)`\s*?(\S.*)?:$": self.spawn_generator,
 
                     # `cmd`
                     ".*?([\-])?`(\S.*?)`.*?": self.backticks_generator
@@ -56,8 +56,8 @@ class Compiler:
     # Handle spawn code blocks
     def spawn_generator(self, parms):
         assign_idx = 1
-        args_idx = 2
-        cmd_idx = 3
+        cmd_idx = 2
+        args_idx = 3
 
         # Build the spawn call that will be located just after the resolver block
         quote_style = "'" if "'" not in parms["match"].group(cmd_idx) else '"'
