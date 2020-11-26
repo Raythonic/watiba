@@ -33,13 +33,16 @@ class Compiler:
         self.resolver_count = 1
         self.spawn_call = []
         self.indentation_count = -1
-        self.spawn_args = "{}"
 
         # Regex expressions for Watiba commands (order matters otherwise backticks would win over spawn)
         self.expressions = {
-                    "^spawn args\((\S.*)\)$": self.spawn_args_generator,
-                    "^(\S.*)?self.spawn `(\S.*)`:$": self.spawn_generator_with_self,
-                    "^(\S.*)?spawn `(\S.*)`:$": self.spawn_generator,
+                    # p = self.spawn `cmd`: block
+                    "^(\S.*)?self.spawn \s*args\((\S.*)?\) \s*`(\S.*)`:$": self.spawn_generator_with_self,
+
+                    # p = spawn `cmd`: block
+                    "^(\S.*)?spawn \s*args\((\S.*)?\) \s*`(\S.*)`:$": self.spawn_generator,
+
+                    # `cmd`
                     ".*?([\-])?`(\S.*?)`.*?": self.backticks_generator
                     }
 
@@ -52,13 +55,16 @@ class Compiler:
 
     # Handle spawn code blocks
     def spawn_generator(self, parms):
+        assign_idx = 1
+        args_idx = 2
+        cmd_idx = 3
 
         # Build the spawn call that will be located just after the resolver block
-        quote_style = "'" if "'" not in parms["match"].group(2) else '"'
+        quote_style = "'" if "'" not in parms["match"].group(cmd_idx) else '"'
 
         # extract the command and if it's a variable, remove the $ and no quotes, otherwise in quotes
-        cmd = parms["match"].group(2)[1:] if parms["match"].group(2)[0] == "$" else "{}{}{}".format(quote_style,
-                                                                                                parms["match"].group(2)[1:],
+        cmd = parms["match"].group(cmd_idx)[1:] if parms["match"].group(cmd_idx)[0] == "$" else "{}{}{}".format(quote_style,
+                                                                                                parms["match"].group(cmd_idx)[1:],
                                                                                                 quote_style)
         # Build the next resolver method name
         resolver_name = "{}__watiba_resolver_{}__".format(parms["prefix"], self.resolver_count)
@@ -68,7 +74,10 @@ class Compiler:
         self_prefix = "" if parms["prefix"] == "" else parms["prefix"].replace(".", ", ")
 
         # Include promise return if there's an assignment on the stmt
-        promise_assign = parms["match"].group(1) if parms["match"].group(1) else ""
+        promise_assign = parms["match"].group(assign_idx) if parms["match"].group(assign_idx) else ""
+
+        # Add in args if there's any
+        resolver_args = parms["match"].group(args_idx) if parms["match"].group(args_idx) else "{}"
 
         # Queue up asyc call which is executed (spit out) at the end of the w_spawn block
         self.spawn_call.append(
@@ -77,9 +86,8 @@ class Compiler:
                                                       self_prefix,
                                                       cmd,
                                                       resolver_name,
-                                                      self.spawn_args))
-        # Default args object passed to resolver
-        self.spawn_args = "{}"
+                                                      resolver_args
+                                                      ))
 
         # Track the indentation level at the time we hit the w_spawn statement
         #   This way we know when to spit out the spawn call at the end of the block
@@ -93,10 +101,6 @@ class Compiler:
         self.output.append(self.spawn_generator({"match": parms["match"],
                                                "statement": parms["statement"],
                                                "prefix": "self."}))
-
-    # Generator for spawn args statement.  (S is not used)
-    def spawn_args_generator(self, parms):
-        self.spawn_args = parms["match"].group(1)
 
     # Generator for `cmd` expressions
     def backticks_generator(self, parms):
