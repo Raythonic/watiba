@@ -71,11 +71,14 @@ while not os.path.exists("/tmp/done"):
 for dir in `ls -d *`.stdout:
     tar = "tar -zcvf {}.tar.gz {}"
     spawn args({"dir": dir})
-    spawn `$tar`:
+    prom = spawn `$tar`:
         print("{} tar complete".format(promise.args["dir"]))
         mv = "mv -r {}/* /tmp/.".format(promise.args["dir"])
+        return True
         spawn `$mv`:
             print("Move done")
+            return True
+    prom.join()
 
 #######################################################
 # Running a command asynchronously with the outer code
