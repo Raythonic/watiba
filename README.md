@@ -118,20 +118,42 @@ The _spawn_ expression returns a _promise_ object that can be used by the outer 
 The promise object is passed to the resolver in variable _promise_.  The outer code can check its state with a call 
 to _resolved()_ on the *returned* promise object.  Output from the command is found in _promise.output_
 
-The resolver must return True to set the promise to resolved, or False to leave it unresolved.
-
-The outer code creating the spawned command can synchronize with it by calling the _.join()_ method on the promise
+_Notes:_
+1. Arguments can be passed to the resolver with the _args()_ parameter.  The argument parameter must be a single
+dictionary object.
+2. The resolver must return True to set the promise to resolved, or False to leave it unresolved.
+3. The outer code creating the spawned command can synchronize with it by calling the _.join()_ method on the promise
 object.
+
+*Spawn statement syntax*
+p = spawn args(a) \`cmd\`:
+    resolver block
+
+For spawns within class definitions
+p = self.spawn args(a) \`cmd\`:
+    resolver block
 
 Spawn with promise example:
 ```
-my_promise = spawn `tar -zcvf tarball.tar.gz /tmp`:
-    # The command results are found in promise.output
+# Parms dictionary passed to resolver
+a = {"msg": "Hello there"}
 
+# Spawn argment and callback resolver block
+my_promise = spawn args(a) `tar -zcvf tarball.tar.gz /tmp`:
+    # This is the resolver block
+
+    # Get args passed to resolver
+    print(promise.args["msg"])
+
+    # The command results are found in promise.output
     print("Command stdout: {}".format(promise.output.stdout))
     print("Tar completed.  Output follows...")
+
+    # Tar output in stderr
     for l in promise.output.stderr:
         print(l)
+
+    # Promise resolved
     return True
 
 # Sleep until promise is resolved
@@ -162,7 +184,7 @@ Example of a promise returned in the spawn assignment, to variable _p_, and pass
 _promise_.
 ```
 dir = "ls -lrt /tmp"
-p = spawn `$dir`:
+p = spawn args() `$dir`:
     # Outcome found in argument "promise"
     print(promise.output.stdout)
     return True
@@ -181,7 +203,7 @@ Simple example.
 #!/usr/bin/python3
 
 # run "date" command asynchronously 
-spawn `date`:
+spawn args() `date`:
     for l in promise.output.stdout:
         print(l)
     return True
@@ -194,7 +216,7 @@ Simple example with the shell command as a Python variable:
 
 # run "date" command asynchronously 
 d = 'date "+%Y/%m/%d"'
-spawn `$d`:
+spawn args() `$d`:
     print(promise.output.stdout[0])
     return True
 
@@ -208,7 +230,7 @@ print("Running Watiba spawn with wait")
 `rm /tmp/done`
 
 # run "ls -lrt" command asynchronously 
-spawn `ls -lrt`:
+spawn args() `ls -lrt`:
     print("Exit code: {}".format(promise.output.exit_code))
     print("CWD: {}".format(promise.output.cwd))
     print("STDERR: {}".format(promise.output.stderr))
@@ -223,30 +245,6 @@ while not os.path.exists("/tmp/done"):
 
 print("complete")
 
-```
-#### Passing Arguments to the Resolver
-Arguments can be passed to the resolver with the ```spawn args(args)``` expression.  Set this expression before
-the spawned command.  This expression takes one parameter and it _must_ be a Python dictionary.  The args are passed
-to the resolver in the promise object variable _promise.args_  
-
-Example:
-```
-# Meaningless arguments for the sake of demonstration
-my_args = {"log_file": "/var/logs/blah.log",
-            "count": some_counter}
-
-# Pass my args to the command to be spawned
-spawn args(my_args)
-
-# Other Python code can be here if wanted...bogus statement for demonstration
-do_nothing = True
-
-# run "date" command asynchronously passing the args from "spawn args()"
-d = 'date "+%Y/%m/%d"'
-spawn `$d`:
-    print("Arguments passed to me: {}".format(promise.args))
-    print(promise.output.stdout[0])
-    return True
 ```
 
 # Installation
