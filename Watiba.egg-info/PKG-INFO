@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: Watiba
-Version: 0.1.29
+Version: 0.1.30
 Summary: Python syntactical sugar for embedded shell commands
 Home-page: https://github.com/Raythonic/watiba
 Author: Ray Walker
@@ -166,13 +166,14 @@ Description: # Watiba
         
         _Expanded example_:
         ```
+        #!/usr/bin/python3
+        
         # Parms dictionary passed to resolver
         my_args = {"msg": "tar command completed.  Output follows:"}
         
         # Spawn argment and callback resolver block
         my_promise = spawn `tar -zcvf tarball.tar.gz /tmp` my_args:
-            # This is the resolver block
-        
+            # Start of resolver block
             # Get my_args passed to resolver
             print(promise.args["msg"])
         
@@ -186,7 +187,7 @@ Description: # Watiba
             # Promise resolved
             return True
         
-        # Sleep until promise is resolved
+        # Sleep until the promise is resolved
         my_promise.join()
         
         # Once the promise is resolved, the command output is available
