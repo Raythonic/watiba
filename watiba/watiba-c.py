@@ -54,7 +54,7 @@ class Compiler:
         # Build the spawn call that will be located just after the resolver block
         quote_style = "'" if "'" not in parms["match"].group(2) else '"'
         cmd = parms["match"].group(2) if parms["match"].group(2)[0] == "$" else "{}{}{}".format(quote_style,
-                                                                                                parms["match"].group(2),
+                                                                                                parms["match"].group(2)[1:],
                                                                                                 quote_style)
         resolver_name = "{}__watiba_resolver_{}__".format(parms["prefix"], self.resolver_count)
         self.resolver_count += 1
