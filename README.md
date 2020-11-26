@@ -371,9 +371,9 @@ for dir in `ls -d *`.stdout:
     prom = spawn `$tar`:
         print("{} tar complete".format(promise.args["dir"]))
         mv = "mv -r {}/* /tmp/.".format(promise.args["dir"])
-        return True
         spawn `$mv`:
             print("Move done")
             return True
+        return True
     prom.join()
 ```

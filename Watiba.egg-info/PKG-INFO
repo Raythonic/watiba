@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: Watiba
-Version: 0.1.24
+Version: 0.1.25
 Summary: Python syntactical sugar for embedded shell commands
 Home-page: https://github.com/Raythonic/watiba
 Author: Ray Walker
@@ -379,10 +379,10 @@ Description: # Watiba
             prom = spawn `$tar`:
                 print("{} tar complete".format(promise.args["dir"]))
                 mv = "mv -r {}/* /tmp/.".format(promise.args["dir"])
-                return True
                 spawn `$mv`:
                     print("Move done")
                     return True
+                return True
             prom.join()
         ```
         
