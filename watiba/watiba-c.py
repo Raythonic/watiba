@@ -49,18 +49,17 @@ class Compiler:
 
     # Flush out any queue spawn calls that are located after the resolver block
     def flush(self):
-        # Spit out spawn calls if they're queued up
-        while len(self.spawn_call) > 0:
-            print(self.spawn_call.pop())
+        if len(self.spawn_call) > 0:
+            if re.search("^return ", self.last_stmt.strip()):
+                # Spit out spawn calls if they're queued up
+                while len(self.spawn_call) > 0:
+                    print(self.spawn_call.pop())
+            else:
+                print("ERROR: Resolver block not properly terminated with return.", file=sys.stderr)
+                print("    Block incorrectly terminated with:", file=sys.stderr)
+                print("      {}".format(self.last_stmt), file=sys.stderr)
+                sys.exit(1)
 
-    # Remove trailing comments from stmt so they're supported but not matched
-    def remove_comments(self, stmt):
-        # Run string in reverse
-        for x,s in enumerate(reversed(stmt)):
-            if s == "#":
-                return stmt[0:x+2]
-
-        return stmt
 
     # Handle spawn code blocks
     def spawn_generator(self, parms):
