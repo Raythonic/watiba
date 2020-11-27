@@ -127,7 +127,7 @@ object.
 4. A resolver can also set the promise to resolved by calling ```promise.set_resolved()```.  This is handy in cases where
 a resolver has spawned another command and doesn't want the outer promise resolved until the inner is resolved.  More
 precisely, the outer resolver can pass its promise to the inner resolver and, thus, the inner resolver can resolve
-the outer's promise. This is demonstrated in the examples.
+the outer's promise. This is demonstrated in the last example of this README.
 
 
 **_Spawn Syntax:_**
