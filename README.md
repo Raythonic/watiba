@@ -119,8 +119,8 @@ The promise object is passed to the resolver in variable _promise_.  The outer c
 to _resolved()_ on the *returned* promise object.  Output from the command is found in _promise.output_
 
 _Notes:_
-1. Arguments can be passed to the resolver by specifying a trailing variable name after the command. The
- argument parameter must be a single dictionary object.
+1. Arguments can be passed to the resolver by specifying a trailing variable name after the command.  If the arguments
+variable is omitted, an empty dictionary, i.e. {}, is passed to the resolver in _promise.args_.
 2. The resolver must return True to set the promise to resolved, or False to leave it unresolved.
 3. The outer code creating the spawned command can synchronize with it by calling the _.join()_ method on the promise
 object.
@@ -128,17 +128,17 @@ object.
 
 **_Spawn Syntax:_**
 ```
-my_promise = spawn `cmd` args_dict:
+my_promise = spawn `cmd` args:
     resolver block
-    args_dict passed in args_dict 
+    args passed in args
     return resolved or unresolved (True or False)
  ```
     
 _For spawns within class definitions_:
 ```
-my_promise = self.spawn `cmd` args_dict:
+my_promise = self.spawn `cmd` args:
     resolver block
-    args_dict passed in args_dict 
+    args passed in promise.args
     return resolved or unresolved (True or False)
 ```
     
@@ -160,7 +160,7 @@ _Expanded example_:
 ```
 #!/usr/bin/python3
 
-# Parms dictionary passed to resolver
+# Args dictionary passed to resolver
 my_args = {"msg": "tar command completed.  Output follows:"}
 
 # Spawn argment and callback resolver block
