@@ -53,6 +53,15 @@ class Compiler:
         while len(self.spawn_call) > 0:
             print(self.spawn_call.pop())
 
+    # Remove trailing comments from stmt so they're supported but not matched
+    def remove_comments(self, stmt):
+        # Run string in reverse
+        for x,s in enumerate(reversed(stmt)):
+            if s == "#":
+                return stmt[0:x+2]
+
+        return stmt
+
     # Handle spawn code blocks
     def spawn_generator(self, parms):
         assign_idx = 1
@@ -143,7 +152,7 @@ class Compiler:
 
         # Check the statement for a Watiba expresion
         for ex in self.expressions:
-            m = re.search(ex, s.strip())
+            m = re.search(ex, self.remove_comments(s.strip()))
 
             # We have a Watiba expression. Generate the code.
             if m:
