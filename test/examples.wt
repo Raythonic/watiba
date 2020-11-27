@@ -70,10 +70,10 @@ while not os.path.exists("/tmp/done"):
 #######################################################
 for dir in `ls -d *`.stdout:
     tar = "tar -zcvf {}.tar.gz {}"
-    prom = spawn `$tar` {"dir": dir}:
+    prom = spawn `$tar` {"dir": dir}: # tar this dir
         print("{} tar complete".format(promise.args["dir"]))
         mv = "mv -r {}/* /tmp/.".format(promise.args["dir"])
-        spawn `$mv` {"outer_promise": promise}:
+        spawn `$mv` {"outer_promise": promise}:  # Move this dir
             print("Move done")
             promise.args["outer_promise"].set_resolved()
             return True
@@ -89,7 +89,7 @@ my_promise = spawn `ls -lrt`:
     # This is the resolver callback block
     print("2 Spawned command done!")
     #print("results {}".format(promise.output.stdout))
-    `touch /tmp/done`
+    `touch /tmp/done`  # Signal we're done
     return True
 
 while not my_promise.resolved():
