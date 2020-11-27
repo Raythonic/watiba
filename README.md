@@ -128,7 +128,7 @@ object.
 4. A resolver can also set the promise to resolved by calling ```promise.set_resolved()```.  This is handy in cases where
 a resolver has spawned another command and doesn't want the outer promise resolved until the inner is resolved.  More
 precisely, the outer resolver can pass its promise to the inner resolver and, thus, the inner resolver can resolve
-the outer's promise. This is demonstrated in the last example of this README.
+the outer's promise. This is demonstrated in the examples.
 
 
 **_Spawn Syntax:_**
@@ -159,6 +159,21 @@ _For spawns within class definitions resolver arguments omitted_:
 my_promise = self.spawn `cmd`:
     resolver block
     return resolved or unresolved (True or False)
+```
+
+__Resolving an outer promise_:
+```
+p = spawn `ls -lrt`:
+    for f in promise.output.stdout:
+        cmd = "touch {}".format(f)
+        # Spawn command from this resolver and pass our promise
+        spawn `$cmd` {"outer_promise":promise}:
+            print("Resolving all promises")
+            promise.args["outer_promise"].set_resolved() # Resolve outer promise
+            return True # Resolve inner promise
+        return False # Do NOT resolve outer promise here
+
+p.join()  # Wait for ALL promises to be resolved
 ```
 
 _Expanded example_:
