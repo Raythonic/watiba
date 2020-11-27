@@ -55,7 +55,7 @@ class Compiler:
                 while len(self.spawn_call) > 0:
                     print(self.spawn_call.pop())
             else:
-                print("ERROR: Resolver block not properly terminated with return.", file=sys.stderr)
+                print("ERROR in flush: Resolver block not properly terminated with return.", file=sys.stderr)
                 print("    Block incorrectly terminated with:", file=sys.stderr)
                 print("      {}".format(self.last_stmt), file=sys.stderr)
                 sys.exit(1)
@@ -144,7 +144,7 @@ class Compiler:
         s = str(stmt)
 
         # Spit out spawn call if it's queued up (on block breaks)
-        if len(s) - len(s.lstrip()) <= self.indentation_count:
+        if len(s) > 0 and s.strip()[0] != "#" and len(s) - len(s.lstrip()) <= self.indentation_count:
             if len(self.spawn_call) > 0:
                 if re.search("^return ", self.last_stmt.strip()):
                     print(self.spawn_call.pop())
@@ -191,6 +191,9 @@ if __name__ == "__main__":
     out_file = in_file.replace('.wt', '.py', 1)
     c = None
 
+    # Statements to ignore when looking for block terminations
+    nothingness = ["#"]
+
     with open(in_file, 'r') as f:
         for statement in f:
             if not c:
@@ -200,7 +203,7 @@ if __name__ == "__main__":
                 for o in c.output:
                     print(o)
                 c.output = []
-                c.last_stmt = statement if statement.strip() != "" else c.last_stmt
+                c.last_stmt = statement if statement.strip() != "" and statement.strip()[0] not in nothingness else c.last_stmt
 
     # Flush out any queued spawn statement calls
     c.flush()

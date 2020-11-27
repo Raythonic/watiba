@@ -78,7 +78,7 @@ for dir in `ls -d *`.stdout:
             promise.args["outer_promise"].set_resolved()
             # Resolve inner promise
             resolved = True
-
+            return resolved   # Returning with variable
         # Don't resolve outer promise here
         return False
     # This will wait until ALL promises are resolved, inner and outer
@@ -107,7 +107,7 @@ args = {"count": global_counter + 1,
 
 p = spawn `echo "hello"` args:
     print("Args passed to me: {}".format(promise.args))
-    return True
+
 
 # Wait for promise to resolve
 p.join()
