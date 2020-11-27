@@ -126,19 +126,19 @@ _Notes:_
 object.
 
 
-**Spawn syntax**
+**_Spawn Syntax:_**
 ```
 my_promise = spawn `cmd` args_dict:
-    args_dict passed in args_dict 
     resolver block
+    args_dict passed in args_dict 
     return resolved or unresolved (True or False)
  ```
     
 _For spawns within class definitions_:
 ```
 my_promise = self.spawn `cmd` args_dict:
-    args_dict passed in args_dict 
     resolver block
+    args_dict passed in args_dict 
     return resolved or unresolved (True or False)
 ```
     
