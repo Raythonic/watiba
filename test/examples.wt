@@ -76,8 +76,9 @@ for dir in `ls -d *`.stdout:
         spawn `$mv` {"outer_promise": promise}:  # Move this dir
             print("Move done")
             promise.args["outer_promise"].set_resolved()
+            # Resolve inner promise
             return True
-        # Do not resolve here.  Let inner resolver do it
+        # Don't resolve outer promise here
         return False
     # This will wait until ALL promises are resolved, inner and outer
     prom.join()

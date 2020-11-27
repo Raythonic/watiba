@@ -37,10 +37,10 @@ class Compiler:
         # Regex expressions for Watiba commands (order matters otherwise backticks would win over spawn)
         self.expressions = {
                     # p = self.spawn `cmd`: block
-                    "^(\S.*)?self.spawn \s*`(\S.*)`\s*?(\S.*)?:$": self.spawn_generator_with_self,
+                    "^(\S.*)?self.spawn \s*`(\S.*)`\s*?(\S.*)?:.*": self.spawn_generator_with_self,
 
                     # p = spawn `cmd`: block
-                    "^(\S.*)?spawn \s*`(\S.*)`\s*?(\S.*)?:$": self.spawn_generator,
+                    "^(\S.*)?spawn \s*`(\S.*)`\s*?(\S.*)?:.*": self.spawn_generator,
 
                     # `cmd`
                     ".*?([\-])?`(\S.*?)`.*?": self.backticks_generator
@@ -58,7 +58,7 @@ class Compiler:
         # Run string in reverse
         for x,s in enumerate(reversed(stmt)):
             if s == "#":
-                return stmt[0:len(s)-x-1].strip()
+                return stmt[0:x+2]
 
         return stmt
 
@@ -145,14 +145,14 @@ class Compiler:
         s = str(stmt)
 
         # Spit out spawn call if it's queued up (on block breaks)
-        if len(s) - len(s.lstrip()) <= self.indentation_count:
+        if len(s) - len(s.lstrip()) <= self.indentation_count and re.search("^return \s*[T,F]", self.last_stmt.strip()):
             if len(self.spawn_call) > 0:
                 print(self.spawn_call.pop())
             self.indentation_count = len(s) - len(s.lstrip())
 
         # Check the statement for a Watiba expresion
         for ex in self.expressions:
-            m = re.search(ex, self.remove_comments(s))
+            m = re.search(ex, s.strip())
 
             # We have a Watiba expression. Generate the code.
             if m:
@@ -195,6 +195,7 @@ if __name__ == "__main__":
                 for o in c.output:
                     print(o)
                 c.output = []
+                c.last_stmt = statement
 
     # Flush out any queued spawn statement calls
     c.flush()
