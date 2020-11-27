@@ -145,9 +145,15 @@ class Compiler:
         s = str(stmt)
 
         # Spit out spawn call if it's queued up (on block breaks)
-        if len(s) - len(s.lstrip()) <= self.indentation_count and re.search("^return ", self.last_stmt.strip()):
+        if len(s) - len(s.lstrip()) <= self.indentation_count:
             if len(self.spawn_call) > 0:
-                print(self.spawn_call.pop())
+                if re.search("^return ", self.last_stmt.strip()):
+                    print(self.spawn_call.pop())
+                else:
+                    print("ERROR: Resolver block not properly terminated with return.")
+                    print("    Block incorrectly terminated with:")
+                    print("      {}".format(self.last_stmt))
+                    sys.exit(1)
             self.indentation_count = len(s) - len(s.lstrip())
 
         # Check the statement for a Watiba expresion
