@@ -112,11 +112,12 @@ Python object.  Following are its properties:
 ## Asynchronous Spawning and Promises
 Shell commands can be executed asynchronously with a defined resolver callback block.
 The resolver is a callback block that follows the Watiba _spawn_ expression.  The spawn feature is executed
-when a ```spawn args() `cmd`: resolver block``` code block is encountered. The resolver is passed the results in the promise object. 
-(The promise structure contains the properties defined in "Results from Spawned Command" of this README.) 
-The _spawn_ expression returns a _promise_ object that can be used by the outer code to check for resolution. 
-The promise object is passed to the resolver in variable _promise_.  The outer code can check its state with a call 
-to _resolved()_ on the *returned* promise object.  Output from the command is found in _promise.output_
+when a ```spawn `cmd` args: resolver block``` code block is encountered. The 
+resolver is passed the results in the promise object. (The promise structure contains the properties 
+defined in "Results from Spawned Command" of this README.)  The _spawn_ expression returns a _promise_ object 
+that can be used by the outer code to check for resolution.  The promise object is passed to the resolver 
+in variable _promise_.  The outer code can check its state with a call to _resolved()_ on 
+the *returned* promise object.  Output from the command is found in _promise.output_
 
 _Notes:_
 1. Arguments can be passed to the resolver by specifying a trailing variable name after the command.  If the arguments
