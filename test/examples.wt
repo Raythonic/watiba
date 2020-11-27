@@ -74,7 +74,7 @@ for dir in `ls -d *`.stdout:
         print("{} tar complete".format(promise.args["dir"]))
         mv = "mv -r {}/* /tmp/.".format(promise.args["dir"])
 
-        spawn args() `$mv`:
+        spawn `$mv`:
             print("Move done")
             return True
         return True
