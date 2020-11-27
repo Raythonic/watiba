@@ -58,7 +58,7 @@ class Compiler:
         # Run string in reverse
         for x,s in enumerate(reversed(stmt)):
             if s == "#":
-                return stmt[0:x+2].strip()
+                return stmt[0:len(s)-x-1].strip()
 
         return stmt
 
@@ -152,7 +152,7 @@ class Compiler:
 
         # Check the statement for a Watiba expresion
         for ex in self.expressions:
-            m = re.search(ex, self.remove_comments(s.strip()))
+            m = re.search(ex, self.remove_comments(s))
 
             # We have a Watiba expression. Generate the code.
             if m:
