@@ -150,9 +150,9 @@ class Compiler:
                 if re.search("^return ", self.last_stmt.strip()):
                     print(self.spawn_call.pop())
                 else:
-                    print("ERROR: Resolver block not properly terminated with return.")
-                    print("    Block incorrectly terminated with:")
-                    print("      {}".format(self.last_stmt))
+                    print("ERROR: Resolver block not properly terminated with return.", file=sys.stderr)
+                    print("    Block incorrectly terminated with:", file=sys.stderr)
+                    print("      {}".format(self.last_stmt), file=sys.stderr)
                     sys.exit(1)
             self.indentation_count = len(s) - len(s.lstrip())
 
