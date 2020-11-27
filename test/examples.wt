@@ -70,7 +70,7 @@ while not os.path.exists("/tmp/done"):
 #######################################################
 for dir in `ls -d *`.stdout:
     tar = "tar -zcvf {}.tar.gz {}"
-    prom = spawn `$tar` dir:
+    prom = spawn `$tar` {"dir": dir}:
         print("{} tar complete".format(promise.args["dir"]))
         mv = "mv -r {}/* /tmp/.".format(promise.args["dir"])
 
@@ -98,7 +98,8 @@ while not my_promise.resolved():
 # Pass arguments to resolver
 global_counter = 0
 print("Testing spawn args")
-args = {"count": global_counter + 1, "log": "/var/log/blah.log"}
+args = {"count": global_counter + 1,
+        "log": "/var/log/blah.log"}
 
 p = spawn `echo "hello"` args:
     print("Args passed to me: {}".format(promise.args))
