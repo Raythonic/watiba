@@ -77,7 +77,8 @@ for dir in `ls -d *`.stdout:
             print("Move done")
             promise.args["outer_promise"].set_resolved()
             # Resolve inner promise
-            return True
+            resolved = True
+            return resolved
         # Don't resolve outer promise here
         return False
     # This will wait until ALL promises are resolved, inner and outer
