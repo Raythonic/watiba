@@ -73,10 +73,13 @@ for dir in `ls -d *`.stdout:
     prom = spawn `$tar` {"dir": dir}:
         print("{} tar complete".format(promise.args["dir"]))
         mv = "mv -r {}/* /tmp/.".format(promise.args["dir"])
-        spawn `$mv`:
+        spawn `$mv` {"outer_promise": promise}:
             print("Move done")
+            promise.args["outer_promise"].set_resolved()
             return True
-        return True
+        # Do not resolve here.  Let inner resolver do it
+        return False
+    # This will wait until ALL promises are resolved, inner and outer
     prom.join()
 
 #######################################################

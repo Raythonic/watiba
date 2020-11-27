@@ -124,6 +124,10 @@ variable is omitted, an empty dictionary, i.e. {}, is passed to the resolver in 
 2. The resolver must return True to set the promise to resolved, or False to leave it unresolved.
 3. The outer code creating the spawned command can synchronize with it by calling the _.join()_ method on the promise
 object.
+4. A resolver can also set the promise to resolved by calling ```promise.set_resolved()```.  This is handy in cases where
+a resolver has spawned another command and doesn't want the outer promise resolved until the inner is resolved.  More
+precisely, the outer resolver can pass its promise to the inner resolver and, thus, the inner resolver can resolve
+the outer's promise. This is demonstrated in the examples.
 
 
 **_Spawn Syntax:_**
@@ -391,9 +395,12 @@ for dir in `ls -d *`.stdout:
     prom = spawn `$tar` {"dir": dir}:
         print("{} tar complete".format(promise.args["dir"]))
         mv = "mv -r {}/* /tmp/.".format(promise.args["dir"])
-        spawn `$mv`:
+        spawn `$mv` {"outer": promise}:
             print("Move done")
+            # Resolve outer promise
+            promise.args["outer"].set_resolved()
             return True
-        return True
+        # Do not resolve this promise yet.  Let the inner resolver do it
+        return False
     prom.join()
 ```

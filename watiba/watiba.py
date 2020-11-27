@@ -32,6 +32,9 @@ class WTPromise(Exception):
     def resolved(self):
         return self.resolution
 
+    def set_resolved(self):
+        self.resolution = True
+
     def join(self):
         while not self.resolution:
             time.sleep(1)
