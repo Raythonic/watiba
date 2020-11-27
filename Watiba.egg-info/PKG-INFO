@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: Watiba
-Version: 0.1.30
+Version: 0.1.32
 Summary: Python syntactical sugar for embedded shell commands
 Home-page: https://github.com/Raythonic/watiba
 Author: Ray Walker
@@ -127,26 +127,26 @@ Description: # Watiba
         to _resolved()_ on the *returned* promise object.  Output from the command is found in _promise.output_
         
         _Notes:_
-        1. Arguments can be passed to the resolver by specifying a trailing variable name after the command. The
-         argument parameter must be a single dictionary object.
+        1. Arguments can be passed to the resolver by specifying a trailing variable name after the command.  If the arguments
+        variable is omitted, an empty dictionary, i.e. {}, is passed to the resolver in _promise.args_.
         2. The resolver must return True to set the promise to resolved, or False to leave it unresolved.
         3. The outer code creating the spawned command can synchronize with it by calling the _.join()_ method on the promise
         object.
         
         
-        **Spawn syntax**
+        **_Spawn Syntax:_**
         ```
-        my_promise = spawn `cmd` args_dict:
-            args_dict passed in args_dict 
+        my_promise = spawn `cmd` args:
             resolver block
+            args passed in args
             return resolved or unresolved (True or False)
          ```
             
         _For spawns within class definitions_:
         ```
-        my_promise = self.spawn `cmd` args_dict:
-            args_dict passed in args_dict 
+        my_promise = self.spawn `cmd` args:
             resolver block
+            args passed in promise.args
             return resolved or unresolved (True or False)
         ```
             
@@ -168,7 +168,7 @@ Description: # Watiba
         ```
         #!/usr/bin/python3
         
-        # Parms dictionary passed to resolver
+        # Args dictionary passed to resolver
         my_args = {"msg": "tar command completed.  Output follows:"}
         
         # Spawn argment and callback resolver block
