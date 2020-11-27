@@ -201,7 +201,7 @@ if __name__ == "__main__":
                 for o in c.output:
                     print(o)
                 c.output = []
-                c.last_stmt = statement
+                c.last_stmt = statement if statement.strip() != "" else c.last_stmt
 
     # Flush out any queued spawn statement calls
     c.flush()
