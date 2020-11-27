@@ -57,7 +57,7 @@ class Compiler:
     def remove_comments(self, stmt):
         # Run string in reverse
         for x,s in enumerate(reversed(stmt)):
-            if s == "#"
+            if s == "#":
                 return stmt[0:x+2].strip()
 
         return stmt
