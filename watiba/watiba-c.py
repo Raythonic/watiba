@@ -137,7 +137,8 @@ class Compiler:
 
         # Spit out spawn call if it's queued up (on block breaks)
         if len(s) - len(s.lstrip()) <= self.indentation_count:
-            self.flush()
+            if len(self.spawn_call) > 0:
+                print(self.spawn_call.pop())
             self.indentation_count = len(s) - len(s.lstrip())
 
         # Check the statement for a Watiba expresion
