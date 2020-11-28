@@ -28,6 +28,7 @@ class WTPromise(Exception):
         self.output = WTOutput()
         self.resolution = False
         self.id = time.time()
+        self.children == []
 
     def resolved(self):
         return self.resolution
@@ -35,8 +36,16 @@ class WTPromise(Exception):
     def set_resolved(self):
         self.resolution = True
 
+    # Check any child promises
+    # Return True if there are no children or all children are resolved
+    def children_resolved(self):
+        r = True
+        for c in self.children:
+            r &= c.resolved()
+        return r
+
     def join(self):
-        while not self.resolution:
+        while not self.resolution and not self.children_resolved():
             time.sleep(.5)
 
 # Singleton object with no side effects
@@ -78,9 +87,13 @@ class Watiba(Exception):
         out.cwd = os.getcwd()
         return out
 
-    def spawn(self, command, resolver, spawn_args):
+    def spawn(self, command, resolver, spawn_args, parent_locals):
         # Create a new promise object
-        promise = WTPromise()
+        l_promise = WTPromise()
+
+        # Chain our promise in if we're a child
+        if 'promise' in parent_locals and str(type(parent_locals['promise'])) == "<class 'watiba.watiba.WTPromise'>":
+            parent_locals['promise'].children.append(l_promise)
 
         def run_command(cmd, resolver_func, resolver_promise, args):
 
@@ -93,7 +106,7 @@ class Watiba(Exception):
             resolver_promise.resolution |= resolver_func(resolver_promise, copy.copy(args))
         try:
             # Create a new thread
-            t = threading.Thread(target=run_command, args=(command, resolver, promise, spawn_args))
+            t = threading.Thread(target=run_command, args=(command, resolver, l_promise, spawn_args))
 
             # Run the command and call the resolver
             t.start()
