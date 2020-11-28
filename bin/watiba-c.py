@@ -1,5 +1,5 @@
 #!/bin/python3
-versions = ["Watiba 0.1.132", "Python 3.8"]
+versions = ["Watiba 0.1.133", "Python 3.8"]
 import re
 import sys
 
@@ -75,7 +75,7 @@ class Compiler:
 
         # extract the command and if it's a variable, remove the $ and no quotes, otherwise in quotes
         cmd = parms["match"].group(cmd_idx)[1:] if parms["match"].group(cmd_idx)[0] == "$" else "{}{}{}".format(quote_style,
-                                                                                                parms["match"].group(cmd_idx)[1:],
+                                                                                                parms["match"].group(cmd_idx),
                                                                                                 quote_style)
         # Build the next resolver method name
         resolver_name = "{}__watiba_resolver_{}__".format(parms["prefix"], self.resolver_count)
