@@ -68,13 +68,16 @@ while not os.path.exists("/tmp/done"):
 
 
 #######################################################
-for dir in `ls -d *`.stdout:
-    tar = "tar -zcvf {}.tar.gz {}"
+`cd /tmp && mkdir watiba1 && mkdir watiba2`
+`touch watiba1/blah.txt`
+`touch watiba2/bleck.txt`
+for dir in `ls -d watiba*`.stdout:
+    tar = "tar -zcvf {}.tar.gz {}".format(dir, dir)
     prom = spawn `$tar` {"dir": dir}: # tar this dir
         print("{} tar complete".format(promise.args["dir"]))
-        mv = "mv -r {}/* /tmp/.".format(promise.args["dir"])
-        spawn `$mv` {"outer_promise": promise}:  # Move this dir
-            print("Move done")
+        done = "echo 'done' > /tmp/{}/done".format(promise.args["dir"])
+        spawn `$done` {"outer_promise": promise}:  # mark this dir done
+            print("Done with {}".format(promise.args["dir"]))
             promise.args["outer_promise"].set_resolved()
             # Resolve inner promise
             resolved = True
