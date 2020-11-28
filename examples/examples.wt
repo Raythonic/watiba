@@ -68,7 +68,7 @@ while not os.path.exists("/tmp/done"):
 
 
 #######################################################
-`cd /tmp && mkdir watiba1 && mkdir watiba2`
+`cd /tmp && rm -rf /tmp/watbia* && mkdir watiba1 && mkdir watiba2`
 `touch watiba1/blah.txt`
 `touch watiba2/bleck.txt`
 for dir in `ls -d watiba*`.stdout:
@@ -76,12 +76,14 @@ for dir in `ls -d watiba*`.stdout:
     prom = spawn `$tar` {"dir": dir}: # tar this dir
         print("{} tar complete".format(args["dir"]))
         done = "echo 'done' > /tmp/{}/done".format(args["dir"])
-        spawn `$done` {"outer_promise": promise, "dir":dir}:  # mark this dir done
+        spawn `$done` {"dir":dir}:  # mark this dir done
             print("Done with {}".format(args["dir"]))
-            args["outer_promise"].set_resolved()
+            promise.parent.set_resolved()
+            spawn `date`:
+                promise.parent.set_resolved()
+                return True
             # Resolve inner promise
-            resolved = True
-            return resolved   # Returning with variable
+            return False
         # Don't resolve outer promise here
         return False
     # This will wait until ALL promises are resolved, inner and outer
@@ -109,7 +111,7 @@ args = {"count": global_counter + 1,
         "log": "/var/log/blah.log"}
 
 p = spawn `echo "hello"` args:
-    print("Args passed to me: {}".format(promise.args))
+    print("Args passed to me: {}".format(args))
     return True
 
 # Wait for promise to resolve
