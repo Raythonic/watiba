@@ -120,7 +120,7 @@ in variable _promise_.  The outer code can check its state with a call to _resol
 the *returned* promise object.  Output from the command is found in _promise.output_
 
 _Notes:_
-1. Arguments can be passed to the resolver by specifying a trailing variable name after the command.  If the arguments
+1. Arguments can be passed to the resolver by specifying a trailing variable after the command.  If the arguments
 variable is omitted, an empty dictionary, i.e. {}, is passed to the resolver in _args_.
 **_Warning!_** Python threading does not deep copy objects passed as arguments to threads.  What you place in ```args```
 of the spawn expression will only be shallow copied so if there's references to other object in an element of args, it's
@@ -167,15 +167,14 @@ my_promise = self.spawn `cmd`:
 __Resolving an outer promise_:
 ```
 p = spawn `ls -lrt`:
-for f in promise.output.stdout:
-    cmd = "touch {}".format(f)
-    # Spawn command from this resolver and pass our promise
-    spawn `$cmd` {"outer_promise":promise}:
-        print("Resolving all promises")
-        args["outer_promise"].set_resolved() # Resolve outer promise
-        return True # Resolve inner promise
-    return False # Do NOT resolve outer promise here
-
+    for f in promise.output.stdout:
+        cmd = "touch {}".format(f)
+        # Spawn command from this resolver and pass our promise
+        spawn `$cmd` {"outer_promise":promise}:
+            print("Resolving all promises")
+            args["outer_promise"].set_resolved() # Resolve outer promise
+            return True # Resolve inner promise
+        return False # Do NOT resolve outer promise here
 p.join()  # Wait for ALL promises to be resolved
 ```
 
