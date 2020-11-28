@@ -28,6 +28,7 @@ class WTPromise(Exception):
         self.output = WTOutput()
         self.resolution = False
         self.id = time.time()
+        self.children == []
 
     def resolved(self):
         return self.resolution
@@ -78,9 +79,13 @@ class Watiba(Exception):
         out.cwd = os.getcwd()
         return out
 
-    def spawn(self, command, resolver, spawn_args):
+    def spawn(self, command, resolver, spawn_args, parent_exists):
         # Create a new promise object
-        promise = WTPromise()
+        l_promise = WTPromise()
+
+        # Chain our promise in if we're a child
+        if parent_exists:
+            promise.children.append(l_promise)
 
         def run_command(cmd, resolver_func, resolver_promise, args):
 
@@ -93,7 +98,7 @@ class Watiba(Exception):
             resolver_promise.resolution |= resolver_func(resolver_promise, copy.copy(args))
         try:
             # Create a new thread
-            t = threading.Thread(target=run_command, args=(command, resolver, promise, spawn_args))
+            t = threading.Thread(target=run_command, args=(command, resolver, l_promise, spawn_args))
 
             # Run the command and call the resolver
             t.start()

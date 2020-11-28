@@ -164,7 +164,7 @@ my_promise = self.spawn `cmd`:
     return resolved or unresolved (True or False)
 ```
 
-__Resolving an outer promise_:
+_Resolving an outer promise_:
 ```
 p = spawn `ls -lrt`:
 for f in promise.output.stdout:
