@@ -37,15 +37,15 @@ class WTPromise(Exception):
         self.resolution = True
 
     # Check any child promises
-    def children_resolved(self, p):
+    def tree_resolved(self, p):
         r = p.resolved()
         for c in p.children:
-            r &= self.children_resolved(c)
+            r &= self.tree_resolved(c)
         return r
 
     # Wait until this promise and all its children down the tree are ALL resolved
     def join(self):
-        while not self.children_resolved(self):
+        while not self.tree_resolved(self):
             time.sleep(.5)
 
 # Singleton object with no side effects
