@@ -74,11 +74,11 @@ while not os.path.exists("/tmp/done"):
 for dir in `ls -d watiba*`.stdout:
     tar = "tar -zcvf {}.tar.gz {}".format(dir, dir)
     prom = spawn `$tar` {"dir": dir}: # tar this dir
-        print("{} tar complete".format(promise.args["dir"]))
-        done = "echo 'done' > /tmp/{}/done".format(promise.args["dir"])
-        spawn `$done` {"outer_promise": promise}:  # mark this dir done
-            print("Done with {}".format(promise.args["dir"]))
-            promise.args["outer_promise"].set_resolved()
+        print("{} tar complete".format(args["dir"]))
+        done = "echo 'done' > /tmp/{}/done".format(args["dir"])
+        spawn `$done` {"outer_promise": promise, "dir":dir}:  # mark this dir done
+            print("Done with {}".format(args["dir"]))
+            args["outer_promise"].set_resolved()
             # Resolve inner promise
             resolved = True
             return resolved   # Returning with variable
