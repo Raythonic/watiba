@@ -79,12 +79,12 @@ class Watiba(Exception):
         out.cwd = os.getcwd()
         return out
 
-    def spawn(self, command, resolver, spawn_args, parent_exists):
+    def spawn(self, command, resolver, spawn_args, parent_locals):
         # Create a new promise object
         l_promise = WTPromise()
 
         # Chain our promise in if we're a child
-        if parent_exists:
+        if 'promise' in parent_locals and str(type(promise)) == "<class 'watiba.watiba.WTPromise'>":
             promise.children.append(l_promise)
 
         def run_command(cmd, resolver_func, resolver_promise, args):
