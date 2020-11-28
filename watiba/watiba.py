@@ -36,8 +36,14 @@ class WTPromise(Exception):
     def set_resolved(self):
         self.resolution = True
 
+    def children_resolved(self):
+        r = True
+        for c in self.children:
+            r &= c.resolved()
+        return r
+
     def join(self):
-        while not self.resolution:
+        while not self.resolution and not self.children_resolved():
             time.sleep(.5)
 
 # Singleton object with no side effects
