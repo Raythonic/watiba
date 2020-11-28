@@ -38,14 +38,15 @@ class WTPromise(Exception):
 
     # Check any child promises
     # Return True if there are no children or all children are resolved
-    def children_resolved(self):
-        r = True
-        for c in self.children:
-            r &= c.resolved()
-        return r
+    def children_resolved(self, p):
+        r = p.resolved()
+        for c in p.children:
+            r = self.children_resolved(c)
+        return r & p.resolved()
 
+    # Wait until this promise and all its children down the tree are ALL resolved
     def join(self):
-        while not self.resolution and not self.children_resolved():
+        while not self.children_resolved(self):
             time.sleep(.5)
 
 # Singleton object with no side effects
@@ -113,4 +114,4 @@ class Watiba(Exception):
         except:
             print("ERROR.  w_async thread execution failed. {}".format(command))
 
-        return promise
+        return l_promise
