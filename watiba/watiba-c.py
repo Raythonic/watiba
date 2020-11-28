@@ -33,6 +33,7 @@ class Compiler:
         self.resolver_count = 1
         self.spawn_call = []
         self.indentation_count = -1
+        self.last_stmt = ""
 
         # Regex expressions for Watiba commands (order matters otherwise backticks would win over spawn)
         self.expressions = {
@@ -102,7 +103,7 @@ class Compiler:
         self.indentation_count = len(parms["statement"]) - len(parms["statement"].lstrip())
 
         # Convert spawn `cmd`: statement to proper Python function definition
-        self.output.append("{}def {}(promise):".format(parms["indentation"], resolver_name))
+        self.output.append("{}def {}(promise, args):".format(parms["indentation"], resolver_name))
 
     # Generator for spawn in class
     def spawn_generator_with_self(self, parms):

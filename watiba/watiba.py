@@ -12,7 +12,7 @@ import re
 import os
 import threading
 import time
-
+import copy
 
 # The object returned to the caller of _watiba_ for command results
 class WTOutput(Exception):
@@ -24,10 +24,10 @@ class WTOutput(Exception):
 
 # The object returned for Watbia thread spawns
 class WTPromise(Exception):
-    def __init__(self, args):
+    def __init__(self):
         self.output = WTOutput()
-        self.args = args
         self.resolution = False
+        self.id = time.time()
 
     def resolved(self):
         return self.resolution
@@ -37,7 +37,7 @@ class WTPromise(Exception):
 
     def join(self):
         while not self.resolution:
-            time.sleep(1)
+            time.sleep(.5)
 
 # Singleton object with no side effects
 # Executes the command an returns a new WTOutput object
@@ -79,22 +79,25 @@ class Watiba(Exception):
         return out
 
     def spawn(self, command, resolver, spawn_args):
-        def run_command(cmd, resolver):
+        # Create a new promise object
+        promise = WTPromise()
+
+        def run_command(cmd, resolver_func, resolver_promise, args):
+
             # Execute the command in a new thread
-            self.promise.output = self.bash(cmd)
+            resolver_promise.output = self.bash(cmd)
 
             # Call the resolver and use its return value for promise resolution
-            self.promise.resolution = resolver(self.promise)
+            # The OR is to ensure we don't override a resolved promise from a race condition!
+            # once some thread marks it resolved, it's resolved.
+            resolver_promise.resolution |= resolver_func(resolver_promise, copy.copy(args))
         try:
-            # Create a new promise object
-            self.promise = WTPromise(spawn_args)
-
             # Create a new thread
-            t = threading.Thread(target=run_command, args=(command, resolver, ))
+            t = threading.Thread(target=run_command, args=(command, resolver, promise, spawn_args))
 
             # Run the command and call the resolver
             t.start()
         except:
             print("ERROR.  w_async thread execution failed. {}".format(command))
 
-        return self.promise
+        return promise
