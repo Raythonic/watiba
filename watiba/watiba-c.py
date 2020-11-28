@@ -88,9 +88,6 @@ class Compiler:
         # Add in args if there's any
         resolver_args = parms["match"].group(args_idx) if parms["match"].group(args_idx) else "{}"
 
-        # Check for parent spawn so to chain promises (parent/child chain)
-        parent_exists = "'promise' in locals() and str(type(promise)) == '<class 'watiba.watiba.WTPromise'>"
-
         # Queue up asyc call which is executed (spit out) at the end of the w_spawn block
         self.spawn_call.append(
             "{}{}_watiba_.spawn({}{}, {}, {}, {})".format(parms["indentation"],
@@ -99,7 +96,7 @@ class Compiler:
                                                       cmd,
                                                       resolver_name,
                                                       resolver_args,
-                                                      parent_exists
+                                                      'locals()'
                                                       ))
 
         # Track the indentation level at the time we hit the w_spawn statement
