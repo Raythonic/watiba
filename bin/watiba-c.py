@@ -1,5 +1,5 @@
 #!/bin/python3
-versions = ["Watiba 0.1.121", "Python 3.8"]
+versions = ["Watiba 0.1.130", "Python 3.8"]
 import re
 import sys
 
@@ -92,12 +92,13 @@ class Compiler:
 
         # Queue up asyc call which is executed (spit out) at the end of the w_spawn block
         self.spawn_call.append(
-            "{}{}_watiba_.spawn({}{}, {}, {})".format(parms["indentation"],
+            "{}{}_watiba_.spawn({}{}, {}, {}, {})".format(parms["indentation"],
                                                       promise_assign,
                                                       self_prefix,
                                                       cmd,
                                                       resolver_name,
-                                                      resolver_args
+                                                      resolver_args,
+                                                      'locals()'
                                                       ))
 
         # Track the indentation level at the time we hit the w_spawn statement

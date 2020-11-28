@@ -28,7 +28,7 @@ class WTPromise(Exception):
         self.output = WTOutput()
         self.resolution = False
         self.id = time.time()
-        self.children == []
+        self.children = []
 
     def resolved(self):
         return self.resolution
@@ -41,8 +41,8 @@ class WTPromise(Exception):
     def children_resolved(self, p):
         r = p.resolved()
         for c in p.children:
-            r = self.children_resolved(c)
-        return r & p.resolved()
+            r &= self.children_resolved(c)
+        return r
 
     # Wait until this promise and all its children down the tree are ALL resolved
     def join(self):
@@ -93,7 +93,7 @@ class Watiba(Exception):
         l_promise = WTPromise()
 
         # Chain our promise in if we're a child
-        if 'promise' in parent_locals and str(type(parent_locals['promise'])) == "<class 'watiba.watiba.WTPromise'>":
+        if 'promise' in parent_locals and str(type(parent_locals['promise'])).find(".WTPromise") >= 0:
             parent_locals['promise'].children.append(l_promise)
 
         def run_command(cmd, resolver_func, resolver_promise, args):
