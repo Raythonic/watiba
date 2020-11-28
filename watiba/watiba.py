@@ -92,7 +92,7 @@ class Watiba(Exception):
         l_promise = WTPromise()
 
         # Chain our promise in if we're a child
-        if 'promise' in parent_locals and str(type(parent_locals['promise'])).find(".WTPromise") >= 0:
+        if 'promise' in parent_locals and str(type(parent_locals['promise'])).find("WTPromise") >= 0:
             parent_locals['promise'].children.append(l_promise)
 
         def run_command(cmd, resolver_func, resolver_promise, args):
