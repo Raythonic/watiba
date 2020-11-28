@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: Watiba
-Version: 0.1.120
+Version: 0.1.121
 Summary: Python syntactical sugar for embedded shell commands
 Home-page: https://github.com/Raythonic/watiba
 Author: Ray Walker
@@ -129,7 +129,10 @@ Description: # Watiba
         
         _Notes:_
         1. Arguments can be passed to the resolver by specifying a trailing variable name after the command.  If the arguments
-        variable is omitted, an empty dictionary, i.e. {}, is passed to the resolver in _promise.args_.
+        variable is omitted, an empty dictionary, i.e. {}, is passed to the resolver in _args_.
+        **_Warning!_** Python threading does not deep copy objects passed as arguments to threads.  What you place in ```args```
+        of the spawn expression will only be shallow copied so if there's references to other object in an element of args, it's
+        to not survive the copy.
         2. The resolver must return True to set the promise to resolved, or False to leave it unresolved.
         3. The outer code creating the spawned command can synchronize with it by calling the _.join()_ method on the promise
         object.
@@ -142,7 +145,7 @@ Description: # Watiba
         **_Spawn Syntax:_**
         ```
         my_promise = spawn `cmd` args:
-            resolver block
+            resolver block (promise, args)
             args passed in args
             return resolved or unresolved (True or False)
          ```
@@ -150,36 +153,36 @@ Description: # Watiba
         _For spawns within class definitions_:
         ```
         my_promise = self.spawn `cmd` args:
-            resolver block
-            args passed in promise.args
+            resolver block (promise, args)
+            args passed in args
             return resolved or unresolved (True or False)
         ```
             
         _Spawn with resolver arguments omitted_:
         ```
         my_promise = spawn `cmd`:
-            resolver block
+            resolver block (promise, args)
             return resolved or unresolved (True or False)
         ```
                 
         _For spawns within class definitions resolver arguments omitted_:
         ```
         my_promise = self.spawn `cmd`:
-            resolver block
+            resolver block (promise, args)
             return resolved or unresolved (True or False)
         ```
         
         __Resolving an outer promise_:
         ```
         p = spawn `ls -lrt`:
-            for f in promise.output.stdout:
-                cmd = "touch {}".format(f)
-                # Spawn command from this resolver and pass our promise
-                spawn `$cmd` {"outer_promise":promise}:
-                    print("Resolving all promises")
-                    promise.args["outer_promise"].set_resolved() # Resolve outer promise
-                    return True # Resolve inner promise
-                return False # Do NOT resolve outer promise here
+        for f in promise.output.stdout:
+            cmd = "touch {}".format(f)
+            # Spawn command from this resolver and pass our promise
+            spawn `$cmd` {"outer_promise":promise}:
+                print("Resolving all promises")
+                args["outer_promise"].set_resolved() # Resolve outer promise
+                return True # Resolve inner promise
+            return False # Do NOT resolve outer promise here
         
         p.join()  # Wait for ALL promises to be resolved
         ```
@@ -195,7 +198,7 @@ Description: # Watiba
         my_promise = spawn `tar -zcvf tarball.tar.gz /tmp` my_args:
             # Start of resolver block
             # Get my_args passed to resolver
-            print(promise.args["msg"])
+            print(args["msg"])
         
             # The command results are found in promise.output
             print("Command stdout: {}".format(promise.output.stdout))
@@ -417,12 +420,12 @@ Description: # Watiba
         for dir in `ls -d *`.stdout:
             tar = "tar -zcvf {}.tar.gz {}"
             prom = spawn `$tar` {"dir": dir}:
-                print("{} tar complete".format(promise.args["dir"]))
-                mv = "mv -r {}/* /tmp/.".format(promise.args["dir"])
+                print("{} tar complete".format(args["dir"]))
+                mv = "mv -r {}/* /tmp/.".format(args["dir"])
                 spawn `$mv` {"outer": promise}:
                     print("Move done")
                     # Resolve outer promise
-                    promise.args["outer"].set_resolved()
+                    args["outer"].set_resolved()
                     return True
                 # Do not resolve this promise yet.  Let the inner resolver do it
                 return False
