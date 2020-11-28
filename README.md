@@ -123,8 +123,8 @@ _Notes:_
 1. Arguments can be passed to the resolver by specifying a trailing variable name after the command.  If the arguments
 variable is omitted, an empty dictionary, i.e. {}, is passed to the resolver in _args_.
 **_Warning!_** Python threading does not deep copy objects passed as arguments to threads.  What you place in ```args```
-of the spawn expression will only be shallow copied so if there's references to other object in an element of args, it's
-to not survive the copy.
+of the spawn expression will only be shallow copied so if there's references to other objects in an element of args, it's
+to not likely survive the copy.
 2. The resolver must return True to set the promise to resolved, or False to leave it unresolved.
 3. The outer code creating the spawned command can synchronize with it by calling the _.join()_ method on the promise
 object.
@@ -136,7 +136,7 @@ the outer's promise. This is demonstrated in the examples.
 
 **_Spawn Syntax:_**
 ```
-my_promise = spawn `cmd` args:
+my_promise = spawn `cmd` [args]:
     resolver block (promise, args)
     args passed in args
     return resolved or unresolved (True or False)
@@ -144,7 +144,7 @@ my_promise = spawn `cmd` args:
     
 _For spawns within class definitions_:
 ```
-my_promise = self.spawn `cmd` args:
+my_promise = self.spawn `cmd` [args]:
     resolver block (promise, args)
     args passed in args
     return resolved or unresolved (True or False)
