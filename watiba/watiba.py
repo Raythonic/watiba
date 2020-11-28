@@ -37,7 +37,6 @@ class WTPromise(Exception):
         self.resolution = True
 
     # Check any child promises
-    # Return True if there are no children or all children are resolved
     def children_resolved(self, p):
         r = p.resolved()
         for c in p.children:
