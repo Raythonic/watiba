@@ -82,6 +82,7 @@ for dir in `ls -d watiba*`.stdout:
             spawn `date`:
                 promise.parent.set_resolved()
                 return True
+            x = 3
             # Resolve inner promise
             return False
         # Don't resolve outer promise here

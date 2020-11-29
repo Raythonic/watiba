@@ -32,7 +32,6 @@ class Compiler:
                        ]
         self.resolver_count = 1
         self.spawn_call = []
-        self.indentation_count = -1
         self.last_stmt = ""
 
         # Regex expressions for Watiba commands (order matters otherwise backticks would win over spawn)
@@ -99,10 +98,6 @@ class Compiler:
                                                       'locals()'
                                                       ))
 
-        # Track the indentation level at the time we hit the w_spawn statement
-        #   This way we know when to spit out the spawn call at the end of the block
-        self.indentation_count = len(parms["statement"]) - len(parms["statement"].lstrip())
-
         # Convert spawn `cmd`: statement to proper Python function definition
         self.output.append("{}def {}(promise, args):".format(parms["indentation"], resolver_name))
 
@@ -146,7 +141,7 @@ class Compiler:
         s = str(stmt)
 
         # Spit out spawn call if it's queued up (on block breaks)
-        if len(s) > 0 and s.strip()[0] != "#" and len(s) - len(s.lstrip()) <= self.indentation_count:
+        if len(s.strip()) > 0 and s.lstrip()[0] != "#" and len(s) - len(s.lstrip()) < len(self.last_stmt) - len(self.last_stmt.lstrip()):
             if len(self.spawn_call) > 0:
                 if re.search("^return ", self.last_stmt.strip()):
                     print(self.spawn_call.pop())
@@ -155,7 +150,6 @@ class Compiler:
                     print("    Block incorrectly terminated with:", file=sys.stderr)
                     print("      {}".format(self.last_stmt), file=sys.stderr)
                     sys.exit(1)
-            self.indentation_count = len(s) - len(s.lstrip())
 
         # Check the statement for a Watiba expresion
         for ex in self.expressions:
@@ -205,7 +199,8 @@ if __name__ == "__main__":
                 for o in c.output:
                     print(o)
                 c.output = []
-                c.last_stmt = statement if statement.strip() != "" and statement.strip()[0] not in nothingness else c.last_stmt
+                if len(statement.strip()) > 0:
+                    c.last_stmt = statement if len(statement.strip()) > 0 and statement.lstrip()[0] not in nothingness else c.last_stmt
 
     # Flush out any queued spawn statement calls
     c.flush()
