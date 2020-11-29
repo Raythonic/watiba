@@ -49,9 +49,26 @@ class WTPromise(Exception):
         return r
 
     # Wait until this promise and all its children down the tree are ALL resolved
-    def join(self):
+    def join(self, args={}):
+        sleep_time = int(args["sleep"]) if "sleep" in args else .5
+        expiration = int(args["expire"]) * sleep_time if "expire" in args else -1
         while not self.tree_resolved(self):
-            time.sleep(.5)
+            time.sleep(sleep_time)
+            if expiration != -1:
+                expiration -= 1
+                if expiration == 0:
+                    raise Exception("expired")
+
+    # Wait on just this promise
+    def wait(self, args={}):
+        sleep_time = int(args["sleep"]) if "sleep" in args else .5
+        expiration = int(args["expire"]) * sleep_time if "expire" in args else -1
+        while not self.resolved():
+            time.sleep(sleep_time)
+            if expiration != -1:
+                expiration -= 1
+                if expiration == 0:
+                    raise Exception("expired")
 
 # Singleton object with no side effects
 # Executes the command an returns a new WTOutput object
