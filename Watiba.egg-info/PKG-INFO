@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: Watiba
-Version: 0.1.155
+Version: 0.1.157
 Summary: Python syntactical sugar for embedded shell commands
 Home-page: https://github.com/Raythonic/watiba
 Author: Ray Walker
@@ -8,7 +8,9 @@ Author-email: raythonic@gmail.com
 License: UNKNOWN
 Description: # Watiba
         Watiba, pronounced wah-TEE-bah, is a lightweight Python pre-compiler for embedding Linux shell 
-        commands within Python applications.
+        commands within Python applications.  It is similar to other languages' syntactical enhancements where
+        XML or HTML is integrated into a language such as JavaScript.  That is the concept applied here but integrating
+        BASH shell commands with Python.
         
         ## Usage
         Watiba files, suffixed with ".wt", are Python programs containing embedded shell commands. 
@@ -28,9 +30,21 @@ Description: # Watiba
         This loop will display the file list from /tmp. The `ls -lrt` is run in the 
         context of previous `cd /tmp`.  
         
-        Commands can also be Python variables only if the entire command is within the variable. This is denoted by 
-        prepending a dollar sign on the variable name within backticks. A complete example:
+        #### Commands Expressed as Variables
+        Commands within backticks can _be_ a variable, but cannot contain snippets of Python code or Python variables. 
+        The statement within the backticks _must_ be either a pure shell command or a Python variable containing a pure
+        shell command.  To execute commands in a Python variable, prefix the variable name between backticks with a dollar sign.
         
+        _A command variable is denoted by prepending a dollar sign on the variable name within backticks_:
+        ```
+        # Set the Python variable to the command
+        touch_cmd = "touch /tmp/blah.txt"
+        
+        # Execute it
+        `$touch_cmd`  # Execute the command within Python variable touch_cmd
+        ```
+        
+        _This example demonstrates keeping dir context and executing a command by variable_:
         ```
         #!/usr/bin/python3
         
@@ -48,27 +62,15 @@ Description: # Watiba
                     print(l)
         ```
         
-        #### Commands Expressed as Variables
-        Commands within backticks can _be_ a variable, but cannot contain snippets of Python code or Python variables. 
-        The statement within the backticks _must_ be either a pure shell command or a Python variable containing a pure
-        shell command.  To execute commands in a Python variable, prefix the variable name between backticks with a dollar sign.
-        
-        A command expressed in a Python variable can be executed like this:
-        ```
-        # Set the Python variable to the command
-        touch_cmd = "touch /tmp/blah.txt"
-        
-        # Execute it
-        `$touch_cmd`  # Execute the command within Python variable touch_cmd
-        ```
-        An example of building a command from other variables and then executing it within a print() statement:
+        _An example of building a command from other variables and then executing it within 
+        a print() statement_:
         ```
         in_file = "some_file.txt"
         my_cmd = "cat {}".format(in_file)
         print(`$my_cmd`.stdout)
         ```
         
-        These constructs are not supported:
+        _These constructs are **not** supported_:
          ```
         file_name = "blah.txt"
         
@@ -78,8 +80,8 @@ Description: # Watiba
         # Attempting to access Python variable with dollar sign
         `touch $file_name` # NOT SUPPORTED!
         
-        # Mixed shell and Python statements within backticks
-        `if x not in l: ls -lrt x` # NOT SUPPORTED!
+        # Python within backticks is NOT SUPPORTED!
+        `if x not in l: ls -lrt x`
         ```
         
         
@@ -87,24 +89,30 @@ Description: # Watiba
         
         An important Watiba usage point is directory context is kept for dispersed shell commands.
         Any command that changes the shell's CWD is discovered and kept by Watiba.  Watiba achieves 
-        this by tagging a `&& echo pwd` to the user's 
-        command, locating the result in the command's STDOUT, and finally setting the
-        Python environment to that CWD with `os.chdir(dir)`.  This is automatic and opaque to the user.  The 
-        user's STDOUT from the command(s) will not contain
-        the product of the inserted `echo` as this element is removed from the STDOUT array passed
-        to the user's program.
+        this by tagging a `&& echo pwd` to the user's command, locating the result in the command's STDOUT, 
+        and finally setting the Python environment to that CWD with `os.chdir(dir)`.  This is automatic and 
+        opaque to the user.  The user will not see the results of the generated suffix.  If the `echo` 
+        suffix presents a problem for the user, it can be eliminated by prefixing the leading backtick with a
+        dash.  The dash turns off the context track, by not suffixing the command, and so causes Watiba to
+        lose its context.  However, the context is maintained _within_ the set of commands in the backticks just not
+        when it returns.  For example, **out = -\`cd /tmp && ls -lrt\`** honors the ```cd``` within the scope
+        of that execution line, but not for any backticked commands that follow later in your code.
         
-        If the `echo` command suffix presents a problem for the user, it can be eliminated by prefixing
-        the leading backtick with a dash.  
+        **_Warning!_** The dash will cause Watiba to lose its directory context should the command
+        cause a CWD change either explicitly or implicitly.
         
-        _Warning_: the dash will cause Watiba to lose its directory context should the command
-        cause a CWD change.
+        _Example_:
+        ```
+        `cd /tmp`  # Context will be kept
         
+        # This will print from /home/user, but context is NOT kept  
+        for line in -`cd /home/user && ls -lrt`.stdout:
+            print(line) 
         
-        Example:  ```for l in -`cd /home/user && ls -lrt && pwd`.stdout: print(l)``` will list the files
-        for /home/user and ```pwd``` output, but it will not change the current working directory for 
-        subsequent commands.
-        
+        # This will print from /tmp, not /home/user
+        for line in `ls -lrt`.stdout:
+            print(line)
+        ```
         
         ### Command Results
         The results of the command issued in backticks are available in the properties
