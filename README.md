@@ -129,7 +129,7 @@ to not likely to survive the copy.
 3. The outer code creating the spawned command can synchronize with it by calling the _.join()_ method on the promise
 object.
 4. A resolver can also set the promise to resolved by calling ```promise.set_resolved()```.  This is handy in cases where
-a resolver has spawned another command and doesn't want the outer promise resolved until the inner resolvers is done. 
+a resolver has spawned another command and doesn't want the outer promise resolved until the inner resolvers are done. 
 To resolve an outer, i.e. parent, resolver issue _promise.parent.set_resolved()_.  Then the parent resolver can return
 _False_ at the end of its block so it leaves the resolved determination to the inner resolver block.
 This is demonstrated in the examples.
