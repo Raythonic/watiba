@@ -166,11 +166,12 @@ my_promise = self.spawn `cmd`:
 
 **Join and Wait**
 
-Once commands are spawned, the caller can wait for all promises, including inner or child promises, to complete. Or
-the caller can wait for the a specific promise to complete.  To wait for all promises, call _join()_ on the promise of
-interest.  It will wait for that promise and all its children.
+Once commands are spawned, the caller can wait for _all_ promises, including inner or child promises, to complete. Or
+the caller can wait for just a specific promise to complete.  To wait for all promises, call _join()_ on the promise of
+interest.  It will wait for that promise and all its children.  To wait for just one specific promise, call _wait()_
+on the promise of interest.
 
-_join()_
+**_join()_ syntax**:
 ```
 promise.join(optional args)
 Where args is a Python dictionary with the following options:
@@ -180,8 +181,9 @@ Where args is a Python dictionary with the following options:
         default: no expiration
 Note: "args" is optional and can be omitted
 ```
+
+_Example of joining parent and children promises_:
 ```
-Example of joining parent and children promises:
 p = spawn `ls *.txt`:
     for f in promise.output.stdout:
         cmd = "tar -zcvf {}.tar.gz {}".format(f)
@@ -198,7 +200,7 @@ except:
     print("join expired")
 ```
 
-_wait()_
+**_wait()_ syntax**
 ```
 promise.wait(optional args)
 Where args is a Python dictionary with the following options:
@@ -208,8 +210,9 @@ Where args is a Python dictionary with the following options:
         default: no expiration
 Note: "args" is optional and can be omitted
 ```
+
+_Example of waiting on just the parent promise_:
 ```
-Example of waiting on just the parent promise:
 p = spawn `ls *.txt`:
     for f in promise.output.stdout:
         cmd = "tar -zcvf {}.tar.gz {}".format(f)
@@ -258,20 +261,7 @@ _Notes:_
 4. The leading dash to ignore CWD _cannot_ be used in the _spawn_ command
 5. The _promise.output_ object is not available until _promise.resolved()_ returns True
 
-Example of a promise returned in the spawn assignment, to variable _p_, and passed to the resolver in argument
-_promise_.
-```
-p = spawn `ls -lrt /tmp`:
-    # Outcome found in argument "promise"
-    print(promise.output.stdout)
-    return True
-
-# Wait until promise is resolved
-p.wait()
-print("Command completed.")
-```
-
-Simple example with the shell command as a Python variable:
+_Simple example with the shell command as a Python variable_:
 ```
 #!/usr/bin/python3
 
@@ -282,10 +272,10 @@ spawn `$d`:
     return True
 
 ```
-Example with shell commands executed within resolver block:
+
+_Example with shell commands executed within resolver block_:
 ```
 #!/usr/bin/python3
-import os
 
 print("Running Watiba spawn with wait")
 `rm /tmp/done`

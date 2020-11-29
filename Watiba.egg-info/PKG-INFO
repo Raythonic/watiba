@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: Watiba
-Version: 0.1.153
+Version: 0.1.155
 Summary: Python syntactical sugar for embedded shell commands
 Home-page: https://github.com/Raythonic/watiba
 Author: Ray Walker
@@ -127,6 +127,7 @@ Description: # Watiba
         in variable _promise_.  The outer code can check its state with a call to _resolved()_ on 
         the *returned* promise object.  Output from the command is found in _promise.output_
         
+        
         _Notes:_
         1. Arguments can be passed to the resolver by specifying a trailing variable after the command.  If the arguments
         variable is omitted, an empty dictionary, i.e. {}, is passed to the resolver in _args_.
@@ -134,9 +135,7 @@ Description: # Watiba
         of the spawn expression will only be shallow copied so if there's references to other objects, it's
         to not likely to survive the copy.
         2. The resolver must return _True_ to set the promise to resolved, or _False_ to leave it unresolved.
-        3. The outer code creating the spawned command can synchronize with it by calling the _.join()_ method on the promise
-        object.
-        4. A resolver can also set the promise to resolved by calling ```promise.set_resolved()```.  This is handy in cases where
+        3. A resolver can also set the promise to resolved by calling ```promise.set_resolved()```.  This is handy in cases where
         a resolver has spawned another command and doesn't want the outer promise resolved until the inner resolvers are done. 
         To resolve an outer, i.e. parent, resolver issue _promise.resolve_parent()_.  Then the parent resolver can return
         _False_ at the end of its block so it leaves the resolved determination to the inner resolver block.
@@ -173,7 +172,72 @@ Description: # Watiba
             return resolved or unresolved (True or False)
         ```
         
-        _Resolving an outer promise_:
+        **Join and Wait**
+        
+        Once commands are spawned, the caller can wait for _all_ promises, including inner or child promises, to complete. Or
+        the caller can wait for just a specific promise to complete.  To wait for all promises, call _join()_ on the promise of
+        interest.  It will wait for that promise and all its children.  To wait for just one specific promise, call _wait()_
+        on the promise of interest.
+        
+        **_join()_ syntax**:
+        ```
+        promise.join(optional args)
+        Where args is a Python dictionary with the following options:
+            "sleep" - seconds of sleep for each iteration (fractions such as .5 are honored)
+                default: .5 seconds
+            "expire" - number of sleep iterations until an excpetions is raised
+                default: no expiration
+        Note: "args" is optional and can be omitted
+        ```
+        
+        _Example of joining parent and children promises_:
+        ```
+        p = spawn `ls *.txt`:
+            for f in promise.output.stdout:
+                cmd = "tar -zcvf {}.tar.gz {}".format(f)
+                spawn `$cmd` {"file":f}:
+                    print("{} completed".format(f)
+                    promise.resolve_parent()
+                    return True
+            return False
+        
+        # Wait for all commands to complete
+        try:
+            p.join({"sleep":1, "expire":20})
+        except:
+            print("join expired")
+        ```
+        
+        **_wait()_ syntax**
+        ```
+        promise.wait(optional args)
+        Where args is a Python dictionary with the following options:
+            "sleep" - seconds of sleep for each iteration (fractions such as .5 are honored)
+                default: .5 seconds
+            "expire" - number of sleep iterations until an excpetions is raised
+                default: no expiration
+        Note: "args" is optional and can be omitted
+        ```
+        
+        _Example of waiting on just the parent promise_:
+        ```
+        p = spawn `ls *.txt`:
+            for f in promise.output.stdout:
+                cmd = "tar -zcvf {}.tar.gz {}".format(f)
+                spawn `$cmd` {"file":f}:
+                    print("{} completed".format(f)
+                    promise.resolve_parent() # Wait completes here
+                    return True
+            return False
+        
+        # Wait for just the parent promise to complete
+        try:
+            p.wait({"sleep":1, "expire":20})
+        except:
+            print("wait expired")
+        ```
+        
+        _Resolving a parent promise_:
         ```
         p = spawn `ls -lrt`:
             for f in promise.output.stdout:
@@ -181,41 +245,12 @@ Description: # Watiba
                 # Spawn command from this resolver and pass our promise
                 spawn `$cmd`:
                     print("Resolving all promises")
-                    promise.resolve_parent() # Resolve outer promise
-                    return True # Resolve inner promise
-                return False # Do NOT resolve outer promise here
+                    promise.resolve_parent() # Resolve parent promise here
+                    return True # Resolve child promise
+                return False # Do NOT resolve parent promise here
         p.join()  # Wait for ALL promises to be resolved
         ```
         
-        _Expanded example_:
-        ```
-        #!/usr/bin/python3
-        
-        # Args dictionary passed to resolver
-        my_args = {"msg": "tar command completed.  Output follows:"}
-        
-        # Spawn argment and callback resolver block
-        my_promise = spawn `tar -zcvf tarball.tar.gz /tmp` my_args:
-            # Start of resolver block
-            # Get my_args passed to resolver
-            print(args["msg"])
-        
-            # The command results are found in promise.output
-            print("Command stdout: {}".format(promise.output.stdout))
-        
-            # Tar's output in STDERR
-            for l in promise.output.stderr:
-                print(l)
-        
-            # Promise resolved
-            return True
-        
-        # Sleep until the promise is resolved
-        my_promise.join()
-        
-        # Once the promise is resolved, the command output is available
-        print("Command exit code: {}".format(my_promise.output.exit_code))
-        ```
         ### Results from Spawned Command
         Spawned commands return their results in the _promise.output_ reference of the _promise_ object passed to
         the resolver block, and in the spawn expression if there is an assignment in that spawn expression.  
@@ -234,37 +269,7 @@ Description: # Watiba
         4. The leading dash to ignore CWD _cannot_ be used in the _spawn_ command
         5. The _promise.output_ object is not available until _promise.resolved()_ returns True
         
-        Example of a promise returned in the spawn assignment, to variable _p_, and passed to the resolver in argument
-        _promise_.
-        ```
-        dir = "ls -lrt /tmp"
-        p = spawn `$dir`:
-            # Outcome found in argument "promise"
-            print(promise.output.stdout)
-            return True
-        
-        # Wait until promise is resolved
-        while not p.resolved():
-            print("Command not finished")
-            `sleep 5`
-        
-         print("Command completed.")
-        ```
-        
-        Simple example.  
-        
-        ```
-        #!/usr/bin/python3
-        
-        # run "date" command asynchronously 
-        spawn `date`:
-            for l in promise.output.stdout:
-                print(l)
-            return True
-        
-        ```
-        
-        Simple example with the shell command as a Python variable:
+        _Simple example with the shell command as a Python variable_:
         ```
         #!/usr/bin/python3
         
@@ -275,28 +280,30 @@ Description: # Watiba
             return True
         
         ```
-        Example with shell commands executed within resolver block:
+        
+        _Example with shell commands executed within resolver block_:
         ```
         #!/usr/bin/python3
-        import os
         
         print("Running Watiba spawn with wait")
         `rm /tmp/done`
         
         # run "ls -lrt" command asynchronously 
-        spawn `ls -lrt`:
+        p = spawn `ls -lrt`:
             print("Exit code: {}".format(promise.output.exit_code))
             print("CWD: {}".format(promise.output.cwd))
             print("STDERR: {}".format(promise.output.stderr))
+        
+            # Loop through STDOUT from command
             for l in promise.output.stdout:
                 print(l)
-            `touch /tmp/done`
+            `echo "Done" > /tmp/done`
+        
+            # Resolve promise
             return True
         
         # Pause until spawn command is complete
-        while not os.path.exists("/tmp/done"):
-            `sleep 3`
-        
+        p.wait()
         print("complete")
         
         ```
