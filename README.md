@@ -119,6 +119,67 @@ that can be used by the outer code to check for resolution.  The promise object 
 in variable _promise_.  The outer code can check its state with a call to _resolved()_ on 
 the *returned* promise object.  Output from the command is found in _promise.output_
 
+### Join and Wait
+Once commands are spawned, the caller can wait for all promises, including inner or child promises, to complete. Or
+the caller can wait for the a specific promise to complete.  To wait for all promises, call _join()_ on the promise of
+interest.  It will wait for that promise and all its children.
+
+**join()**
+```
+promise.join(optional args)
+Where args is a Python dictionary with the following options:
+    "sleep" - seconds of sleep for each iteration (fractions such as .5 are honored)
+        default: .5 seconds
+    "expire" - number of sleep iterations until an excpetions is raised
+        default: no expiration
+Note: "args" is optional and can be omitted
+```
+```
+Example of joining parent and children promises:
+p = spawn `ls *.txt`:
+    for f in promise.output.stdout:
+        cmd = "tar -zcvf {}.tar.gz {}".format(f)
+        spawn `$cmd` {"file":f}:
+            print("{} completed".format(f)
+            promise.resolve_parent()
+            return True
+    return False
+
+# Wait for all commands to complete
+try:
+    p.join({"sleep":1, "expire":20})
+except:
+    print("join expired")
+```
+
+**wait()**
+```
+promise.wait(optional args)
+Where args is a Python dictionary with the following options:
+    "sleep" - seconds of sleep for each iteration (fractions such as .5 are honored)
+        default: .5 seconds
+    "expire" - number of sleep iterations until an excpetions is raised
+        default: no expiration
+Note: "args" is optional and can be omitted
+```
+```
+Example of waiting on just the parent promise:
+p = spawn `ls *.txt`:
+    for f in promise.output.stdout:
+        cmd = "tar -zcvf {}.tar.gz {}".format(f)
+        spawn `$cmd` {"file":f}:
+            print("{} completed".format(f)
+            promise.resolve_parent() # Wait completes here
+            return True
+    return False
+
+# Wait for just the parent promise to complete
+try:
+    p.wait({"sleep":1, "expire":20})
+except:
+    print("wait expired")
+```
+
 _Notes:_
 1. Arguments can be passed to the resolver by specifying a trailing variable after the command.  If the arguments
 variable is omitted, an empty dictionary, i.e. {}, is passed to the resolver in _args_.
@@ -126,9 +187,7 @@ variable is omitted, an empty dictionary, i.e. {}, is passed to the resolver in 
 of the spawn expression will only be shallow copied so if there's references to other objects, it's
 to not likely to survive the copy.
 2. The resolver must return _True_ to set the promise to resolved, or _False_ to leave it unresolved.
-3. The outer code creating the spawned command can synchronize with it by calling the _.join()_ method on the promise
-object.
-4. A resolver can also set the promise to resolved by calling ```promise.set_resolved()```.  This is handy in cases where
+3. A resolver can also set the promise to resolved by calling ```promise.set_resolved()```.  This is handy in cases where
 a resolver has spawned another command and doesn't want the outer promise resolved until the inner resolvers are done. 
 To resolve an outer, i.e. parent, resolver issue _promise.resolve_parent()_.  Then the parent resolver can return
 _False_ at the end of its block so it leaves the resolved determination to the inner resolver block.
