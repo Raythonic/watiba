@@ -119,66 +119,6 @@ that can be used by the outer code to check for resolution.  The promise object 
 in variable _promise_.  The outer code can check its state with a call to _resolved()_ on 
 the *returned* promise object.  Output from the command is found in _promise.output_
 
-### Join and Wait
-Once commands are spawned, the caller can wait for all promises, including inner or child promises, to complete. Or
-the caller can wait for the a specific promise to complete.  To wait for all promises, call _join()_ on the promise of
-interest.  It will wait for that promise and all its children.
-
-**join()**
-```
-promise.join(optional args)
-Where args is a Python dictionary with the following options:
-    "sleep" - seconds of sleep for each iteration (fractions such as .5 are honored)
-        default: .5 seconds
-    "expire" - number of sleep iterations until an excpetions is raised
-        default: no expiration
-Note: "args" is optional and can be omitted
-```
-```
-Example of joining parent and children promises:
-p = spawn `ls *.txt`:
-    for f in promise.output.stdout:
-        cmd = "tar -zcvf {}.tar.gz {}".format(f)
-        spawn `$cmd` {"file":f}:
-            print("{} completed".format(f)
-            promise.resolve_parent()
-            return True
-    return False
-
-# Wait for all commands to complete
-try:
-    p.join({"sleep":1, "expire":20})
-except:
-    print("join expired")
-```
-
-**wait()**
-```
-promise.wait(optional args)
-Where args is a Python dictionary with the following options:
-    "sleep" - seconds of sleep for each iteration (fractions such as .5 are honored)
-        default: .5 seconds
-    "expire" - number of sleep iterations until an excpetions is raised
-        default: no expiration
-Note: "args" is optional and can be omitted
-```
-```
-Example of waiting on just the parent promise:
-p = spawn `ls *.txt`:
-    for f in promise.output.stdout:
-        cmd = "tar -zcvf {}.tar.gz {}".format(f)
-        spawn `$cmd` {"file":f}:
-            print("{} completed".format(f)
-            promise.resolve_parent() # Wait completes here
-            return True
-    return False
-
-# Wait for just the parent promise to complete
-try:
-    p.wait({"sleep":1, "expire":20})
-except:
-    print("wait expired")
-```
 
 _Notes:_
 1. Arguments can be passed to the resolver by specifying a trailing variable after the command.  If the arguments
@@ -224,7 +164,69 @@ my_promise = self.spawn `cmd`:
     return resolved or unresolved (True or False)
 ```
 
-_Resolving an outer promise_:
+**Join and Wait**
+
+Once commands are spawned, the caller can wait for all promises, including inner or child promises, to complete. Or
+the caller can wait for the a specific promise to complete.  To wait for all promises, call _join()_ on the promise of
+interest.  It will wait for that promise and all its children.
+
+_join()_
+```
+promise.join(optional args)
+Where args is a Python dictionary with the following options:
+    "sleep" - seconds of sleep for each iteration (fractions such as .5 are honored)
+        default: .5 seconds
+    "expire" - number of sleep iterations until an excpetions is raised
+        default: no expiration
+Note: "args" is optional and can be omitted
+```
+```
+Example of joining parent and children promises:
+p = spawn `ls *.txt`:
+    for f in promise.output.stdout:
+        cmd = "tar -zcvf {}.tar.gz {}".format(f)
+        spawn `$cmd` {"file":f}:
+            print("{} completed".format(f)
+            promise.resolve_parent()
+            return True
+    return False
+
+# Wait for all commands to complete
+try:
+    p.join({"sleep":1, "expire":20})
+except:
+    print("join expired")
+```
+
+_wait()_
+```
+promise.wait(optional args)
+Where args is a Python dictionary with the following options:
+    "sleep" - seconds of sleep for each iteration (fractions such as .5 are honored)
+        default: .5 seconds
+    "expire" - number of sleep iterations until an excpetions is raised
+        default: no expiration
+Note: "args" is optional and can be omitted
+```
+```
+Example of waiting on just the parent promise:
+p = spawn `ls *.txt`:
+    for f in promise.output.stdout:
+        cmd = "tar -zcvf {}.tar.gz {}".format(f)
+        spawn `$cmd` {"file":f}:
+            print("{} completed".format(f)
+            promise.resolve_parent() # Wait completes here
+            return True
+    return False
+
+# Wait for just the parent promise to complete
+try:
+    p.wait({"sleep":1, "expire":20})
+except:
+    print("wait expired")
+```
+
+_Resolving a parent promise_:
 ```
 p = spawn `ls -lrt`:
     for f in promise.output.stdout:
@@ -232,41 +234,12 @@ p = spawn `ls -lrt`:
         # Spawn command from this resolver and pass our promise
         spawn `$cmd`:
             print("Resolving all promises")
-            promise.resolve_parent() # Resolve outer promise
-            return True # Resolve inner promise
-        return False # Do NOT resolve outer promise here
+            promise.resolve_parent() # Resolve parent promise here
+            return True # Resolve child promise
+        return False # Do NOT resolve parent promise here
 p.join()  # Wait for ALL promises to be resolved
 ```
 
-_Expanded example_:
-```
-#!/usr/bin/python3
-
-# Args dictionary passed to resolver
-my_args = {"msg": "tar command completed.  Output follows:"}
-
-# Spawn argment and callback resolver block
-my_promise = spawn `tar -zcvf tarball.tar.gz /tmp` my_args:
-    # Start of resolver block
-    # Get my_args passed to resolver
-    print(args["msg"])
-
-    # The command results are found in promise.output
-    print("Command stdout: {}".format(promise.output.stdout))
-
-    # Tar's output in STDERR
-    for l in promise.output.stderr:
-        print(l)
-
-    # Promise resolved
-    return True
-
-# Sleep until the promise is resolved
-my_promise.join()
-
-# Once the promise is resolved, the command output is available
-print("Command exit code: {}".format(my_promise.output.exit_code))
-```
 ### Results from Spawned Command
 Spawned commands return their results in the _promise.output_ reference of the _promise_ object passed to
 the resolver block, and in the spawn expression if there is an assignment in that spawn expression.  
@@ -288,31 +261,14 @@ _Notes:_
 Example of a promise returned in the spawn assignment, to variable _p_, and passed to the resolver in argument
 _promise_.
 ```
-dir = "ls -lrt /tmp"
-p = spawn `$dir`:
+p = spawn `ls -lrt /tmp`:
     # Outcome found in argument "promise"
     print(promise.output.stdout)
     return True
 
 # Wait until promise is resolved
-while not p.resolved():
-    print("Command not finished")
-    `sleep 5`
-
- print("Command completed.")
-```
-
-Simple example.  
-
-```
-#!/usr/bin/python3
-
-# run "date" command asynchronously 
-spawn `date`:
-    for l in promise.output.stdout:
-        print(l)
-    return True
-
+p.wait()
+print("Command completed.")
 ```
 
 Simple example with the shell command as a Python variable:
@@ -335,19 +291,21 @@ print("Running Watiba spawn with wait")
 `rm /tmp/done`
 
 # run "ls -lrt" command asynchronously 
-spawn `ls -lrt`:
+p = spawn `ls -lrt`:
     print("Exit code: {}".format(promise.output.exit_code))
     print("CWD: {}".format(promise.output.cwd))
     print("STDERR: {}".format(promise.output.stderr))
+
+    # Loop through STDOUT from command
     for l in promise.output.stdout:
         print(l)
-    `touch /tmp/done`
+    `echo "Done" > /tmp/done`
+
+    # Resolve promise
     return True
 
 # Pause until spawn command is complete
-while not os.path.exists("/tmp/done"):
-    `sleep 3`
-
+p.wait()
 print("complete")
 
 ```
