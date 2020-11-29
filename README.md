@@ -130,7 +130,7 @@ to not likely to survive the copy.
 object.
 4. A resolver can also set the promise to resolved by calling ```promise.set_resolved()```.  This is handy in cases where
 a resolver has spawned another command and doesn't want the outer promise resolved until the inner resolvers are done. 
-To resolve an outer, i.e. parent, resolver issue _promise.parent.set_resolved()_.  Then the parent resolver can return
+To resolve an outer, i.e. parent, resolver issue _promise.resolve_parent()_.  Then the parent resolver can return
 _False_ at the end of its block so it leaves the resolved determination to the inner resolver block.
 This is demonstrated in the examples.
 
@@ -173,7 +173,7 @@ p = spawn `ls -lrt`:
         # Spawn command from this resolver and pass our promise
         spawn `$cmd`:
             print("Resolving all promises")
-            promise.parent.set_resolved() # Resolve outer promise
+            promise.resolve_parent() # Resolve outer promise
             return True # Resolve inner promise
         return False # Do NOT resolve outer promise here
 p.join()  # Wait for ALL promises to be resolved
@@ -417,7 +417,7 @@ for dir in `ls -d *`.stdout:
         spawn `$mv`:
             print("Move done")
             # Resolve outer promise
-            promise.parent.set_resolved()
+            promise.resolve_parent()
             return True
         # Do not resolve this promise yet.  Let the inner resolver do it
         return False
