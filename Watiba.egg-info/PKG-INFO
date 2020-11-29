@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: Watiba
-Version: 0.1.152
+Version: 0.1.153
 Summary: Python syntactical sugar for embedded shell commands
 Home-page: https://github.com/Raythonic/watiba
 Author: Ray Walker
@@ -137,8 +137,8 @@ Description: # Watiba
         3. The outer code creating the spawned command can synchronize with it by calling the _.join()_ method on the promise
         object.
         4. A resolver can also set the promise to resolved by calling ```promise.set_resolved()```.  This is handy in cases where
-        a resolver has spawned another command and doesn't want the outer promise resolved until the inner resolvers is done. 
-        To resolve an outer, i.e. parent, resolver issue _promise.parent.set_resolved()_.  Then the parent resolver can return
+        a resolver has spawned another command and doesn't want the outer promise resolved until the inner resolvers are done. 
+        To resolve an outer, i.e. parent, resolver issue _promise.resolve_parent()_.  Then the parent resolver can return
         _False_ at the end of its block so it leaves the resolved determination to the inner resolver block.
         This is demonstrated in the examples.
         
@@ -181,7 +181,7 @@ Description: # Watiba
                 # Spawn command from this resolver and pass our promise
                 spawn `$cmd`:
                     print("Resolving all promises")
-                    promise.parent.set_resolved() # Resolve outer promise
+                    promise.resolve_parent() # Resolve outer promise
                     return True # Resolve inner promise
                 return False # Do NOT resolve outer promise here
         p.join()  # Wait for ALL promises to be resolved
@@ -425,7 +425,7 @@ Description: # Watiba
                 spawn `$mv`:
                     print("Move done")
                     # Resolve outer promise
-                    promise.parent.set_resolved()
+                    promise.resolve_parent()
                     return True
                 # Do not resolve this promise yet.  Let the inner resolver do it
                 return False
