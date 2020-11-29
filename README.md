@@ -123,15 +123,15 @@ _Notes:_
 1. Arguments can be passed to the resolver by specifying a trailing variable after the command.  If the arguments
 variable is omitted, an empty dictionary, i.e. {}, is passed to the resolver in _args_.
 **_Warning!_** Python threading does not deep copy objects passed as arguments to threads.  What you place in ```args```
-of the spawn expression will only be shallow copied so if there's references to other objects in an element of args, it's
-to not likely survive the copy.
-2. The resolver must return True to set the promise to resolved, or False to leave it unresolved.
+of the spawn expression will only be shallow copied so if there's references to other objects, it's
+to not likely to survive the copy.
+2. The resolver must return _True_ to set the promise to resolved, or _False_ to leave it unresolved.
 3. The outer code creating the spawned command can synchronize with it by calling the _.join()_ method on the promise
 object.
 4. A resolver can also set the promise to resolved by calling ```promise.set_resolved()```.  This is handy in cases where
-a resolver has spawned another command and doesn't want the outer promise resolved until the inner is resolved.  More
-precisely, the outer resolver can pass its promise to the inner resolver and, thus, the inner resolver can resolve
-the outer's promise.  Resolving the parent resolver is done with ```promise.parent.set_resolved()``` 
+a resolver has spawned another command and doesn't want the outer promise resolved until the inner resolvers is done. 
+To resolve an outer, i.e. parent, resolver issue _promise.parent.set_resolved()_.  Then the parent resolver can return
+_False_ at the end of its block so it leaves the resolved determination to the inner resolver block.
 This is demonstrated in the examples.
 
 
