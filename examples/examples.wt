@@ -78,9 +78,9 @@ for dir in `ls -d watiba*`.stdout:
         done = "echo 'done' > /tmp/{}/done".format(args["dir"])
         spawn `$done` {"dir":dir}:  # mark this dir done
             print("Done with {}".format(args["dir"]))
-            promise.parent.set_resolved()
+            promise.resolve_parent()
             spawn `date`:
-                promise.parent.set_resolved()
+                promise.resolve_parent()
                 return True
             x = 3
             # Resolve inner promise

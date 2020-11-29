@@ -37,6 +37,10 @@ class WTPromise(Exception):
     def set_resolved(self):
         self.resolution = True
 
+    def resolve_parent(self):
+        if self.parent:
+            self.parent.set_resolved()
+
     # Check any child promises
     def tree_resolved(self, p):
         r = p.resolved()
