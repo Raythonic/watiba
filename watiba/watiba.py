@@ -42,7 +42,8 @@ class WTPromise(Exception):
             self.parent.set_resolved()
 
     # Check any child promises
-    def tree_resolved(self, p):
+    def tree_resolved(self, p=None):
+        p = self if not p else p
         r = p.resolved()
         for c in p.children:
             r &= self.tree_resolved(c)
@@ -50,25 +51,20 @@ class WTPromise(Exception):
 
     # Wait until this promise and all its children down the tree are ALL resolved
     def join(self, args={}):
-        sleep_time = int(args["sleep"]) if "sleep" in args else .5
-        expiration = int(args["expire"]) * sleep_time if "expire" in args else -1
-        while not self.tree_resolved(self):
-            time.sleep(sleep_time)
-            if expiration != -1:
-                expiration -= 1
-                if expiration == 0:
-                    raise Exception("expired")
+        self.wait(args, self.tree_resolved)
 
     # Wait on just this promise
-    def wait(self, args={}):
+    def wait(self, args = {}, promise_function = None):
         sleep_time = int(args["sleep"]) if "sleep" in args else .5
         expiration = int(args["expire"]) * sleep_time if "expire" in args else -1
-        while not self.resolved():
+        exception_msg = args["exception_msg"] if "exception_msg" in args else "wait expired"
+        func = promise_function if promise_function else self.resolved
+        while not func():
             time.sleep(sleep_time)
             if expiration != -1:
                 expiration -= 1
                 if expiration == 0:
-                    raise Exception("expired")
+                    raise Exception(exception_msg)
 
 # Singleton object with no side effects
 # Executes the command an returns a new WTOutput object
