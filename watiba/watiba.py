@@ -43,22 +43,33 @@ class WTPromise(Exception):
 
     # Check any child promises
     def tree_resolved(self, p=None):
+        # Can't specify "self" as default for argument, so...
         p = self if not p else p
+
+        # Get this promise's resolved state
         r = p.resolved()
+
+        # Now walk thru its children and check their states
+        # If anyone reports False, the final result will return False
         for c in p.children:
             r &= self.tree_resolved(c)
+
+        # Return resolved status
         return r
 
     # Wait until this promise and all its children down the tree are ALL resolved
     def join(self, args={}):
-        self.wait(args, self.tree_resolved)
+        self.wait(args, self.tree_resolved, "Join expired")
 
     # Wait on just this promise
-    def wait(self, args = {}, promise_function = None):
+    def wait(self, args = {}, promise_function = None, exception_msg="Wait expired"):
         sleep_time = int(args["sleep"]) if "sleep" in args else .5
         expiration = int(args["expire"]) * sleep_time if "expire" in args else -1
-        exception_msg = args["exception_msg"] if "exception_msg" in args else "wait expired"
+
+        # Caller can specify function to check resolved state
         func = promise_function if promise_function else self.resolved
+
+        # Pause until promise or promises resolved
         while not func():
             time.sleep(sleep_time)
             if expiration != -1:
