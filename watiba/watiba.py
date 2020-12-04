@@ -57,7 +57,7 @@ class WTPromise(Exception):
     # Count promise tree size
     # Set resolved_only to True to only count resolved promises in the tree
     def spawn_count(self, resolved_only=False):
-        # Start with this prmose
+        # Start with this promise
         p = self
 
         # Walk to the top of the tree
@@ -72,6 +72,10 @@ class WTPromise(Exception):
             count = self.child_counter(child, count, resolved_only)
 
         return count
+
+    # Count resolve promises in tree
+    def resolved_count(self):
+        return self.spawn_count(True)
 
     # Check any child promises
     def tree_resolved(self, p=None):
