@@ -3,7 +3,7 @@
 Watiba class wraps the Python subprocess and captures all its outputs in a single object
 
 Author: Ray Walker
-ipyRaythonic@gmail.com
+Raythonic@gmail.com
 '''
 
 
@@ -41,6 +41,33 @@ class WTPromise(Exception):
         if self.parent:
             self.parent.set_resolved()
 
+    # Count this promise's children
+    def child_counter(self, child, count, resolved_only = False):
+        # Count 1 if not counting just resolved, otherwise only count it if it's resolved
+        count += 1 if not resolved_only or child.resolved() else 0
+
+        # Count these children (descend)
+        for c in child.children:
+            count = self.child_counter(c, count)
+
+        return count
+
+    # Count promise tree size
+    # Set resolved_only to True to only count resolved promises in the tree
+    def spawn_count(self, resolved_only = False):
+        p = self
+        count = 0
+
+        # Walk to the top of the tree
+        while p.parent:
+            p = p.parent
+
+        # Now do a descending count down the tree
+        for child in p.children:
+            count = self.children(child, count, resolved_only)
+
+        return count
+
     # Check any child promises
     def tree_resolved(self, p=None):
         # Can't specify "self" as default for argument, so...
@@ -59,15 +86,15 @@ class WTPromise(Exception):
 
     # Wait until this promise and all its children down the tree are ALL resolved
     def join(self, args={}):
-        self.wait(args, self.tree_resolved, "Join expired")
+        self.wait(args, {"promise_function":self.tree_resolved, "message":"Join expired"})
 
     # Wait on just this promise
-    def wait(self, args = {}, promise_function = None, exception_msg="Wait expired"):
+    def wait(self, args = {}, wait_parms = {}):
         sleep_time = int(args["sleep"]) if "sleep" in args else .5
         expiration = int(args["expire"]) * sleep_time if "expire" in args else -1
 
         # Caller can specify function to check resolved state
-        func = promise_function if promise_function else self.resolved
+        func = wait_parms["promise_function"] if "promise_function" in wait_parms else self.resolved
 
         # Pause until promise or promises resolved
         while not func():
@@ -75,7 +102,7 @@ class WTPromise(Exception):
             if expiration != -1:
                 expiration -= 1
                 if expiration == 0:
-                    raise Exception(exception_msg)
+                    raise Exception(wait_parms["message"] if "message" in wait_parms else "Wait expired")
 
 # Singleton object with no side effects
 # Executes the command an returns a new WTOutput object
@@ -144,3 +171,4 @@ class Watiba(Exception):
             print("ERROR.  w_async thread execution failed. {}".format(command))
 
         return l_promise
+    
