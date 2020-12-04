@@ -6,13 +6,13 @@ Author: Ray Walker
 Raythonic@gmail.com
 '''
 
-
 from subprocess import Popen, PIPE, STDOUT
 import re
 import os
 import threading
 import time
 import copy
+
 
 # The object returned to the caller of _watiba_ for command results
 class WTOutput(Exception):
@@ -21,6 +21,7 @@ class WTOutput(Exception):
         self.stderr = []
         self.exit_code = 0
         self.cwd = "."
+
 
 # The object returned for Watbia thread spawns
 class WTPromise(Exception):
@@ -43,7 +44,7 @@ class WTPromise(Exception):
             self.parent.set_resolved()
 
     # Count this promise's children
-    def child_counter(self, child, count, resolved_only = False):
+    def child_counter(self, child, count, resolved_only=False):
         # Count 1 if not counting just resolved, otherwise only count it if it's resolved
         count += 1 if not resolved_only or child.resolved() else 0
 
@@ -55,17 +56,20 @@ class WTPromise(Exception):
 
     # Count promise tree size
     # Set resolved_only to True to only count resolved promises in the tree
-    def spawn_count(self, resolved_only = False):
+    def spawn_count(self, resolved_only=False):
+        # Start with this prmose
         p = self
-        count = 0
 
         # Walk to the top of the tree
         while p.parent:
             p = p.parent
 
+        # Count this promise
+        count = 1 if not resolved_only or p.resolved() else 0
+
         # Now do a descending count down the tree
         for child in p.children:
-            count = self.children(child, count, resolved_only)
+            count = self.child_counter(child, count, resolved_only)
 
         return count
 
@@ -87,10 +91,10 @@ class WTPromise(Exception):
 
     # Wait until this promise and all its children down the tree are ALL resolved
     def join(self, args={}):
-        self.wait(args, {"promise_function":self.tree_resolved, "message":"Join expired"})
+        self.wait(args, {"promise_function": self.tree_resolved, "message": "Join expired"})
 
     # Wait on just this promise
-    def wait(self, args = {}, wait_parms = {}):
+    def wait(self, args={}, wait_parms={}):
         sleep_time = int(args["sleep"]) if "sleep" in args else .5
         expiration = int(args["expire"]) * sleep_time if "expire" in args else -1
 
@@ -104,6 +108,7 @@ class WTPromise(Exception):
                 expiration -= 1
                 if expiration == 0:
                     raise Exception(wait_parms["message"] if "message" in wait_parms else "Wait expired")
+
 
 # Singleton object with no side effects
 # Executes the command an returns a new WTOutput object
@@ -162,6 +167,7 @@ class Watiba(Exception):
             # The OR is to ensure we don't override a resolved promise from a race condition!
             # once some thread marks it resolved, it's resolved.
             resolver_promise.resolution |= resolver_func(resolver_promise, copy.copy(args))
+
         try:
             # Create a new thread
             t = threading.Thread(target=run_command, args=(command, resolver, l_promise, spawn_args))
@@ -172,4 +178,3 @@ class Watiba(Exception):
             print("ERROR.  w_async thread execution failed. {}".format(command))
 
         return l_promise
-    
