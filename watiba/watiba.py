@@ -74,39 +74,25 @@ class WTPromise(Exception):
         return count
 
     # Count resolve promises in tree
-    def resolved_count(self):
-        return self.spawn_count(True)
-
-    # Check any child promises
-    def tree_resolved(self, p=None):
-        # Can't specify "self" as default for argument, so...
-        p = self if not p else p
-
-        # Get this promise's resolved state
-        r = p.resolved()
-
-        # Now walk thru its children and check their states
-        # If anyone reports False, the final result will return False
-        for c in p.children:
-            r &= self.tree_resolved(c)
-
-        # Return resolved status
-        return r
+    def resolved_count(self, deep_dive=True):
+        # Full tree count?
+        if deep_dive:
+            return self.spawn_count(True)
+        else:
+            # Just test this promise
+            return 1 if self.resolved() else 0
 
     # Wait until this promise and all its children down the tree are ALL resolved
     def join(self, args={}):
-        self.wait(args, {"promise_function": self.tree_resolved, "message": "Join expired"})
+        self.wait(args, {"message": "Join expired"}, True)
 
     # Wait on just this promise
-    def wait(self, args={}, wait_parms={}):
+    def wait(self, args={}, wait_parms={}, from_join=False):
         sleep_time = int(args["sleep"]) if "sleep" in args else .5
         expiration = int(args["expire"]) * sleep_time if "expire" in args else -1
 
-        # Caller can specify function to check resolved state
-        func = wait_parms["promise_function"] if "promise_function" in wait_parms else self.resolved
-
         # Pause until promise or promises resolved
-        while not func():
+        while not self.resolved_count(from_join) > 0:
             time.sleep(sleep_time)
             if expiration != -1:
                 expiration -= 1
