@@ -176,8 +176,25 @@ my_promise = self.spawn `cmd`:
 
 Once commands are spawned, the caller can wait for _all_ promises, including inner or child promises, to complete. Or
 the caller can wait for just a specific promise to complete.  To wait for all _child_ promises including
-the promise on which you're calling this method, call _join()_.  It will wait for that promise and all its children.  To wait for just one specific promise, call _wait()_
-on the promise of interest.  To wait for _all_ promises in the promise tree, call _join()_ on root promise.
+the promise on which you're calling this method, call _join()_.  It will wait for that promise and all its children.  
+To wait for just one specific promise, call _wait()_ on the promise of interest.  To wait for _all_ promises in 
+the promise tree, call _join()_ on the root promise.
+
+_join_ and _wait_ can be controlled through parameters.  Each are iterators paused with a sleep method and will throw
+an expiration exception should you set a limit for iterations.  If an expiration value is not set,
+no exception will be thrown and the cycle will run only until the promise(s) are resolved.
+
+Examples with controlling parameters:
+```
+p = spawn `ls -lrt`:
+    resolver block
+    
+# Wait for promises, pause for 1/4 second each iteration, and throw an exception after 4 iterations (1 second)
+p.join({"sleep": .250, "expire": 4})
+
+# Wait for this promise, pause for 1 second each iteration, and throw an exception after 5 iterations (5 seconds)
+p.wait({"sleep": 1, "expire": 5})
+```
 
 #### Promise Tree
 Each _spawn_ issued inserts its promise object into the promise tree.  The outermost _spawn_ will generate the root
