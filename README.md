@@ -175,9 +175,41 @@ my_promise = self.spawn `cmd`:
 **Join and Wait**
 
 Once commands are spawned, the caller can wait for _all_ promises, including inner or child promises, to complete. Or
-the caller can wait for just a specific promise to complete.  To wait for all promises, call _join()_ on the promise of
-interest.  It will wait for that promise and all its children.  To wait for just one specific promise, call _wait()_
-on the promise of interest.
+the caller can wait for just a specific promise to complete.  To wait for all _child_ promises including their root 
+promise, call _join()_.  It will wait for that promise and all its children.  To wait for just one specific promise, call _wait()_
+on the promise of interest.  To wait for _all_ promises in the promise tree, call _join()_ on root promise.
+
+#### Promise Tree
+Each _spawn_ issued inserts its promise object into the promise tree.  The outermost _spawn_ will generate the root
+promise and each inner _spawn_ will be its child.  There's no limit to how far it can nest.
+
+The difference between _join()_ and _join_all()_ is shown in the following examples:
+```
+root_promise = spawn `ls -lrt`:  # This will generate the first or root promise.
+    resolver block
+```  
+``` 
+root_promise = spawn `ls -lr`:
+    for file in promise.stdout:
+        t = "touch {}".format(file)
+        child_promise = spawn `$t` {"file" file}:  # This promise is a child of root
+            print("{} updated".format(promise.args["file"]))
+            another_child = spawn `echo "done" > /tmp/done"`:
+                print("Complete")
+
+root_promise.join()  # Wait on the root promise and all its children (effectively join_all())
+```
+
+``` 
+root_promise = spawn `ls -lr`:
+    for file in promise.stdout:
+        t = "touch {}".format(file)
+        child_promise = spawn `$t` {"file" file}:  # This promise is a child of root
+            promise.join() # Wait for this promise and it's children but not its parent (root)
+            print("{} updated".format(promise.args["file"]))
+            another_child = spawn `echo "done" > /tmp/done"`:
+                print("Complete")
+```
 
 **_join()_ syntax**:
 ```
