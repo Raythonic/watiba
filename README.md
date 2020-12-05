@@ -118,9 +118,9 @@ Python object.  Following are its properties:
 
 
 ## Asynchronous Spawning and Promises
-Shell commands can be executed asynchronously with a defined resolver callback block.
-The resolver is a callback block that follows the Watiba _spawn_ expression.  The spawn feature is executed
-when a ```spawn `cmd` args: resolver block``` code block is encountered. The 
+Shell commands can be executed asynchronously with a defined resolver callback block.  Each _spawn_ expression creates
+and runs a new OS thread. The resolver is a callback block that follows the Watiba _spawn_ expression.  The spawn 
+feature is executed when a ```spawn `cmd` args: resolver block``` code block is encountered. The 
 resolver is passed the results in the promise object. (The promise structure contains the properties 
 defined in "Results from Spawned Command" of this README.)  The _spawn_ expression returns a _promise_ object 
 that can be used by the outer code to check for resolution.  The promise object is passed to the resolver 
@@ -181,13 +181,13 @@ on the promise of interest.  To wait for _all_ promises in the promise tree, cal
 
 #### Promise Tree
 Each _spawn_ issued inserts its promise object into the promise tree.  The outermost _spawn_ will generate the root
-promise and each inner _spawn_ will be its child.  There's no limit to how far it can nest.
+promise and each inner _spawn_ will be its child.  There's no limit to how far it can nest.  _wait()_ only applies
+to the promise on which it is called and is how it is different than _join()_.  _wait()_ does not consider any other
+promise state but the one it's called for, whereas _join()_ considers the one it's called for **and** anything below it
+in the tree.
 
-The difference between _join()_ and _join_all()_ is shown in the following examples:
-```
-root_promise = spawn `ls -lrt`:  # This will generate the first or root promise.
-    resolver block
-```  
+Parent and child joins shown in these two examples:
+
 ``` 
 root_promise = spawn `ls -lr`:
     for file in promise.stdout:
@@ -197,7 +197,7 @@ root_promise = spawn `ls -lr`:
             another_child = spawn `echo "done" > /tmp/done"`:
                 print("Complete")
 
-root_promise.join()  # Wait on the root promise and all its children (effectively join_all())
+root_promise.join()  # Wait on the root promise and all its children.  Thus, waiting for everything.
 ```
 
 ``` 
@@ -205,7 +205,7 @@ root_promise = spawn `ls -lr`:
     for file in promise.stdout:
         t = "touch {}".format(file)
         child_promise = spawn `$t` {"file" file}:  # This promise is a child of root
-            promise.join() # Wait for this promise and it's children but not its parent (root)
+            promise.join() # Wait for this promise and its children but not its parent (root)
             print("{} updated".format(promise.args["file"]))
             another_child = spawn `echo "done" > /tmp/done"`:
                 print("Complete")
@@ -339,6 +339,12 @@ p.wait()
 print("complete")
 
 ```
+### Thread Counting
+To access to the number of threads your code has spawned.
+``` 
+num_of_spawns = promise.spawn_count()  # Returns number of nodes in the promise tree
+num_of_resolved_promises = promise.resolved_count() # Returns the number of promises resolved in tree
+``` 
 
 # Installation
 ## PIP
