@@ -56,12 +56,12 @@ class WTPromise(Exception):
 
     # Count promise tree size
     # Set resolved_only to True to only count resolved promises in the tree
-    def spawn_count(self, resolved_only=False):
+    def spawn_count(self, resolved_only=False, start_at_top=True):
         # Start with this promise
         p = self
 
         # Walk to the top of the tree
-        while p.parent:
+        while start_at_top and p.parent:
             p = p.parent
 
         # Count this promise
@@ -74,25 +74,25 @@ class WTPromise(Exception):
         return count
 
     # Count resolve promises in tree
-    def resolved_count(self, deep_dive=True):
+    def resolved_count(self, deep_dive=True, start_at_top=True):
         # Full tree count?
-        if deep_dive:
-            return self.spawn_count(True)
-        else:
-            # Just test this promise
-            return 1 if self.resolved() else 0
+        return self.spawn_count(deep_dive, start_at_top) if deep_dive else 1 if self.resolved() else 0
+
+    # Wait until this promise and all its children down the tree are ALL resolved
+    def join_all(self, args={}):
+        self.wait(args, {"message": "Join expired"}, True, True)
 
     # Wait until this promise and all its children down the tree are ALL resolved
     def join(self, args={}):
-        self.wait(args, {"message": "Join expired"}, True)
+        self.wait(args, {"message": "Join expired"}, True, False)
 
     # Wait on just this promise
-    def wait(self, args={}, wait_parms={}, from_join=False):
+    def wait(self, args={}, wait_parms={}, from_join=False, start_at_top=True):
         sleep_time = int(args["sleep"]) if "sleep" in args else .5
         expiration = int(args["expire"]) * sleep_time if "expire" in args else -1
 
         # Pause until promise or promises resolved
-        while not self.resolved_count(from_join) > 0:
+        while not self.resolved_count(from_join, start_at_top) > 0:
             time.sleep(sleep_time)
             if expiration != -1:
                 expiration -= 1
