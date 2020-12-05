@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: Watiba
-Version: 0.1.166
+Version: 0.1.167
 Summary: Python syntactical sugar for embedded shell commands
 Home-page: https://github.com/Raythonic/watiba
 Author: Ray Walker
@@ -183,8 +183,8 @@ Description: # Watiba
         **Join and Wait**
         
         Once commands are spawned, the caller can wait for _all_ promises, including inner or child promises, to complete. Or
-        the caller can wait for just a specific promise to complete.  To wait for all _child_ promises including their root 
-        promise, call _join()_.  It will wait for that promise and all its children.  To wait for just one specific promise, call _wait()_
+        the caller can wait for just a specific promise to complete.  To wait for all _child_ promises including
+        the promise on which you're calling this method, call _join()_.  It will wait for that promise and all its children.  To wait for just one specific promise, call _wait()_
         on the promise of interest.  To wait for _all_ promises in the promise tree, call _join()_ on root promise.
         
         #### Promise Tree
