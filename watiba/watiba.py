@@ -79,22 +79,39 @@ class WTPromise(Exception):
         return self.spawn_count(deep_dive, start_at_top) if deep_dive else 1 if self.resolved() else 0
 
 
+    # Boolean return for resolved state of entire promise tree
+    def tree_resolved(self, p):
+        r = p.resolved()
+        for c in p.children:
+            r &= self.tree_resolved(c)
+        return r
+
+
     # Wait until this promise and all its children down the tree are ALL resolved
     def join(self, args={}):
-        self.wait(args, {"message": "Join expired"}, True, False)
-
-    # Wait on just this promise
-    def wait(self, args={}, wait_parms={}, from_join=False, start_at_top=True):
         sleep_time = int(args["sleep"]) if "sleep" in args else .5
         expiration = int(args["expire"]) * sleep_time if "expire" in args else -1
 
         # Pause until promise or promises resolved
-        while not self.resolved_count(from_join, start_at_top) > 0:
+        while not self.tree_resolved(self):
             time.sleep(sleep_time)
             if expiration != -1:
                 expiration -= 1
                 if expiration == 0:
-                    raise Exception(wait_parms["message"] if "message" in wait_parms else "Wait expired")
+                    raise Exception("Join expired")
+
+    # Wait on just this promise
+    def wait(self, args={}):
+        sleep_time = int(args["sleep"]) if "sleep" in args else .5
+        expiration = int(args["expire"]) * sleep_time if "expire" in args else -1
+
+        # Pause until promise or promises resolved
+        while not self.resolved(s):
+            time.sleep(sleep_time)
+            if expiration != -1:
+                expiration -= 1
+                if expiration == 0:
+                    raise Exception("Wait expired")
 
 
 # Singleton object with no side effects
