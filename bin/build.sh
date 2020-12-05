@@ -25,15 +25,3 @@ cp watiba/watiba.py tmp/.
 # Build the dist package
 python3 setup.py sdist
 
-# Push package to distribution site
-echo "__________________________"
-echo "Dist is built"
-echo "Push to Test PyPi?"
-read yn
-if [ "$yn" == "y" ]
-then
-  p=$(grep "password" .pypirc | head -1)
-  echo "User: __token__"
-  echo "$p"
-  python3 -m twine upload --repository testpypi dist/*
-fi
