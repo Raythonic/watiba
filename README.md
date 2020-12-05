@@ -307,7 +307,7 @@ p = spawn `ls -lrt`:
 p.join()  # Wait for ALL promises to be resolved
 ```
 
-### Results from Spawned Command
+### Results from Spawned Commands
 Spawned commands return their results in the _promise.output_ reference of the _promise_ object passed to
 the resolver block, and in the spawn expression if there is an assignment in that spawn expression.  
 The result properties can then be accessed as followed:
