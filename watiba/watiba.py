@@ -78,9 +78,6 @@ class WTPromise(Exception):
         # Full tree count?
         return self.spawn_count(deep_dive, start_at_top) if deep_dive else 1 if self.resolved() else 0
 
-    # Wait until this promise and all its children down the tree are ALL resolved
-    def join_all(self, args={}):
-        self.wait(args, {"message": "Join expired"}, True, True)
 
     # Wait until this promise and all its children down the tree are ALL resolved
     def join(self, args={}):
