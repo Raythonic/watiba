@@ -186,14 +186,21 @@ no exception will be thrown and the cycle will run only until the promise(s) are
 
 Examples with controlling parameters:
 ```
+# Spawn a thread running this command
 p = spawn `ls -lrt`:
     resolver block
     
 # Wait for promises, pause for 1/4 second each iteration, and throw an exception after 4 iterations (1 second)
-p.join({"sleep": .250, "expire": 4})
+try:
+    p.join({"sleep": .250, "expire": 4})
+except Exception as ex:
+    print(ex.args)
 
 # Wait for this promise, pause for 1 second each iteration, and throw an exception after 5 iterations (5 seconds)
-p.wait({"sleep": 1, "expire": 5})
+try:
+    p.wait({"sleep": 1, "expire": 5})
+except Exception as ex:
+    print(ex.args)
 ```
 
 #### Promise Tree
