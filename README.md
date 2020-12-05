@@ -216,9 +216,9 @@ Parent and child joins shown in these two examples:
 root_promise = spawn `ls -lr`:
     for file in promise.stdout:
         t = "touch {}".format(file)
-        child_promise = spawn `$t` {"file" file}:  # This promise is a child of root
+        spawn `$t` {"file" file}:  # This promise is a child of root
             print("{} updated".format(promise.args["file"]))
-            another_child = spawn `echo "done" > /tmp/done"`:
+            spawn `echo "done" > /tmp/done"`:  # Another child promise
                 print("Complete")
 
 root_promise.join()  # Wait on the root promise and all its children.  Thus, waiting for everything.
@@ -228,10 +228,10 @@ root_promise.join()  # Wait on the root promise and all its children.  Thus, wai
 root_promise = spawn `ls -lr`:
     for file in promise.stdout:
         t = "touch {}".format(file)
-        child_promise = spawn `$t` {"file" file}:  # This promise is a child of root
-            promise.join() # Wait for this promise and its children but not its parent (root)
+        spawn `$t` {"file" file}:  # This promise is a child of root
             print("{} updated".format(promise.args["file"]))
-            another_child = spawn `echo "done" > /tmp/done"`:
+            promise.join() # Wait for this promise and its children but not its parent (root)
+            spawn `echo "done" > /tmp/done"`:
                 print("Complete")
 ```
 
@@ -260,8 +260,8 @@ p = spawn `ls *.txt`:
 # Wait for all commands to complete
 try:
     p.join({"sleep":1, "expire":20})
-except:
-    print("join expired")
+except Exception as ex:
+    print(ex.args)
 ```
 
 **_wait()_ syntax**
@@ -289,8 +289,8 @@ p = spawn `ls *.txt`:
 # Wait for just the parent promise to complete
 try:
     p.wait({"sleep":1, "expire":20})
-except:
-    print("wait expired")
+except Exception as ex:
+    print(ex.args)
 ```
 
 _Resolving a parent promise_:
