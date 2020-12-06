@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: Watiba
-Version: 0.1.168
+Version: 0.1.169
 Summary: Python syntactical sugar for embedded shell commands
 Home-page: https://github.com/Raythonic/watiba
 Author: Ray Walker
@@ -224,9 +224,9 @@ Description: # Watiba
         root_promise = spawn `ls -lr`:
             for file in promise.stdout:
                 t = "touch {}".format(file)
-                child_promise = spawn `$t` {"file" file}:  # This promise is a child of root
+                spawn `$t` {"file" file}:  # This promise is a child of root
                     print("{} updated".format(promise.args["file"]))
-                    another_child = spawn `echo "done" > /tmp/done"`:
+                    spawn `echo "done" > /tmp/done"`:  # Another child promise
                         print("Complete")
         
         root_promise.join()  # Wait on the root promise and all its children.  Thus, waiting for everything.
@@ -236,10 +236,10 @@ Description: # Watiba
         root_promise = spawn `ls -lr`:
             for file in promise.stdout:
                 t = "touch {}".format(file)
-                child_promise = spawn `$t` {"file" file}:  # This promise is a child of root
-                    promise.join() # Wait for this promise and its children but not its parent (root)
+                spawn `$t` {"file" file}:  # This promise is a child of root
                     print("{} updated".format(promise.args["file"]))
-                    another_child = spawn `echo "done" > /tmp/done"`:
+                    promise.join() # Wait for this promise and its children but not its parent (root)
+                    spawn `echo "done" > /tmp/done"`:
                         print("Complete")
         ```
         
@@ -268,8 +268,8 @@ Description: # Watiba
         # Wait for all commands to complete
         try:
             p.join({"sleep":1, "expire":20})
-        except:
-            print("join expired")
+        except Exception as ex:
+            print(ex.args)
         ```
         
         **_wait()_ syntax**
@@ -297,8 +297,8 @@ Description: # Watiba
         # Wait for just the parent promise to complete
         try:
             p.wait({"sleep":1, "expire":20})
-        except:
-            print("wait expired")
+        except Exception as ex:
+            print(ex.args)
         ```
         
         _Resolving a parent promise_:
@@ -315,7 +315,7 @@ Description: # Watiba
         p.join()  # Wait for ALL promises to be resolved
         ```
         
-        ### Results from Spawned Command
+        ### Results from Spawned Commands
         Spawned commands return their results in the _promise.output_ reference of the _promise_ object passed to
         the resolver block, and in the spawn expression if there is an assignment in that spawn expression.  
         The result properties can then be accessed as followed:
