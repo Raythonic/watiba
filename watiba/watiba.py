@@ -79,28 +79,27 @@ class WTPromise(Exception):
         return self.spawn_count(True, start_at_top)
 
 
-    # Boolean return for resolved state of entire promise tree
-    def tree_resolved(self, p=None):
+    # Check the resolved state of nodes in promise tree.
+    # Returns True of all nodes (promises) in tree or a subtree, starting from the position given,
+    # are resolved, otherwise False.
+    def tree_resolved(self, position_node=None):
         # If we're not given a position in the tree to start from
-        #   climb to the root promise.
-        n = self if not p else p
-        while not p and n.parent:
-            n = n.parent
+        #   start at the root promise.
+        starting_node = self if not position_node else position_node
+        while not position_node and starting_node.parent:
+            starting_node = starting_node.parent
 
-        p = n
-        if not p:
-            p = self
-            while p.parent:
-                p = p.parent
+        # Start at the tree node we're supposed to
+        position_node = starting_node
 
-        # Check the promise we're on
-        r = p.resolved()
+        # Check the node we're on
+        total_resolved = position_node.resolved()
 
         # Now recursively check the children.  If anyone returns unresolved,
         # then the final result will be unresolved (False)
-        for c in p.children:
-            r &= self.tree_resolved(c)
-        return r
+        for child in position_node.children:
+            total_resolved &= self.tree_resolved(child)
+        return total_resolved
 
     # Wait until this promise and all its children down the tree are ALL resolved
     def join(self, args={}):
