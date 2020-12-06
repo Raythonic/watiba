@@ -74,9 +74,9 @@ class WTPromise(Exception):
         return count
 
     # Count resolve promises in tree
-    def resolved_count(self, deep_dive=True, start_at_top=True):
+    def resolved_count(self, start_at_top=True):
         # Full tree count?
-        return self.spawn_count(True, start_at_top) if deep_dive else 1 if self.resolved() else 0
+        return self.spawn_count(True, start_at_top)
 
 
     # Boolean return for resolved state of entire promise tree
