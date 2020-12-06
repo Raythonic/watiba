@@ -108,13 +108,12 @@ for line in `ls -lrt`.stdout:
 
 ### Command Results
 The results of the command issued in backticks are available in the properties
-of the object returned by Watiba in an object.  Treat the backticked command as a normal
-Python object.  Following are its properties:
+of the object returned by Watiba.  Following are those properties:
 
-- stdout - array of output lines from the command normalized for display
-- stderr - array of standard error output lines from the command normalized for display
-- exit_code - integer exit code value from command
-- cwd - current working directory after command was executed
+- stdout - **array** of output lines from the command normalized for display
+- stderr - **array** of standard error output lines from the command normalized for display
+- exit_code - **integer** exit code value from command
+- cwd - **string** current working directory after command was executed
 
 
 ## Asynchronous Spawning and Promises
@@ -122,10 +121,10 @@ Shell commands can be executed asynchronously with a defined resolver callback b
 and runs a new OS thread. The resolver is a callback block that follows the Watiba _spawn_ expression.  The spawn 
 feature is executed when a ```spawn `cmd` args: resolver block``` code block is encountered. The 
 resolver is passed the results in the promise object. (The promise structure contains the properties 
-defined in "Results from Spawned Command" of this README.)  The _spawn_ expression returns a _promise_ object 
-that can be used by the outer code to check for resolution.  The promise object is passed to the resolver 
-in variable _promise_.  The outer code can check its state with a call to _resolved()_ on 
-the *returned* promise object.  Output from the command is found in _promise.output_
+defined in "Results from Spawned Command" of this README.)  The _spawn_ expression also returns a _promise_ object 
+to the caller of _spawn_.  The promise object is passed to the _resolver block_ in argument _promise_.  The 
+outer code can check its state with a call to _resolved()_ on the *returned* promise object.  Output from the command
+is found in _promise.output_.  The examples throughout this README and in the _examples.wt_ file make this clear.
 
 
 _Notes:_
@@ -174,10 +173,10 @@ my_promise = self.spawn `cmd`:
 
 **Join and Wait**
 
-Once commands are spawned, the caller can wait for _all_ promises, including inner or child promises, to complete. Or
+Once commands are spawned, the caller can wait for _all_ promises, including inner or child promises, to complete, or
 the caller can wait for just a specific promise to complete.  To wait for all _child_ promises including
-the promise on which you're calling this method, call _join()_.  It will wait for that promise and all its children.  
-To wait for just one specific promise, call _wait()_ on the promise of interest.  To wait for _all_ promises in 
+the promise on which you're calling this method, call _join()_.  It will wait for that promise and all its children. To 
+wait for just one specific promise, call _wait()_ on the promise of interest.  To wait for _all_ promises in 
 the promise tree, call _join()_ on the root promise.
 
 _join_ and _wait_ can be controlled through parameters.  Each are iterators paused with a sleep method and will throw
@@ -205,12 +204,12 @@ except Exception as ex:
 
 #### Promise Tree
 Each _spawn_ issued inserts its promise object into the promise tree.  The outermost _spawn_ will generate the root
-promise and each inner _spawn_ will be its child.  There's no limit to how far it can nest.  _wait()_ only applies
-to the promise on which it is called and is how it is different than _join()_.  _wait()_ does not consider any other
-promise state but the one it's called for, whereas _join()_ considers the one it's called for **and** anything below it
+promise and each inner _spawn_ will be among its children.  There's no limit to how far it can nest.  _wait_ only applies
+to the promise on which it is called and is how it is different than _join_.  _wait_ does not consider any other
+promise state but the one it's called for, whereas _join_ considers the one it's called for **and** anything below it
 in the tree.
 
-Parent and child joins shown in these two examples:
+_Parent and child joins shown in these two examples_:
 
 ``` 
 root_promise = spawn `ls -lr`:
@@ -218,7 +217,7 @@ root_promise = spawn `ls -lr`:
         t = "touch {}".format(file)
         spawn `$t` {"file" file}:  # This promise is a child of root
             print("{} updated".format(promise.args["file"]))
-            spawn `echo "done" > /tmp/done"`:  # Another child promise
+            spawn `echo "done" > /tmp/done"`:  # Another child promise (root's grandchild)
                 print("Complete")
 
 root_promise.join()  # Wait on the root promise and all its children.  Thus, waiting for everything.
@@ -235,7 +234,7 @@ root_promise = spawn `ls -lr`:
                 print("Complete")
 ```
 
-**_join()_ syntax**:
+**_join_ syntax**:
 ```
 promise.join(optional args)
 Where args is a Python dictionary with the following options:
@@ -264,7 +263,7 @@ except Exception as ex:
     print(ex.args)
 ```
 
-**_wait()_ syntax**
+**_wait_ syntax**
 ```
 promise.wait(optional args)
 Where args is a Python dictionary with the following options:
@@ -321,8 +320,9 @@ _Notes:_
 1. Watiba backticked commands can exist within the resolver 
 2. Other _spawn_ blocks can be embedded within a resolver (recursion allowed)
 3. The command within the _spawn_ definition can be a variable
-    (The same rules apply as for all backticked shell commands)
-4. The leading dash to ignore CWD _cannot_ be used in the _spawn_ command
+    (The same rules apply as for all backticked shell commands.  This means the variable must contain
+   pure shell commands.)
+4. The leading dash to ignore CWD _cannot_ be used in the _spawn_ expression
 5. The _promise.output_ object is not available until _promise.resolved()_ returns True
 
 _Simple example with the shell command as a Python variable_:
