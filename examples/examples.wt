@@ -48,7 +48,7 @@ print("Return code: {}".format(`badcmd`.exit_code))
 
 
 # Demonstrate context.  CWD is still /tmp
-print(`pwd`.cwd)
+print("Should be /tmp: {}".format(`pwd`.stdout[0]))
 
 # Running a command asynchronously with the outer code
 # looking for the creation of a file to signal its completion
