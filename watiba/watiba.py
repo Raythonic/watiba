@@ -83,6 +83,11 @@ class WTPromise(Exception):
     def tree_resolved(self, p=None):
         # If we're not given a position in the tree to start from
         #   climb to the root promise.
+        n = self if not p else p
+        while not p and n.parent:
+            n = n.parent
+
+        p = n
         if not p:
             p = self
             while p.parent:
