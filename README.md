@@ -188,6 +188,7 @@ Examples with controlling parameters:
 # Spawn a thread running this command
 p = spawn `ls -lrt`:
     resolver block
+    return True
     
 # Wait for promises, pause for 1/4 second each iteration, and throw an exception after 4 iterations (1 second)
 try:
@@ -219,6 +220,11 @@ root_promise = spawn `ls -lr`:
             print("{} updated".format(promise.args["file"]))
             spawn `echo "done" > /tmp/done"`:  # Another child promise (root's grandchild)
                 print("Complete")
+                promise.resolve_parent()
+                return True
+            promise.resolve_parent()
+            return False
+    return False
 
 root_promise.join()  # Wait on the root promise and all its children.  Thus, waiting for everything.
 ```

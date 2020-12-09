@@ -25,12 +25,14 @@ class WTOutput(Exception):
 
 # The object returned for Watbia thread spawns
 class WTPromise(Exception):
-    def __init__(self):
+    def __init__(self, command):
         self.output = WTOutput()
         self.resolution = False
         self.id = time.time()
         self.children = []
         self.parent = None
+        self.command = command
+        self.state = {True: "Resolved", False: "UNRESOLVED"}
 
     def resolved(self):
         return self.resolution
@@ -101,6 +103,27 @@ class WTPromise(Exception):
             total_resolved &= self.tree_resolved(child)
         return total_resolved
 
+    # Mostly for debugging.  Will document later if it seems necessary
+    def tree_dump(self, p = None, dashes=""):
+        def lengthen(d):
+            d = d.replace("-", " ")
+            d = d.replace("|", " ")
+            d += "    "
+            return d.replace("    ", "---|", 1)[::-1]
+
+        n = self if not p else p
+        while not p and n.parent:
+            n = n.parent
+        p = n
+
+        print("{}+{} ({})".format(dashes, p.command, "Resolved" if p.resolved() else "Unresolved"))
+
+        for x in range(0,3):
+
+            for child in p.children:
+                self.tree_dump(child, lengthen(dashes))
+
+
     # Wait until this promise and all its children down the tree are ALL resolved
     def join(self, args={}):
         sleep_time = int(args["sleep"]) if "sleep" in args else .5
@@ -169,7 +192,7 @@ class Watiba(Exception):
 
     def spawn(self, command, resolver, spawn_args, parent_locals):
         # Create a new promise object
-        l_promise = WTPromise()
+        l_promise = WTPromise(command)
 
         # Chain our promise in if we're a child
         if 'promise' in parent_locals and str(type(parent_locals['promise'])).find("WTPromise") >= 0:
