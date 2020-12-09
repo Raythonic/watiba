@@ -106,9 +106,7 @@ class WTPromise(Exception):
     # Mostly for debugging.  Will document later if it seems necessary
     def tree_dump(self, p = None, dashes=""):
         def lengthen(d):
-            d = d.replace("-", " ")
-            d = d.replace("|", " ")
-            d += "    "
+            d = d.replace("-", " ").replace("|", " ") + "    "
             return d.replace("    ", "---|", 1)[::-1]
 
         n = self if not p else p
