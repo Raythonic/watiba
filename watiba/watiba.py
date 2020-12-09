@@ -116,7 +116,7 @@ class WTPromise(Exception):
             n = n.parent
         p = n
 
-        print("{}+{} ({})".format(dashes, p.command, "Resolved" if p.resolved() else "Unresolved"))
+        print("{}+`{}` ({})".format(dashes, p.command, "Resolved" if p.resolved() else "Unresolved"))
 
         for child in p.children:
             self.tree_dump(child, lengthen(dashes))
