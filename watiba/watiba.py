@@ -32,7 +32,6 @@ class WTPromise(Exception):
         self.children = []
         self.parent = None
         self.command = command
-        self.state = {True: "Resolved", False: "UNRESOLVED"}
 
     def resolved(self):
         return self.resolution
