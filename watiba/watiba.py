@@ -109,6 +109,8 @@ class WTPromise(Exception):
             return d.replace("    ", "---|", 1)[::-1]
 
         n = self if not p else p
+
+        # If position in tree not passed, find root promise
         while not p and n.parent:
             n = n.parent
         p = n
