@@ -106,6 +106,7 @@ class WTPromise(Exception):
     def tree_dump(self, p = None, dashes=""):
         def lengthen(d):
             d = d.replace("-", " ").replace("|", " ") + "    "
+            # Replace just the first 4 spaces with line, then reverse it so line is on right side
             return d.replace("    ", "---|", 1)[::-1]
 
         n = self if not p else p
