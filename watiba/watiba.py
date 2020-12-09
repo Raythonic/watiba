@@ -116,10 +116,8 @@ class WTPromise(Exception):
 
         print("{}+{} ({})".format(dashes, p.command, "Resolved" if p.resolved() else "Unresolved"))
 
-        for x in range(0,3):
-
-            for child in p.children:
-                self.tree_dump(child, lengthen(dashes))
+        for child in p.children:
+            self.tree_dump(child, lengthen(dashes))
 
 
     # Wait until this promise and all its children down the tree are ALL resolved
