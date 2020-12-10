@@ -156,7 +156,7 @@ class WTPromise(Exception):
         expiration = int(args["expire"]) if "expire" in args else -1
 
         # Pause until promise or promises resolved
-        while not self.resolved(s):
+        while not self.resolved():
             time.sleep(sleep_time)
             if expiration != -1:
                 expiration -= 1
