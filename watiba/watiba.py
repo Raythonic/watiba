@@ -85,10 +85,7 @@ class WTPromise(Exception):
         self.parent = parent_promise
 
         # Set its depth level
-        z = self.parent
-        while z:
-            self.depth += 1
-            z = z.parent
+        self.depth = self.parent.depth + 1
 
     # Check the resolved state of nodes in promise tree.
     # Returns True of all nodes (promises) in tree or a subtree, starting from the position given,
@@ -142,7 +139,7 @@ class WTPromise(Exception):
     # Wait until this promise and all its children down the tree are ALL resolved
     def join(self, args={}):
         sleep_time = int(args["sleep"]) if "sleep" in args else .5
-        expiration = int(args["expire"]) * sleep_time if "expire" in args else -1
+        expiration = int(args["expire"]) if "expire" in args else -1
 
         # Pause until promise or promises resolved
         while not self.tree_resolved(self):
@@ -156,7 +153,7 @@ class WTPromise(Exception):
     # Wait on just this promise
     def wait(self, args={}):
         sleep_time = int(args["sleep"]) if "sleep" in args else .5
-        expiration = int(args["expire"]) * sleep_time if "expire" in args else -1
+        expiration = int(args["expire"]) if "expire" in args else -1
 
         # Pause until promise or promises resolved
         while not self.resolved(s):
