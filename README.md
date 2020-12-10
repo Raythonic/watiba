@@ -328,10 +328,10 @@ Spawned commands return their results in the _promise.output_ property of the _p
 the resolver block, and in the spawn expression if there is an assignment in that spawn expression.  
 The result properties can then be accessed as followed:
  
-- promise.output.stdout - array of output lines from the command normalized for display
-- promise.output.stderr - array of standard error output lines from the command normalized for display
-- promise.output.exit_code - integer exit code value from command
-- promise.output.cwd - current working directory after command was executed
+- **promise.output.stdout** - array of output lines from the command normalized for display
+- **promise.output.stderr** - array of standard error output lines from the command normalized for display
+- **promise.output.exit_code** - integer exit code value from command
+- **promise.output.cwd** - current working directory after command was executed
 
 _Notes:_
 1. Watiba backticked commands can exist within the resolver 
