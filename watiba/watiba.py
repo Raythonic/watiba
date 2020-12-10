@@ -12,6 +12,7 @@ import os
 import threading
 import time
 import copy
+import sys
 
 
 # The object returned to the caller of _watiba_ for command results
@@ -110,7 +111,9 @@ class WTPromise(Exception):
         return total_resolved
 
     # Mostly for debugging.  Will document later if it seems necessary
-    def tree_dump(self, p = None, dashes=""):
+    def tree_dump(self, p=None, dashes=""):
+        print("Dumping promise tree", file=sys.stderr)
+
         def indent(d):
             d = d.replace("-", " ").replace("|", " ") + "    "
             # Replace just the first 4 spaces with line, then reverse it so line is on right side
@@ -130,11 +133,10 @@ class WTPromise(Exception):
                                          "root" if p.depth < 1 else p.depth,
                                          p.command,
                                          "Resolved" if p.resolved() else "Unresolved"
-                                         ))
+                                         ), file=sys.stderr)
 
         for child in p.children:
             self.tree_dump(child, indent(dashes))
-
 
     # Wait until this promise and all its children down the tree are ALL resolved
     def join(self, args={}):
@@ -163,6 +165,7 @@ class WTPromise(Exception):
                 if expiration == 0:
                     self.tree_dump()
                     raise Exception("Wait expired")
+
 
 ###############################################################################################################
 ########################################## Watiba #############################################################
