@@ -131,7 +131,7 @@ _Notes:_
 1. Arguments can be passed to the resolver by specifying a trailing variable after the command.  If the arguments
 variable is omitted, an empty dictionary, i.e. {}, is passed to the resolver in _args_.
 **_Warning!_** Python threading does not deep copy objects passed as arguments to threads.  What you place in ```args```
-of the spawn expression will only be shallow copied so if there's references to other objects, it's not likely to 
+of the spawn expression will only be shallow copied so if there are references to other objects, it's not likely to 
    survive the copy.
 2. The resolver must return _True_ to set the promise to resolved, or _False_ to leave it unresolved.
 3. A resolver can also set the promise to resolved by calling ```promise.set_resolved()```.  This is handy in cases where
