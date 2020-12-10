@@ -210,6 +210,16 @@ to the promise on which it is called and is how it is different than _join_.  _w
 promise state but the one it's called for, whereas _join_ considers the one it's called for **and** anything below it
 in the tree.
 
+The promise tree can be printed:
+```
+p = spawn `date`:
+    return True
+    
+p.tree_dump()  # Dump tree from root
+# or
+p.tree_dump(subtree_node)  # Dump tree from node in argument
+```
+
 _Parent and child joins shown in these two examples_:
 
 ``` 
