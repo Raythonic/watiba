@@ -111,8 +111,10 @@ class WTPromise(Exception):
         return total_resolved
 
     # Mostly for debugging.  Will document later if it seems necessary
-    def tree_dump(self, p=None, dashes=""):
-        print("Dumping promise tree", file=sys.stderr)
+    def tree_dump(self, p=None, dashes="", header=True):
+        if header:
+            print("Dumping promise tree", file=sys.stderr)
+            header = False
 
         def indent(d):
             d = d.replace("-", " ").replace("|", " ") + "    "
@@ -136,7 +138,7 @@ class WTPromise(Exception):
                                          ), file=sys.stderr)
 
         for child in p.children:
-            self.tree_dump(child, indent(dashes))
+            self.tree_dump(child, indent(dashes), header)
 
     # Wait until this promise and all its children down the tree are ALL resolved
     def join(self, args={}):
