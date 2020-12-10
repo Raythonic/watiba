@@ -80,6 +80,7 @@ class WTPromise(Exception):
         # Full tree count?
         return self.spawn_count(True, start_at_top)
 
+    # Encapsulate setting parent promise so depth can be tracked
     def set_parent(self, parent_promise):
         self.parent = parent_promise
 
