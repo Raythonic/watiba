@@ -30,6 +30,7 @@ class WTPromise(Exception):
         self.output = WTOutput()
         self.resolution = False
         self.id = time.time()
+        self.thread_id = -1
         self.children = []
         self.parent = None
         self.command = command
@@ -131,10 +132,11 @@ class WTPromise(Exception):
         # Set out starting position
         p = n
 
-        print("{}+ {}: `{}` ({})".format(dashes,
+        print("{}+ {}: `{}` ({}, thread id: {})".format(dashes,
                                          "root" if p.depth < 1 else p.depth,
                                          p.command,
-                                         "Resolved" if p.resolved() else "Unresolved"
+                                         "Resolved" if p.resolved() else "Unresolved",
+                                         p.thread_id if p.thread_id > -1 else "not started"
                                          ), file=sys.stderr)
 
         for child in p.children:
@@ -221,6 +223,8 @@ class Watiba(Exception):
             l_promise.set_parent(parent_locals['promise'])
 
         def run_command(cmd, resolver_func, resolver_promise, args):
+
+            resolver_promise.thread_id = threading.get_ident()
 
             # Execute the command in a new thread
             resolver_promise.output = self.bash(cmd)
