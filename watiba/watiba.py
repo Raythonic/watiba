@@ -85,7 +85,7 @@ class WTPromise(Exception):
 
         # Set its depth level
         z = self.parent
-        while z.parent:
+        while zs:
             self.depth += 1
             z = z.parent
 
