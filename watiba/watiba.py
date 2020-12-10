@@ -53,7 +53,7 @@ class WTPromise(Exception):
 
         # Count these children (descend)
         for c in child.children:
-            count = self.child_counter(c, count)
+            count = self.child_counter(c, count, resolved_only)
 
         return count
 
