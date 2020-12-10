@@ -32,6 +32,7 @@ class WTPromise(Exception):
         self.children = []
         self.parent = None
         self.command = command
+        self.depth = 0
 
     def resolved(self):
         return self.resolution
@@ -79,6 +80,14 @@ class WTPromise(Exception):
         # Full tree count?
         return self.spawn_count(True, start_at_top)
 
+    def set_parent(self, parent_promise):
+        self.parent = parent_promise
+
+        # Set its depth level
+        z = self.parent
+        while z.parent:
+            self.depth += 1
+            z = z.parent
 
     # Check the resolved state of nodes in promise tree.
     # Returns True of all nodes (promises) in tree or a subtree, starting from the position given,
@@ -104,22 +113,29 @@ class WTPromise(Exception):
 
     # Mostly for debugging.  Will document later if it seems necessary
     def tree_dump(self, p = None, dashes=""):
-        def lengthen(d):
+        def indent(d):
             d = d.replace("-", " ").replace("|", " ") + "    "
             # Replace just the first 4 spaces with line, then reverse it so line is on right side
             return d.replace("    ", "---|", 1)[::-1]
 
+        # If not given a starting point, set up to start at root
         n = self if not p else p
 
         # If position in tree not passed, find root promise
         while not p and n.parent:
             n = n.parent
+
+        # Set out starting position
         p = n
 
-        print("{}+`{}` ({})".format(dashes, p.command, "Resolved" if p.resolved() else "Unresolved"))
+        print("{}+ {}: `{}` ({})".format(dashes,
+                                         "root" if p.depth < 1 else p.depth,
+                                         p.command,
+                                         "Resolved" if p.resolved() else "Unresolved"
+                                         ))
 
         for child in p.children:
-            self.tree_dump(child, lengthen(dashes))
+            self.tree_dump(child, indent(dashes))
 
 
     # Wait until this promise and all its children down the tree are ALL resolved
@@ -133,6 +149,7 @@ class WTPromise(Exception):
             if expiration != -1:
                 expiration -= 1
                 if expiration == 0:
+                    self.tree_dump()
                     raise Exception("Join expired")
 
     # Wait on just this promise
@@ -146,9 +163,12 @@ class WTPromise(Exception):
             if expiration != -1:
                 expiration -= 1
                 if expiration == 0:
+                    self.tree_dump()
                     raise Exception("Wait expired")
 
-
+###############################################################################################################
+########################################## Watiba #############################################################
+###############################################################################################################
 # Singleton object with no side effects
 # Executes the command an returns a new WTOutput object
 class Watiba(Exception):
@@ -195,7 +215,7 @@ class Watiba(Exception):
         # Chain our promise in if we're a child
         if 'promise' in parent_locals and str(type(parent_locals['promise'])).find("WTPromise") >= 0:
             parent_locals['promise'].children.append(l_promise)
-            l_promise.parent = parent_locals['promise']
+            l_promise.set_parent(parent_locals['promise'])
 
         def run_command(cmd, resolver_func, resolver_promise, args):
 
