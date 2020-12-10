@@ -138,9 +138,10 @@ of the spawn expression will only be shallow copied so if there are references t
 a resolver has spawned another command and doesn't want the outer promise resolved until the inner resolvers are done. 
 To resolve an outer, i.e. parent, resolver issue _promise.resolve_parent()_.  Then the parent resolver can return
 _False_ at the end of its block so it leaves the resolved determination to the inner resolver block.
+4. Each promise object holds its OS thread object in property _thread_ and its thread id in property _thread_id_. This
+can be useful for controlling the thread directly.  For example, to signal a kill.
+
 This is demonstrated in the examples.
-
-
 **_Spawn Syntax:_**
 ```
 my_promise = spawn `cmd` [args]:

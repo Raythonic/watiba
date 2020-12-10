@@ -30,6 +30,7 @@ class WTPromise(Exception):
         self.output = WTOutput()
         self.resolution = False
         self.id = time.time()
+        self.thread = None
         self.thread_id = -1
         self.children = []
         self.parent = None
@@ -236,10 +237,10 @@ class Watiba(Exception):
 
         try:
             # Create a new thread
-            t = threading.Thread(target=run_command, args=(command, resolver, l_promise, spawn_args))
+            l_promise.thread = threading.Thread(target=run_command, args=(command, resolver, l_promise, spawn_args))
 
             # Run the command and call the resolver
-            t.start()
+            l_promise.thread.start()
         except:
             print("ERROR.  w_async thread execution failed. {}".format(command))
 
