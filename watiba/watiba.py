@@ -13,6 +13,7 @@ import threading
 import time
 import copy
 import sys
+import inspect
 
 
 # The object returned to the caller of _watiba_ for command results
@@ -83,12 +84,12 @@ class WTPromise(Exception):
         # Full tree count?
         return self.spawn_count(True, start_at_top)
 
-    # Encapsulate setting parent promise so depth can be tracked
-    def set_parent(self, parent_promise):
+    # Encapsulate setting relating parent/child promises
+    def relate(self, parent_promise):
+        # Link child to parent
         self.parent = parent_promise
-
-        # Set its depth level
         self.depth = self.parent.depth + 1
+        self.parent.children.append(self)
 
     # Check the resolved state of nodes in promise tree.
     # Returns True of all nodes (promises) in tree or a subtree, starting from the position given,
@@ -134,11 +135,11 @@ class WTPromise(Exception):
         p = n
 
         print("{}+ {}: `{}` ({}, thread id: {})".format(dashes,
-                                         "root" if p.depth < 1 else p.depth,
-                                         p.command,
-                                         "Resolved" if p.resolved() else "Unresolved",
-                                         p.thread_id if p.thread_id > -1 else "not started"
-                                         ), file=sys.stderr)
+                                                        "root" if p.depth < 1 else p.depth,
+                                                        p.command,
+                                                        "Resolved" if p.resolved() else "Unresolved",
+                                                        p.thread_id if p.thread_id > -1 else "not started"
+                                                        ), file=sys.stderr)
 
         for child in p.children:
             self.tree_dump(child, indent(dashes), header)
@@ -219,9 +220,12 @@ class Watiba(Exception):
         l_promise = WTPromise(command)
 
         # Chain our promise in if we're a child
-        if 'promise' in parent_locals and str(type(parent_locals['promise'])).find("WTPromise") >= 0:
-            parent_locals['promise'].children.append(l_promise)
-            l_promise.set_parent(parent_locals['promise'])
+        if 'promise' in parent_locals \
+                and str(type(parent_locals['promise'])).find("WTPromise") >= 0 \
+                and hasattr(parent_locals['promise'], "resolved") \
+                and inspect.ismethod(getattr(parent_locals['promise'], "resolved")):
+            # Link this child promise to its parent
+            l_promise.relate(parent_locals['promise'])
 
         def run_command(cmd, resolver_func, resolver_promise, args):
 
