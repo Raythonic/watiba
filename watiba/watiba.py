@@ -247,7 +247,7 @@ class Watiba(Exception):
 
             # Run the command and call the resolver
             l_promise.thread.start()
-        except:
+        except Exception(BaseException) as ex:
             print("ERROR.  w_async thread execution failed. {}".format(command))
 
         return l_promise
