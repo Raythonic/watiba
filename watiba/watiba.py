@@ -37,6 +37,7 @@ class WTPromise(Exception):
         self.parent = None
         self.command = command
         self.depth = 0
+        self.__WTPROMISE_STAMP__ = True
 
     def resolved(self):
         return self.resolution
@@ -222,6 +223,7 @@ class Watiba(Exception):
         # Chain our promise in if we're a child
         if 'promise' in parent_locals \
                 and str(type(parent_locals['promise'])).find("WTPromise") >= 0 \
+                and hasattr(parent_locals['promise'], "__WTPROMISE_STAMP__") \
                 and hasattr(parent_locals['promise'], "resolved") \
                 and inspect.ismethod(getattr(parent_locals['promise'], "resolved")):
             # Link this child promise to its parent
