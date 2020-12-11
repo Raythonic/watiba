@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: Watiba
-Version: 0.1.179
+Version: 0.1.187
 Summary: Python syntactical sugar for embedded shell commands
 Home-page: https://github.com/Raythonic/watiba
 Author: Ray Walker
@@ -139,16 +139,17 @@ Description: # Watiba
         1. Arguments can be passed to the resolver by specifying a trailing variable after the command.  If the arguments
         variable is omitted, an empty dictionary, i.e. {}, is passed to the resolver in _args_.
         **_Warning!_** Python threading does not deep copy objects passed as arguments to threads.  What you place in ```args```
-        of the spawn expression will only be shallow copied so if there's references to other objects, it's
-        to not likely to survive the copy.
+        of the spawn expression will only be shallow copied so if there are references to other objects, it's not likely to 
+           survive the copy.
         2. The resolver must return _True_ to set the promise to resolved, or _False_ to leave it unresolved.
         3. A resolver can also set the promise to resolved by calling ```promise.set_resolved()```.  This is handy in cases where
         a resolver has spawned another command and doesn't want the outer promise resolved until the inner resolvers are done. 
         To resolve an outer, i.e. parent, resolver issue _promise.resolve_parent()_.  Then the parent resolver can return
         _False_ at the end of its block so it leaves the resolved determination to the inner resolver block.
+        4. Each promise object holds its OS thread object in property _thread_ and its thread id in property _thread_id_. This
+        can be useful for controlling the thread directly.  For example, to signal a kill.
+        
         This is demonstrated in the examples.
-        
-        
         **_Spawn Syntax:_**
         ```
         my_promise = spawn `cmd` [args]:
@@ -217,6 +218,16 @@ Description: # Watiba
         to the promise on which it is called and is how it is different than _join_.  _wait_ does not consider any other
         promise state but the one it's called for, whereas _join_ considers the one it's called for **and** anything below it
         in the tree.
+        
+        The promise tree can be printed:
+        ```
+        p = spawn `date`:
+            return True
+            
+        p.tree_dump()  # Dump tree from root
+        # or
+        p.tree_dump(subtree_node)  # Dump tree from node in argument
+        ```
         
         _Parent and child joins shown in these two examples_:
         

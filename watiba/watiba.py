@@ -12,6 +12,7 @@ import os
 import threading
 import time
 import copy
+import sys
 
 
 # The object returned to the caller of _watiba_ for command results
@@ -29,6 +30,8 @@ class WTPromise(Exception):
         self.output = WTOutput()
         self.resolution = False
         self.id = time.time()
+        self.thread = None
+        self.thread_id = -1
         self.children = []
         self.parent = None
         self.command = command
@@ -52,7 +55,7 @@ class WTPromise(Exception):
 
         # Count these children (descend)
         for c in child.children:
-            count = self.child_counter(c, count)
+            count = self.child_counter(c, count, resolved_only)
 
         return count
 
@@ -85,10 +88,7 @@ class WTPromise(Exception):
         self.parent = parent_promise
 
         # Set its depth level
-        z = self.parent
-        while z:
-            self.depth += 1
-            z = z.parent
+        self.depth = self.parent.depth + 1
 
     # Check the resolved state of nodes in promise tree.
     # Returns True of all nodes (promises) in tree or a subtree, starting from the position given,
@@ -113,7 +113,11 @@ class WTPromise(Exception):
         return total_resolved
 
     # Mostly for debugging.  Will document later if it seems necessary
-    def tree_dump(self, p = None, dashes=""):
+    def tree_dump(self, p=None, dashes="", header=True):
+        if header:
+            print("Dumping promise tree", file=sys.stderr)
+            header = False
+
         def indent(d):
             d = d.replace("-", " ").replace("|", " ") + "    "
             # Replace just the first 4 spaces with line, then reverse it so line is on right side
@@ -129,20 +133,20 @@ class WTPromise(Exception):
         # Set out starting position
         p = n
 
-        print("{}+ {}: `{}` ({})".format(dashes,
+        print("{}+ {}: `{}` ({}, thread id: {})".format(dashes,
                                          "root" if p.depth < 1 else p.depth,
                                          p.command,
-                                         "Resolved" if p.resolved() else "Unresolved"
-                                         ))
+                                         "Resolved" if p.resolved() else "Unresolved",
+                                         p.thread_id if p.thread_id > -1 else "not started"
+                                         ), file=sys.stderr)
 
         for child in p.children:
-            self.tree_dump(child, indent(dashes))
-
+            self.tree_dump(child, indent(dashes), header)
 
     # Wait until this promise and all its children down the tree are ALL resolved
     def join(self, args={}):
         sleep_time = int(args["sleep"]) if "sleep" in args else .5
-        expiration = int(args["expire"]) * sleep_time if "expire" in args else -1
+        expiration = int(args["expire"]) if "expire" in args else -1
 
         # Pause until promise or promises resolved
         while not self.tree_resolved(self):
@@ -156,16 +160,17 @@ class WTPromise(Exception):
     # Wait on just this promise
     def wait(self, args={}):
         sleep_time = int(args["sleep"]) if "sleep" in args else .5
-        expiration = int(args["expire"]) * sleep_time if "expire" in args else -1
+        expiration = int(args["expire"]) if "expire" in args else -1
 
         # Pause until promise or promises resolved
-        while not self.resolved(s):
+        while not self.resolved():
             time.sleep(sleep_time)
             if expiration != -1:
                 expiration -= 1
                 if expiration == 0:
                     self.tree_dump()
                     raise Exception("Wait expired")
+
 
 ###############################################################################################################
 ########################################## Watiba #############################################################
@@ -220,6 +225,8 @@ class Watiba(Exception):
 
         def run_command(cmd, resolver_func, resolver_promise, args):
 
+            resolver_promise.thread_id = threading.get_ident()
+
             # Execute the command in a new thread
             resolver_promise.output = self.bash(cmd)
 
@@ -230,10 +237,10 @@ class Watiba(Exception):
 
         try:
             # Create a new thread
-            t = threading.Thread(target=run_command, args=(command, resolver, l_promise, spawn_args))
+            l_promise.thread = threading.Thread(target=run_command, args=(command, resolver, l_promise, spawn_args))
 
             # Run the command and call the resolver
-            t.start()
+            l_promise.thread.start()
         except:
             print("ERROR.  w_async thread execution failed. {}".format(command))
 
