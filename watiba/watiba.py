@@ -98,10 +98,10 @@ class Watiba(Exception):
         try:
             # Create a new thread
             l_promise.thread = threading.Thread(target=run_command, args=(command, resolver, l_promise, spawn_args))
+
+            # Control the threads (the controller starts the thread)
             self.spawn_ctlr.add_promise(l_promise)
 
-            # Run the command and call the resolver
-            l_promise.thread.start()
         except Exception(BaseException) as ex:
             print("ERROR.  w_async thread execution failed. {}".format(command))
 
