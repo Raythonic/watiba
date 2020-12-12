@@ -42,6 +42,9 @@ class Compiler:
                     # p = spawn `cmd`: block
                     "^(\S.*)?spawn \s*`(\S.*)`\s*?(\S.*)?:.*": self.spawn_generator,
 
+                    # spawn-ctl {args}
+                    "^spawn-ctl \s*(\S.*)": self.spawn_ctl_args,
+
                     # `cmd`
                     ".*?([\-])?`(\S.*?)`.*?": self.backticks_generator
                     }
@@ -60,6 +63,10 @@ class Compiler:
                 print("      {}".format(self.last_stmt), file=sys.stderr)
                 sys.exit(1)
 
+
+    # Set spawn controller args
+    def spawn_ctl_args(self, parms):
+        self.output.append("_watiba_.spawn_ctlr.set_args({})".format(parms["match"].group(1)))
 
     # Handle spawn code blocks
     def spawn_generator(self, parms):
