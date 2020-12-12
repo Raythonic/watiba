@@ -28,16 +28,16 @@ class WTOutput(Exception):
 # The object returned for Watbia thread spawns
 class WTPromise(Exception):
     def __init__(self, command):
-        self.output = WTOutput()
-        self.resolution = False
+        self.__WTPROMISE_STAMP__ = True
         self.id = time.time()
         self.thread = None
         self.thread_id = -1
+        self.output = WTOutput()
+        self.resolution = False
         self.children = []
         self.parent = None
         self.command = command
         self.depth = 0
-        self.__WTPROMISE_STAMP__ = True
 
     def resolved(self):
         return self.resolution
