@@ -36,9 +36,6 @@ class Compiler:
 
         # Regex expressions for Watiba commands (order matters otherwise backticks would win over spawn)
         self.expressions = {
-                    # p = self.spawn `cmd`: block
-                    "^(\S.*)?self.spawn \s*`(\S.*)`\s*?(\S.*)?:.*": self.spawn_generator_with_self,
-
                     # p = spawn `cmd`: block
                     "^(\S.*)?spawn \s*`(\S.*)`\s*?(\S.*)?:.*": self.spawn_generator,
 
@@ -82,11 +79,8 @@ class Compiler:
                                                                                                 parms["match"].group(cmd_idx),
                                                                                                 quote_style)
         # Build the next resolver method name
-        resolver_name = "{}__watiba_resolver_{}__".format(parms["prefix"], self.resolver_count)
+        resolver_name = "__watiba_resolver_{}__".format(self.resolver_count)
         self.resolver_count += 1
-
-        # Replace the dot with a comma in "self." if that prefix exists
-        self_prefix = "" if parms["prefix"] == "" else parms["prefix"].replace(".", ", ")
 
         # Include promise return if there's an assignment on the stmt
         promise_assign = parms["match"].group(assign_idx) if parms["match"].group(assign_idx) else ""
@@ -96,9 +90,8 @@ class Compiler:
 
         # Queue up asyc call which is executed (spit out) at the end of the w_spawn block
         self.spawn_call.append(
-            "{}{}_watiba_.spawn({}{}, {}, {}, {})".format(parms["indentation"],
+            "{}{}_watiba_.spawn({}, {}, {}, {})".format(parms["indentation"],
                                                       promise_assign,
-                                                      self_prefix,
                                                       cmd,
                                                       resolver_name,
                                                       resolver_args,
@@ -108,11 +101,6 @@ class Compiler:
         # Convert spawn `cmd`: statement to proper Python function definition
         self.output.append("{}def {}(promise, args):".format(parms["indentation"], resolver_name))
 
-    # Generator for spawn in class
-    def spawn_generator_with_self(self, parms):
-        self.output.append(self.spawn_generator({"match": parms["match"],
-                                               "statement": parms["statement"],
-                                               "prefix": "self."}))
 
     # Generator for `cmd` expressions
     def backticks_generator(self, parms):
@@ -167,7 +155,6 @@ class Compiler:
                 return self.expressions[ex](
                     {"match": m,
                      "statement": s,
-                     "prefix": "",
                      "pattern": ex,
                      "indentation":stmt[0:len(stmt) - len(stmt.lstrip())]}
                 )
