@@ -126,6 +126,33 @@ to the caller of _spawn_.  The promise object is passed to the _resolver block_ 
 outer code can check its state with a call to _resolved()_ on the *returned* promise object.  Output from the command
 is found in _promise.output_.  The examples throughout this README and in the _examples.wt_ file make this clear.
 
+All spawned threads are managed by Watiba's Spawn Controller.  The controller watches for too many threads and
+incrementally slows down each thread start when that threshold is exceeded until an expiration count is reached, at
+which time an exception is thrown on the last spawned command.  This exception is raised by the default error method.
+This method as well as other spawn controlling parameters can be overridden.
+
+_Example of file that overrides spawn controller parameters_:
+```
+#!/usr/bin/python3.8
+if __name__ == "__main__":
+    # Example showing default values
+    parms = {"max": 10, # Max number of threads allowed before slowdown mode
+     "sleep-floor": .125,  # Starting sleep value
+     "sleep-ceiling": 3,  # Maximum sleep value
+     "sleep-increment": .125,  # Incremental sleep value
+     "expire": -1,  # Default: no expiration
+     "error": self.default_error  # Default error callback
+     }
+    spawn-ctl parms
+```
+
+Spawn control parameters:
+- _max_ - **Integer** The maximum number of spawned commands allowed before the controller enters slowdown mode
+- _sleep-floor_ - **Seconds** The starting sleep value when the controller enters slowdown mode
+- _sleep-increment_ - **Seconds** The amount of seconds sleep will increase every third cycle when in slowdown mode
+- _sleep-ceiling_ - **Seconds** The highest length sleep value allowed when in slowdown mode.  (As slow as it will get.)
+- _expire_ - **Integer** Total number of slowdown cycles allowed before the error method is called
+- _error_ - **Method** Callback method invoked when slowdown mode expires.  By default, this will throw an exception.
 
 _Notes:_
 1. Arguments can be passed to the resolver by specifying a trailing variable after the command.  If the arguments
