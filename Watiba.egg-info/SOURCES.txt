@@ -8,3 +8,5 @@ watiba/__init__.py
 watiba/version.py
 watiba/watiba-c.py
 watiba/watiba.py
+watiba/wtpromise.py
+watiba/wtspawncontroller.py
