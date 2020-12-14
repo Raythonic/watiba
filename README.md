@@ -165,7 +165,9 @@ Spawn control parameters:
   - _promise_ - The promise attempting execution at the time of expiration
   - _count_ - The thread count (unresolved promises) at the time of expiration 
     
-spawn-ctl only overrides the values it sets, and does not affect values not specified.
+_spawn-ctl_ only overrides the values it sets and does not affect values not specified.  _spawn-ctl_ statements can
+set whichever values it wants, can be dispersed throughout your code (i.e. multiple _spawn-ctl_ statements) and 
+only affects spawns subsequent to its setting at execution time.
 
 _Notes:_
 1. Arguments can be passed to the resolver by specifying a trailing variable after the command.  If the arguments
