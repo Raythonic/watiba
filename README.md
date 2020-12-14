@@ -148,9 +148,9 @@ if __name__ == "__main__":
          "sleep-increment": .125,  # Incremental sleep value
          "expire": -1,  # Default: no expiration
          "error": spawn_expired  # Method called upon slowdown expiration
-     }
+    }
      
-     # Set spawn controller parameter values
+    # Set spawn controller parameter values
     spawn-ctl parms
 ```
 
@@ -164,6 +164,8 @@ Spawn control parameters:
         This method is passed 2 arguments:
   - _promise_ - The promise attempting execution at the time of expiration
   - _count_ - The thread count (unresolved promises) at the time of expiration 
+    
+spawn-ctl only overrides the values it sets, and does not affect values not specified.
 
 _Notes:_
 1. Arguments can be passed to the resolver by specifying a trailing variable after the command.  If the arguments
