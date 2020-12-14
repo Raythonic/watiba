@@ -1,5 +1,5 @@
 #!/bin/python3
-versions = ["Watiba 0.1.189", "Python 3.8"]
+versions = ["Watiba 0.1.190", "Python 3.8"]
 import re
 import sys
 
@@ -38,16 +38,15 @@ class Compiler:
 
         # Regex expressions for Watiba commands (order matters otherwise backticks would win over spawn)
         self.expressions = {
-                    # p = self.spawn `cmd`: block
-                    "^(\S.*)?self.spawn \s*`(\S.*)`\s*?(\S.*)?:.*": self.spawn_generator_with_self,
+            # p = spawn `cmd`: block
+            "^(\S.*)?spawn \s*`(\S.*)`\s*?(\S.*)?:.*": self.spawn_generator,
 
-                    # p = spawn `cmd`: block
-                    "^(\S.*)?spawn \s*`(\S.*)`\s*?(\S.*)?:.*": self.spawn_generator,
+            # spawn-ctl {args}
+            "^spawn-ctl \s*(\S.*)": self.spawn_ctl_args,
 
-                    # `cmd`
-                    ".*?([\-])?`(\S.*?)`.*?": self.backticks_generator
-                    }
-
+            # `cmd`
+            ".*?([\-])?`(\S.*?)`.*?": self.backticks_generator
+        }
 
     # Flush out any queue spawn calls that are located after the resolver block
     def flush(self):
@@ -62,6 +61,9 @@ class Compiler:
                 print("      {}".format(self.last_stmt), file=sys.stderr)
                 sys.exit(1)
 
+    # Set spawn controller args
+    def spawn_ctl_args(self, parms):
+        self.output.append("_watiba_.spawn_ctlr.set_parms({})".format(parms["match"].group(1)))
 
     # Handle spawn code blocks
     def spawn_generator(self, parms):
@@ -73,15 +75,13 @@ class Compiler:
         quote_style = "'" if "'" not in parms["match"].group(cmd_idx) else '"'
 
         # extract the command and if it's a variable, remove the $ and no quotes, otherwise in quotes
-        cmd = parms["match"].group(cmd_idx)[1:] if parms["match"].group(cmd_idx)[0] == "$" else "{}{}{}".format(quote_style,
-                                                                                                parms["match"].group(cmd_idx),
-                                                                                                quote_style)
+        cmd = parms["match"].group(cmd_idx)[1:] if parms["match"].group(cmd_idx)[0] == "$" else "{}{}{}".format(
+            quote_style,
+            parms["match"].group(cmd_idx),
+            quote_style)
         # Build the next resolver method name
-        resolver_name = "{}__watiba_resolver_{}__".format(parms["prefix"], self.resolver_count)
+        resolver_name = "__watiba_resolver_{}__".format(self.resolver_count)
         self.resolver_count += 1
-
-        # Replace the dot with a comma in "self." if that prefix exists
-        self_prefix = "" if parms["prefix"] == "" else parms["prefix"].replace(".", ", ")
 
         # Include promise return if there's an assignment on the stmt
         promise_assign = parms["match"].group(assign_idx) if parms["match"].group(assign_idx) else ""
@@ -91,23 +91,16 @@ class Compiler:
 
         # Queue up asyc call which is executed (spit out) at the end of the w_spawn block
         self.spawn_call.append(
-            "{}{}_watiba_.spawn({}{}, {}, {}, {})".format(parms["indentation"],
-                                                      promise_assign,
-                                                      self_prefix,
-                                                      cmd,
-                                                      resolver_name,
-                                                      resolver_args,
-                                                      'locals()'
-                                                      ))
+            "{}{}_watiba_.spawn({}, {}, {}, {})".format(parms["indentation"],
+                                                        promise_assign,
+                                                        cmd,
+                                                        resolver_name,
+                                                        resolver_args,
+                                                        'locals()'
+                                                        ))
 
         # Convert spawn `cmd`: statement to proper Python function definition
         self.output.append("{}def {}(promise, args):".format(parms["indentation"], resolver_name))
-
-    # Generator for spawn in class
-    def spawn_generator_with_self(self, parms):
-        self.output.append(self.spawn_generator({"match": parms["match"],
-                                               "statement": parms["statement"],
-                                               "prefix": "self."}))
 
     # Generator for `cmd` expressions
     def backticks_generator(self, parms):
@@ -143,7 +136,8 @@ class Compiler:
         s = str(stmt)
 
         # Spit out spawn call if it's queued up (on block breaks)
-        if len(s.strip()) > 0 and s.lstrip()[0] != "#" and len(s) - len(s.lstrip()) < len(self.last_stmt) - len(self.last_stmt.lstrip()):
+        if len(s.strip()) > 0 and s.lstrip()[0] != "#" and len(s) - len(s.lstrip()) < len(self.last_stmt) - len(
+                self.last_stmt.lstrip()):
             if len(self.spawn_call) > 0:
                 if re.search("^return ", self.last_stmt.strip()):
                     print(self.spawn_call.pop())
@@ -162,10 +156,9 @@ class Compiler:
                 return self.expressions[ex](
                     {"match": m,
                      "statement": s,
-                     "prefix": "",
                      "pattern": ex,
-                     "indentation":stmt[0:len(stmt) - len(stmt.lstrip())]}
-                )
+                     "indentation": stmt[0:len(stmt) - len(stmt.lstrip())]
+                     })
 
         self.output.append(stmt)
 
@@ -202,7 +195,8 @@ if __name__ == "__main__":
                     print(o)
                 c.output = []
                 if len(statement.strip()) > 0:
-                    c.last_stmt = statement if len(statement.strip()) > 0 and statement.lstrip()[0] not in nothingness else c.last_stmt
+                    c.last_stmt = statement if len(statement.strip()) > 0 and statement.lstrip()[
+                        0] not in nothingness else c.last_stmt
 
     # Flush out any queued spawn statement calls
     c.flush()
