@@ -134,15 +134,23 @@ This method as well as other spawn controlling parameters can be overridden.
 _Example of file that overrides spawn controller parameters_:
 ```
 #!/usr/bin/python3.8
+def spawn_expired(promise, count):
+    print("I do nothing just to demonstrate the error callback.")
+    print("This command failed {} at this threshold {}".format(promise.command, count)
+    
+    raise Exception("Too many threads.")
+    
 if __name__ == "__main__":
     # Example showing default values
     parms = {"max": 10, # Max number of threads allowed before slowdown mode
-     "sleep-floor": .125,  # Starting sleep value
-     "sleep-ceiling": 3,  # Maximum sleep value
-     "sleep-increment": .125,  # Incremental sleep value
-     "expire": -1,  # Default: no expiration
-     "error": self.default_error  # Default error callback
+         "sleep-floor": .125,  # Starting sleep value
+         "sleep-ceiling": 3,  # Maximum sleep value
+         "sleep-increment": .125,  # Incremental sleep value
+         "expire": -1,  # Default: no expiration
+         "error": spawn_expired  # Method called upon slowdown expiration
      }
+     
+     # Set spawn controller parameter values
     spawn-ctl parms
 ```
 
@@ -153,6 +161,9 @@ Spawn control parameters:
 - _sleep-ceiling_ - **Seconds** The highest length sleep value allowed when in slowdown mode.  (As slow as it will get.)
 - _expire_ - **Integer** Total number of slowdown cycles allowed before the error method is called
 - _error_ - **Method** Callback method invoked when slowdown mode expires.  By default, this will throw an exception.
+        This method is passed 2 arguments:
+  - _promise_ - The promise attempting execution at the time of expiration
+  - _count_ - The thread count (unresolved promises) at the time of expiration 
 
 _Notes:_
 1. Arguments can be passed to the resolver by specifying a trailing variable after the command.  If the arguments
