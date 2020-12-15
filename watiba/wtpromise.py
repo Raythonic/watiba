@@ -1,6 +1,7 @@
 import sys
 import time
 import threading
+from watiba.wtoutput import WTOutput
 
 # The object returned for Watbia thread spawns
 class WTPromise(Exception):
