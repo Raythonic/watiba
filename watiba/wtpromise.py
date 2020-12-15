@@ -155,10 +155,6 @@ class WTPromise(Exception):
     # Does not pause like join or wait.
     #  Calls back user's method, specified in "notify" argument, if promise hasn't completed in time
     def watch(self, watcher_method, args):
-        if "notify" not in args:
-            print("ERROR: watch called for promise without a 'notify' argument: {}".format(self.command))
-            return
-
         # Thread function.  Wraps watcher notification method.
         def watcher(promise, watcher_method, args):
             expire = args["expire"] if "expire" in args else 12
@@ -168,7 +164,7 @@ class WTPromise(Exception):
 
             # Call the user's watcher if promise still not resolved
             if not self.resolved():
-                args["notify"](promise, args)
+                watcher_method(promise, args)
 
         # Spawn a watcher thread
         self.watcher = threading.Thread(target=watcher, args=(self, watcher_method, args))
