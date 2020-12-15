@@ -12,6 +12,8 @@ import os
 import threading
 import copy
 import inspect
+from wtspawncontroller import WTSpawnController
+from wtpromise import WTPromise
 
 
 # The object returned to the caller of _watiba_ for command results
