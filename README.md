@@ -214,7 +214,7 @@ my_promise = self.spawn `cmd`:
     return resolved or unresolved (True or False)
 ```
 
-**Join and Wait**
+**Join, Wait, or Watch**
 
 Once commands are spawned, the caller can wait for _all_ promises, including inner or child promises, to complete, or
 the caller can wait for just a specific promise to complete.  To wait for all _child_ promises including
@@ -224,7 +224,14 @@ the promise tree, call _join()_ on the root promise.
 
 _join_ and _wait_ can be controlled through parameters.  Each are iterators paused with a sleep method and will throw
 an expiration exception should you set a limit for iterations.  If an expiration value is not set,
-no exception will be thrown and the cycle will run only until the promise(s) are resolved.
+no exception will be thrown and the cycle will run only until the promise(s) are resolved.  _join_ and _wait_ are not
+affected by _spawn-ctl_.
+
+_watch_ is called to establish a separate asynchronous thread that will call back a function of your choosing should
+the command on the _spawn_ times out.  This is different than _join_ and _wait_ in that _watch_ is not synchronous 
+and does not pause.  This is used to keep an eye on a spawned command and take action should it hang.  Your watcher
+function is passed the promise on which the watcher was attached, and the arguments, if any, from the spawn expression.
+_watch_ can be controlled with the same arguments as _join_ and _wait_ and is not affected by _spawn-ctl_.
 
 Examples with controlling parameters:
 ```
@@ -244,6 +251,19 @@ try:
     p.wait({"sleep": 1, "expire": 5})
 except Exception as ex:
     print(ex.args)
+
+# My watcher function (called if spawned command never resolves by its experation period)
+def watcher(promise, args):
+    print("This promise is likely hung: {}".format(promise.command))
+    print("and I still have the spawn expression's args: {}".format(args))
+
+p = spawn `echo "hello" && sleep 5` args:
+    print("Args passed to me: {}".format(args))
+    return True
+
+# Attach a watcher to this thread.  It will be called upon experation.
+p.watch(watcher)
+print("watch() does not pause like join or wait")
 ```
 
 #### Promise Tree
