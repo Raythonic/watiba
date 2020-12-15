@@ -237,10 +237,13 @@ no exception will be thrown and the cycle will run only until the promise(s) are
 affected by _spawn-ctl_.
 
 _watch_ is called to establish a separate asynchronous thread that will call back a function of your choosing should
-the command on the _spawn_ times out.  This is different than _join_ and _wait_ in that _watch_ is not synchronous 
+the command the promise is attached to times out.  This is different than _join_ and _wait_ in that _watch_ is not synchronous 
 and does not pause.  This is used to keep an eye on a spawned command and take action should it hang.  Your watcher
 function is passed the promise on which the watcher was attached, and the arguments, if any, from the spawn expression.
-_watch_ can be controlled with the same arguments as _join_ and _wait_ and is not affected by _spawn-ctl_.
+If your command does not time out (i.e. hangs and expires), the watcher thread will quietly go away when the promise
+is resolved.  _watch_ expiration is expressed in **seconds**, unlike _join_ and _wait_ which are expressed as total
+_iterations_ paused at the sleep value.  _watch_'s polling cycle pause is .250 seconds, so the expiration value is
+multipled by .250.  The default expiration is 15 seconds
 
 Examples with controlling parameters:
 ```
