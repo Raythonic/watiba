@@ -134,7 +134,7 @@ class WTPromise(Exception):
                                              "root" if p.depth < 1 else p.depth,
                                              p.command,
                                              "Resolved" if p.resolved() else "Unresolved",
-                                             "Ran for {} seconds".format(
+                                             "Execution time: {} seconds".format(
                                                  round(p.end_time - p.id, 4) if p.resolved() else round(
                                                      time.time() - p.id, 4))
                                              ), file=sys.stderr)
