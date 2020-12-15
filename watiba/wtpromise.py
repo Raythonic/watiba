@@ -23,6 +23,7 @@ class WTPromise(Exception):
         self.output = WTOutput()
         self.resolution = False
         self.id = time.time()
+        self.end_time = time.time()
         self.thread = None
         self.thread_id = -1
         self.watcher = None
@@ -36,6 +37,7 @@ class WTPromise(Exception):
         return self.resolution
 
     def set_resolved(self):
+        self.end_time = time.time()
         self.resolution = True
 
     # Resolve the parent promise if one exists
@@ -128,12 +130,14 @@ class WTPromise(Exception):
         # Set out starting position
         p = n
 
-        print("{}+ {}: `{}` ({}, thread id: {})".format(dashes,
-                                                        "root" if p.depth < 1 else p.depth,
-                                                        p.command,
-                                                        "Resolved" if p.resolved() else "Unresolved",
-                                                        p.thread_id if p.thread_id > -1 else "not started"
-                                                        ), file=sys.stderr)
+        print("{}+ {}: `{}` ({}, {})".format(dashes,
+                                             "root" if p.depth < 1 else p.depth,
+                                             p.command,
+                                             "Resolved" if p.resolved() else "Unresolved",
+                                             "Ran for {} seconds".format(
+                                                 round(p.end_time - p.id, 4) if p.resolved() else round(
+                                                     time.time() - p.id, 4))
+                                             ), file=sys.stderr)
 
         for child in p.children:
             self.tree_dump(child, indent(dashes), header)
@@ -164,7 +168,7 @@ class WTPromise(Exception):
                 expiration -= 1
                 if expiration == 0:
                     self.tree_dump()
-                    raise  WTWaitException(self, "Join exceeded expiration period")
+                    raise WTWaitException(self, "Join exceeded expiration period")
 
     # Establish a watcher thread for this promise
     # Does not pause like join or wait.

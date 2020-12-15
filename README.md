@@ -126,10 +126,13 @@ to the caller of _spawn_.  The promise object is passed to the _resolver block_ 
 outer code can check its state with a call to _resolved()_ on the *returned* promise object.  Output from the command
 is found in _promise.output_.  The examples throughout this README and in the _examples.wt_ file make this clear.
 
+### Spawn Controller
 All spawned threads are managed by Watiba's Spawn Controller.  The controller watches for too many threads and
-incrementally slows down each thread start when that threshold is exceeded until an expiration count is reached, at
-which time an exception is thrown on the last spawned command.  This exception is raised by the default error method.
-This method as well as other spawn controlling parameters can be overridden.
+incrementally slows down each thread start when that threshold is exceeded until either all the promises in the tree
+resolve, or an expiration count is reached, at which time an exception is thrown on the last spawned command.  
+This exception is raised by the default error method. This method as well as other spawn controlling parameters 
+can be overridden.  The controller's purpose is to not allow run away threads and provide signaling of possible
+hung threads.
 
 _Example of file that overrides spawn controller parameters_:
 ```
