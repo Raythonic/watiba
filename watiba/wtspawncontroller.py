@@ -1,4 +1,17 @@
+'''
+Watiba spawn controller class and exception definitions
+
+Author: Ray Walker
+Raythonic@gmail.com
+'''
+
 import time
+
+
+class WTSpawnException(Exception):
+    def __init__(self, promise, message=""):
+        self.promise = promise
+        self.message = message
 
 
 class WTSpawnController():
@@ -20,7 +33,7 @@ class WTSpawnController():
         print("ERROR: Maximum promise/thread count reached: {}".format(promise_count))
         print("  Shell command that exceeded max: {}".format(promise.command))
         promise.tree_dump()
-        raise Exception("Promises not resolved by expiration")
+        raise WTSpawnException(promise, "Promises not resolved by expiration period")
 
     # Start a thread belonging to the passed promise
     def start(self, promise):
@@ -54,7 +67,8 @@ class WTSpawnController():
             # Every third cycle, bump the sleep time up 1/8 second  (slowing down the loop incrementally)
             # Once the increment hits the sleep value, stay at sleep value
             if loop_counter > 0 and loop_counter % 3 == 0:
-                sleep_value = sleep_value + self.args["sleep-increment"] if sleep_value < self.args["sleep-ceiling"] else self.args["sleep-ceiling"]
+                sleep_value = sleep_value + self.args["sleep-increment"] if sleep_value < self.args[
+                    "sleep-ceiling"] else self.args["sleep-ceiling"]
 
             loop_counter += 1
             self.promises_gc()
@@ -64,5 +78,5 @@ class WTSpawnController():
 
     # Merge in parameters settings
     def set_parms(self, parms):
-        for k,v in parms.items():
+        for k, v in parms.items():
             self.args[k] = v
