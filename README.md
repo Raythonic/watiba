@@ -181,7 +181,13 @@ a resolver has spawned another command and doesn't want the outer promise resolv
 To resolve an outer, i.e. parent, resolver issue _promise.resolve_parent()_.  Then the parent resolver can return
 _False_ at the end of its block so it leaves the resolved determination to the inner resolver block.
 4. Each promise object holds its OS thread object in property _thread_ and its thread id in property _thread_id_. This
-can be useful for controlling the thread directly.  For example, to signal a kill.
+can be useful for controlling the thread directly.  For example, to signal a kill. 
+5. _spawn-ctl_ has no affect on _join_, _wait_, or _watch_.  This is because _spawn-ctl_ establishes an upper end
+throttle on the overall spawning process.  When the number of spawns hits the max value, throttling (i.e. slowdown 
+   mode) takes affect and will expire if none of the promises resolve.  Conversely, the arguments used by _join_, 
+   _wait_ and _watch_ control the sleep cycle and expiration of just those calls, not the spawned threads as a whole. When
+   an expiration is set for, say, _join_, then that join will expire at that time.  When an expiration is set in
+   _spawn-ctl_, then if all the spawned threads as a whole don't resolve in time then an expiration function is called.
 
 This is demonstrated in the examples.
 **_Spawn Syntax:_**
