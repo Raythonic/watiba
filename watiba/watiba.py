@@ -12,8 +12,6 @@ import os
 import threading
 import copy
 import inspect
-import WTPromise
-import WTSpawnController
 
 
 # The object returned to the caller of _watiba_ for command results
