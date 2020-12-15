@@ -12,7 +12,7 @@ import os
 import threading
 import copy
 import inspect
-from wtpromose import WTPromise
+from wtpromise import WTPromise
 from wtspawncontroller import WTSpawnController
 
 
