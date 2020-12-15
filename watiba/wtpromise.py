@@ -1,7 +1,21 @@
+'''
+Watiba promise class and exception definitions
+
+Author: Ray Walker
+Raythonic@gmail.com
+'''
+
 import sys
 import time
 import threading
 from watiba.wtoutput import WTOutput
+
+
+class WTWaitException(Exception):
+    def __init__(self, promise, message=""):
+        self.promise = promise
+        self.message = message
+
 
 # The object returned for Watbia thread spawns
 class WTPromise(Exception):
@@ -136,7 +150,7 @@ class WTPromise(Exception):
                 expiration -= 1
                 if expiration == 0:
                     self.tree_dump()
-                    raise Exception("Join expired")
+                    raise WTWaitException(self, "Join exceeded expiration period")
 
     # Wait on just this promise
     def wait(self, args={}):
@@ -150,7 +164,7 @@ class WTPromise(Exception):
                 expiration -= 1
                 if expiration == 0:
                     self.tree_dump()
-                    raise Exception("Wait expired")
+                    raise  WTWaitException(self, "Join exceeded expiration period")
 
     # Establish a watcher thread for this promise
     # Does not pause like join or wait.
