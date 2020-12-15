@@ -12,7 +12,7 @@ import os
 import threading
 import copy
 import inspect
-from watiba.wtpromise import WTPromise
+import watbia.WTPromise
 from watiba.wtspawncontroller import WTSpawnController
 
 
