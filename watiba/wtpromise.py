@@ -22,7 +22,7 @@ class WTPromise(Exception):
     def __init__(self, command):
         self.output = WTOutput()
         self.resolution = False
-        self.id = time.time()
+        self.start_time = time.time()
         self.end_time = time.time()
         self.thread = None
         self.thread_id = -1
@@ -135,8 +135,8 @@ class WTPromise(Exception):
                                              p.command,
                                              "Resolved" if p.resolved() else "Unresolved",
                                              "Execution time: {} seconds".format(
-                                                 round(p.end_time - p.id, 4) if p.resolved() else round(
-                                                     time.time() - p.id, 4))
+                                                 round(p.end_time - p.start_time, 4) if p.resolved() else round(
+                                                     time.time() - p.start_time, 4))
                                              ), file=sys.stderr)
 
         for child in p.children:
