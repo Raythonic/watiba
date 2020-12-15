@@ -1,6 +1,6 @@
 import sys
 import time
-
+import threading
 
 # The object returned for Watbia thread spawns
 class WTPromise(Exception):
@@ -10,6 +10,7 @@ class WTPromise(Exception):
         self.id = time.time()
         self.thread = None
         self.thread_id = -1
+        self.watcher = None
         self.children = []
         self.parent = None
         self.command = command
@@ -149,3 +150,26 @@ class WTPromise(Exception):
                 if expiration == 0:
                     self.tree_dump()
                     raise Exception("Wait expired")
+
+    # Establish a watcher thread for this promise
+    # Does not pause like join or wait.
+    #  Calls back user's method, specified in "notify" argument, if promise hasn't completed in time
+    def watch(self, watcher_method, args):
+        if "notify" not in args:
+            print("ERROR: watch called for promise without a 'notify' argument: {}".format(self.command))
+            return
+
+        # Thread function.  Wraps watcher notification method.
+        def watcher(promise, watcher_method, args):
+            expire = args["expire"] if "expire" in args else 12
+            while expire > 0 and not promise.resolved():
+                time.sleep(args["sleep"] if "sleep" in args else 5)
+                expire -= 1
+
+            # Call the user's watcher if promise still not resolved
+            if not self.resolved():
+                args["notify"](promise, args)
+
+        # Spawn a watcher thread
+        self.watcher = threading.Thread(target=watcher, args=(self, watcher_method, args))
+        self.watcher.start()
