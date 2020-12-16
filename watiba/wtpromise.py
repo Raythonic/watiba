@@ -26,6 +26,7 @@ class WTPromise(Exception):
         self.end_time = time.time()
         self.thread = None
         self.thread_id = -1
+        self.killed = False
         self.watcher = None
         self.children = []
         self.parent = None
@@ -39,6 +40,10 @@ class WTPromise(Exception):
     def set_resolved(self):
         self.end_time = time.time()
         self.resolution = True
+
+    def kill(self):
+        if not self.resolved() and self.thread_id < 0:
+            self.killed = True
 
     # Resolve the parent promise if one exists
     def resolve_parent(self):
