@@ -47,7 +47,7 @@ class WTSpawnController():
 
         # Check to see if we somehow are already tracking this promise (shouldn't happen)
         for p in self.promises:
-            if p.thread_id == promise.thread_id and p.id == promise.id:
+            if p.thread_id == promise.thread_id and p.command == p.command:
                 promise_exists = True
 
         # Add this promise to our tracking list
