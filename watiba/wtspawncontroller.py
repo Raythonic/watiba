@@ -73,6 +73,14 @@ class WTSpawnController():
             loop_counter += 1
             self.promises_gc()
 
+        '''
+        The "kill switch" is there in case the user's app wants to pre-emptively stop this command from running.
+          How the user can access the promise before this start, takes some doing.  But since the promise 
+          is inserted into the promise tree before we get here, there is early access to it.  But that requires 
+          the user to be walking the tree in an unconventional way.
+          
+          So, the kill() method was added to the promise to allow sophisticated thread management in the user's app.
+        '''
         # Run the command and call the resolver if some other process out there didn't kill it first
         if not promise.killed:
             promise.thread.start()
