@@ -37,7 +37,7 @@ class WTSpawnController():
 
     # Start a thread belonging to the passed promise
     def start(self, promise):
-        promise_exists = False
+        track_promise = True
         ex_count = self.args["expire"]
         loop_counter = 0
         sleep_value = self.args["sleep-floor"]
@@ -48,10 +48,10 @@ class WTSpawnController():
         # Check to see if we somehow are already tracking this promise (shouldn't happen)
         for p in self.promises:
             if p.resolved() or (p.thread_id == promise.thread_id and p.command == promise.command):
-                promise_exists = True
+                track_promise = False
 
         # Add this promise to our tracking list
-        if not promise_exists:
+        if track_promise:
             self.promises.append(promise)
 
         # Don't start the new thread until we're below the threshold
@@ -73,8 +73,9 @@ class WTSpawnController():
             loop_counter += 1
             self.promises_gc()
 
-        # Run the command and call the resolver
-        promise.thread.start()
+        # Run the command and call the resolver if some other process out there didn't kill it first
+        if not promise.killed:
+            promise.thread.start()
 
     # Merge in parameters settings
     def set_parms(self, parms):
