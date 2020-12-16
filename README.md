@@ -126,10 +126,13 @@ to the caller of _spawn_.  The promise object is passed to the _resolver block_ 
 outer code can check its state with a call to _resolved()_ on the *returned* promise object.  Output from the command
 is found in _promise.output_.  The examples throughout this README and in the _examples.wt_ file make this clear.
 
+### Spawn Controller
 All spawned threads are managed by Watiba's Spawn Controller.  The controller watches for too many threads and
-incrementally slows down each thread start when that threshold is exceeded until an expiration count is reached, at
-which time an exception is thrown on the last spawned command.  This exception is raised by the default error method.
-This method as well as other spawn controlling parameters can be overridden.
+incrementally slows down each thread start when that threshold is exceeded until either all the promises in the tree
+resolve, or an expiration count is reached, at which time an exception is thrown on the last spawned command.  
+This exception is raised by the default error method. This method as well as other spawn controlling parameters 
+can be overridden.  The controller's purpose is to not allow run away threads and provide signaling of possible
+hung threads.
 
 _Example of file that overrides spawn controller parameters_:
 ```
@@ -181,7 +184,13 @@ a resolver has spawned another command and doesn't want the outer promise resolv
 To resolve an outer, i.e. parent, resolver issue _promise.resolve_parent()_.  Then the parent resolver can return
 _False_ at the end of its block so it leaves the resolved determination to the inner resolver block.
 4. Each promise object holds its OS thread object in property _thread_ and its thread id in property _thread_id_. This
-can be useful for controlling the thread directly.  For example, to signal a kill.
+can be useful for controlling the thread directly.  For example, to signal a kill. 
+5. _spawn-ctl_ has no affect on _join_, _wait_, or _watch_.  This is because _spawn-ctl_ establishes an upper end
+throttle on the overall spawning process.  When the number of spawns hits the max value, throttling (i.e. slowdown 
+   mode) takes affect and will expire if none of the promises resolve.  Conversely, the arguments used by _join_, 
+   _wait_ and _watch_ control the sleep cycle and expiration of just those calls, not the spawned threads as a whole. When
+   an expiration is set for, say, _join_, then that join will expire at that time.  When an expiration is set in
+   _spawn-ctl_, then if all the spawned threads as a whole don't resolve in time then an expiration function is called.
 
 This is demonstrated in the examples.
 **_Spawn Syntax:_**
@@ -214,7 +223,7 @@ my_promise = self.spawn `cmd`:
     return resolved or unresolved (True or False)
 ```
 
-**Join and Wait**
+**Join, Wait, or Watch**
 
 Once commands are spawned, the caller can wait for _all_ promises, including inner or child promises, to complete, or
 the caller can wait for just a specific promise to complete.  To wait for all _child_ promises including
@@ -224,7 +233,17 @@ the promise tree, call _join()_ on the root promise.
 
 _join_ and _wait_ can be controlled through parameters.  Each are iterators paused with a sleep method and will throw
 an expiration exception should you set a limit for iterations.  If an expiration value is not set,
-no exception will be thrown and the cycle will run only until the promise(s) are resolved.
+no exception will be thrown and the cycle will run only until the promise(s) are resolved.  _join_ and _wait_ are not
+affected by _spawn-ctl_.
+
+_watch_ is called to establish a separate asynchronous thread that will call back a function of your choosing should
+the command the promise is attached to times out.  This is different than _join_ and _wait_ in that _watch_ is not synchronous 
+and does not pause.  This is used to keep an eye on a spawned command and take action should it hang.  Your watcher
+function is passed the promise on which the watcher was attached, and the arguments, if any, from the spawn expression.
+If your command does not time out (i.e. hangs and expires), the watcher thread will quietly go away when the promise
+is resolved.  _watch_ expiration is expressed in **seconds**, unlike _join_ and _wait_ which are expressed as total
+_iterations_ paused at the sleep value.  _watch_'s polling cycle pause is .250 seconds, so the expiration value is
+multipled by .250.  The default expiration is 15 seconds
 
 Examples with controlling parameters:
 ```
@@ -244,6 +263,19 @@ try:
     p.wait({"sleep": 1, "expire": 5})
 except Exception as ex:
     print(ex.args)
+
+# My watcher function (called if spawned command never resolves by its experation period)
+def watcher(promise, args):
+    print("This promise is likely hung: {}".format(promise.command))
+    print("and I still have the spawn expression's args: {}".format(args))
+
+p = spawn `echo "hello" && sleep 5` args:
+    print("Args passed to me: {}".format(args))
+    return True
+
+# Attach a watcher to this thread.  It will be called upon experation.
+p.watch(watcher)
+print("watch() does not pause like join or wait")
 ```
 
 #### Promise Tree

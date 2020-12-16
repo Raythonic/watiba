@@ -12,17 +12,9 @@ import os
 import threading
 import copy
 import inspect
-from wtpromise import WTPromise
-from wtspawncontroller import WTSpawnController
-
-
-# The object returned to the caller of _watiba_ for command results
-class WTOutput(Exception):
-    def __init__(self):
-        self.stdout = []
-        self.stderr = []
-        self.exit_code = 0
-        self.cwd = "."
+from watiba.wtspawncontroller import WTSpawnController, WTSpawnException
+from watiba.wtpromise import WTPromise
+from watiba.wtoutput import WTOutput
 
 
 ###############################################################################################################
@@ -102,7 +94,7 @@ class Watiba(Exception):
             # Control the threads (the controller starts the thread)
             self.spawn_ctlr.start(l_promise)
 
-        except Exception(BaseException) as ex:
-            print("ERROR.  w_async thread execution failed. {}".format(command))
+        except WTSpawnException as ex:
+            print("ERROR.  w_async thread execution failed. {}".format(ex.promise.command))
 
         return l_promise

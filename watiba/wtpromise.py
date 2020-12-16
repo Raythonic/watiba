@@ -1,5 +1,20 @@
+'''
+Watiba promise class and exception definitions
+
+Author: Ray Walker
+Raythonic@gmail.com
+'''
+
 import sys
 import time
+import threading
+from watiba.wtoutput import WTOutput
+
+
+class WTWaitException(Exception):
+    def __init__(self, promise, message=""):
+        self.promise = promise
+        self.message = message
 
 
 # The object returned for Watbia thread spawns
@@ -7,9 +22,11 @@ class WTPromise(Exception):
     def __init__(self, command):
         self.output = WTOutput()
         self.resolution = False
-        self.id = time.time()
+        self.start_time = time.time()
+        self.end_time = time.time()
         self.thread = None
         self.thread_id = -1
+        self.watcher = None
         self.children = []
         self.parent = None
         self.command = command
@@ -20,6 +37,7 @@ class WTPromise(Exception):
         return self.resolution
 
     def set_resolved(self):
+        self.end_time = time.time()
         self.resolution = True
 
     # Resolve the parent promise if one exists
@@ -112,12 +130,14 @@ class WTPromise(Exception):
         # Set out starting position
         p = n
 
-        print("{}+ {}: `{}` ({}, thread id: {})".format(dashes,
-                                                        "root" if p.depth < 1 else p.depth,
-                                                        p.command,
-                                                        "Resolved" if p.resolved() else "Unresolved",
-                                                        p.thread_id if p.thread_id > -1 else "not started"
-                                                        ), file=sys.stderr)
+        print("{}+ {}: `{}` ({}, {})".format(dashes,
+                                             "root" if p.depth < 1 else p.depth,
+                                             p.command,
+                                             "Resolved" if p.resolved() else "Unresolved",
+                                             "Execution time: {} seconds".format(
+                                                 round(p.end_time - p.start_time, 4) if p.resolved() else round(
+                                                     time.time() - p.start_time, 4))
+                                             ), file=sys.stderr)
 
         for child in p.children:
             self.tree_dump(child, indent(dashes), header)
@@ -134,7 +154,7 @@ class WTPromise(Exception):
                 expiration -= 1
                 if expiration == 0:
                     self.tree_dump()
-                    raise Exception("Join expired")
+                    raise WTWaitException(self, "Join exceeded expiration period")
 
     # Wait on just this promise
     def wait(self, args={}):
@@ -148,4 +168,25 @@ class WTPromise(Exception):
                 expiration -= 1
                 if expiration == 0:
                     self.tree_dump()
-                    raise Exception("Wait expired")
+                    raise WTWaitException(self, "Join exceeded expiration period")
+
+    # Establish a watcher thread for this promise
+    # Does not pause like join or wait.
+    #  Calls back user's method, specified in "notify" argument, if promise hasn't completed in time
+    def watch(self, watcher_method, args={}):
+        # Thread function.  Wraps watcher notification method.
+        def watcher(promise, watcher_method, args):
+            expire = args["expire"] * 4 if "expire" in args else 60
+
+            # Sleep in 1 second chunks so if resolved we end quickly
+            while expire > 0 and not promise.resolved():
+                time.sleep(.250)
+                expire -= 1
+
+            # Call the user's watcher if promise still not resolved
+            if not self.resolved():
+                watcher_method(promise, args)
+
+        # Spawn a watcher thread
+        self.watcher = threading.Thread(target=watcher, args=(self, watcher_method, args))
+        self.watcher.start()
