@@ -122,5 +122,23 @@ try:
 except Exception as ex:
     print(ex.args)
 
+#######################################################
+# Place a watcher on promise
+global_counter = 0
+print("Testing spawn args and join timeout")
+args = {"count": global_counter + 1,
+        "log": "/var/log/blah.log"}
+
+def watcher(promise, args):
+    print("This promise is likely hung: {}".format(promise.command))
+    print("and I still have the spawn expression's args: {}".format(args))
+
+p = spawn `echo "hello" && sleep 5` args:
+    print("Args passed to me: {}".format(args))
+    return True
+
+p.watch(watcher)
+print("watch() does not pause like join or wait")
+
 print("test complete.")
 

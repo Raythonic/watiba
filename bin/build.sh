@@ -20,7 +20,6 @@ echo "#!/bin/python3" > bin/watiba-c.py
 echo "versions = [\"Watiba $ver\", \"Python 3.8\"]" >> bin/watiba-c.py
 cat watiba/watiba-c.py >> bin/watiba-c.py
 chmod +x bin/watiba-c.py
-cp watiba/watiba.py tmp/.
 
 # Build the dist package
 python3 setup.py sdist

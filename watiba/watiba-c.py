@@ -1,7 +1,4 @@
-import re
-import sys
-
-"""
+'''
 Watiba pre-complier.  Watiba commands are BASH embedded commands between backtick characters (i.e. `), like traditional Bash captures.
 
 Examples:
@@ -18,7 +15,9 @@ Author:
 Ray Walker
 raythonic@gmail.com
 
-"""
+'''
+import re
+import sys
 
 watiba_ref = "_watiba_"
 
