@@ -243,7 +243,7 @@ function is passed the promise on which the watcher was attached, and the argume
 If your command does not time out (i.e. hangs and expires), the watcher thread will quietly go away when the promise
 is resolved.  _watch_ expiration is expressed in **seconds**, unlike _join_ and _wait_ which are expressed as total
 _iterations_ paused at the sleep value.  _watch_'s polling cycle pause is .250 seconds, so the expiration value is
-multipled by .250.  The default expiration is 15 seconds
+multiplied by 4.  The default expiration is 15 seconds.
 
 Examples with controlling parameters:
 ```
@@ -263,7 +263,7 @@ try:
     p.wait({"sleep": 1, "expire": 5})
 except Exception as ex:
     print(ex.args)
-
+ 
 # My watcher function (called if spawned command never resolves by its experation period)
 def watcher(promise, args):
     print("This promise is likely hung: {}".format(promise.command))
@@ -276,6 +276,9 @@ p = spawn `echo "hello" && sleep 5` args:
 # Attach a watcher to this thread.  It will be called upon experation.
 p.watch(watcher)
 print("watch() does not pause like join or wait")
+
+# Attach a watcher that will expire in 5 seconds
+p.watch(watcher, {"expire": 5})
 ```
 
 #### Promise Tree
