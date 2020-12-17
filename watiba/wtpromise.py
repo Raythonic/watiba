@@ -47,6 +47,13 @@ class WTPromise(Exception):
         self.end_time = time.time()
         self.resolution = True
 
+    # kill() here just in case it's needed.  Not documenting right now.
+    # This would only work in some rare case where you issue kill() BEFORE the thread starts.  This prevents the
+    # thread from starting, it does not kill a running thread.  Since the caller under normal circumstances cannot
+    # access the promise until the thread is started, it's not likely to be useful.  So why have it?  Because a
+    # promise is inserted in the promise tree before the thread is started, so there remains a slim window when
+    # the user's code has access to a promise before its thread is started--and they may just want to stop it from
+    # starting.  So, making that possible.
     def kill(self):
         if not self.resolved() and self.thread_id < 0:
             self.killed = True
