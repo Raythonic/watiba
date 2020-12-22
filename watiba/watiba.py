@@ -27,7 +27,17 @@ class Watiba(Exception):
     def __init__(self):
         self.spawn_ctlr = WTSpawnController()
 
-    def ssh(self, host, cmd, context=True):
+    # Called by spawned thread
+    # Dir context is not kept by the spawn expression
+    def execute(self, cmd, host):
+        context = False
+        if host == "localhost":
+            return self.bash(cmd, context)
+        else:
+            return self.ssh(cmd, host)
+
+    # Run command remotely
+    def ssh(self, cmd, host, context=True):
         return self.bash(f'ssh {host} "{cmd}"', context)
 
     # cmd - command string to execute
@@ -78,24 +88,22 @@ class Watiba(Exception):
             # Link this child promise to its parent
             l_promise.relate(parent_locals['promise'])
 
-        def run_command(cmd, resolver_func, resolver_promise, args):
-
-            resolver_promise.thread_id = threading.get_ident()
+        def run_command(thread_args):
+            thread_args["promise"].thread_id = threading.get_ident()
 
             # Execute the command in a new thread
-            resolver_promise.output = self.bash(cmd)
+            thread_args["promise"].output = self.execute(thread_args["command"], thread_args["host"])
 
             # Call the resolver and use its return value for promise resolution
             # The OR is to ensure we don't override a resolved promise from a race condition!
             # once some thread marks it resolved, it's resolved.
-            resolver_promise.resolution |= resolver_func(resolver_promise, copy.copy(args))
+            thread_args["promise"].resolution |= thread_args["resolver"](thread_args["promise"], copy.copy(thread_args["spawn-args"]))
 
         try:
-            # Create a new thread
-            l_promise.thread = threading.Thread(target=run_command, args=(command, resolver, l_promise, spawn_args))
+            args = {"command":command, "resolver":resolver, "promise":l_promise, "spawn-args": spawn_args}
 
             # Control the threads (the controller starts the thread)
-            self.spawn_ctlr.start(l_promise)
+            self.spawn_ctlr.start(l_promise, run_command, args)
 
         except WTSpawnException as ex:
             print(f"ERROR.  w_async thread execution failed. {ex.promise.command}")
