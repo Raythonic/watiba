@@ -58,8 +58,7 @@ class WTPromise(Exception):
         if not self.resolved() and self.thread_id < 0:
             self.killed = True
         else:
-            raise WTKillException(self, "Kill failed.  Command {}.".format(
-                "running" if not self.resolved() else "completed"))
+            raise WTKillException(self, f'Kill failed.  Command {"running" if not self.resolved() else "completed"}.')
 
     # Resolve the parent promise if one exists
     def resolve_parent(self):

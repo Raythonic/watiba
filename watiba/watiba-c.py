@@ -27,7 +27,7 @@ class Compiler:
     def __init__(self, first_stmt):
         self.output = [first_stmt,
                        "import watiba",
-                       "{} = watiba.Watiba()".format(watiba_ref)
+                       f"{watiba_ref} = watiba.Watiba()"
                        ]
         self.resolver_count = 1
         self.spawn_call = []
@@ -55,12 +55,12 @@ class Compiler:
             else:
                 print("ERROR in flush: Resolver block not properly terminated with return.", file=sys.stderr)
                 print("    Block incorrectly terminated with:", file=sys.stderr)
-                print("      {}".format(self.last_stmt), file=sys.stderr)
+                print(f"      {self.last_stmt}", file=sys.stderr)
                 sys.exit(1)
 
     # Set spawn controller args
     def spawn_ctl_args(self, parms):
-        self.output.append("_watiba_.spawn_ctlr.set_parms({})".format(parms["match"].group(1)))
+        self.output.append(f'_watiba_.spawn_ctlr.set_parms({parms["match"].group(1)})')
 
     # Handle spawn code blocks
     def spawn_generator(self, parms):
@@ -72,12 +72,10 @@ class Compiler:
         quote_style = "'" if "'" not in parms["match"].group(cmd_idx) else '"'
 
         # extract the command and if it's a variable, remove the $ and no quotes, otherwise in quotes
-        cmd = parms["match"].group(cmd_idx)[1:] if parms["match"].group(cmd_idx)[0] == "$" else "{}{}{}".format(
-            quote_style,
-            parms["match"].group(cmd_idx),
-            quote_style)
+        cmd = parms["match"].group(cmd_idx)[1:] if parms["match"].group(cmd_idx)[
+                                                       0] == "$" else f'{quote_style}{parms["match"].group(cmd_idx)}{quote_style}'
         # Build the next resolver method name
-        resolver_name = "__watiba_resolver_{}__".format(self.resolver_count)
+        resolver_name = f"__watiba_resolver_{self.resolver_count}__"
         self.resolver_count += 1
 
         # Include promise return if there's an assignment on the stmt
@@ -88,16 +86,10 @@ class Compiler:
 
         # Queue up asyc call which is executed (spit out) at the end of the w_spawn block
         self.spawn_call.append(
-            "{}{}_watiba_.spawn({}, {}, {}, {})".format(parms["indentation"],
-                                                        promise_assign,
-                                                        cmd,
-                                                        resolver_name,
-                                                        resolver_args,
-                                                        'locals()'
-                                                        ))
+            f'{promise_assign}{cmd}_watiba_.spawn({parms["indentation"]}, {resolver_name}, {resolver_args}, {locals()})')
 
         # Convert spawn `cmd`: statement to proper Python function definition
-        self.output.append("{}def {}(promise, args):".format(parms["indentation"], resolver_name))
+        self.output.append(f'{parms["indentation"]}def {resolver_name}(promise, args):')
 
     # Generator for `cmd` expressions
     def backticks_generator(self, parms):
@@ -111,15 +103,15 @@ class Compiler:
             cmd = m.group(2)
 
             # Make sure the string to be replaced includes the dash if needed
-            repl_str = "{}`{}`".format("-" if not context else "", cmd)
+            repl_str = f'{"-" if not context else ""}`{cmd}`'
 
             # Replace the backticked commands with a Watiba function call
             if cmd[0] == "$":
                 cmd = cmd[1:]
             else:
                 quote_style = "'" if cmd.find("'") < 0 else '"'
-                cmd = "{}{}{}".format(quote_style, cmd, quote_style)
-            s = s.replace(repl_str, "{}.bash({}, {})".format(watiba_ref, cmd, context), 1)
+                cmd = f"{quote_style}{cmd}{quote_style}"
+            s = s.replace(repl_str, f"{watiba_ref}.bash({cmd}, {context})", 1)
 
             # Test for more backticked commands
             m = re.search(parms["pattern"], s)
@@ -141,7 +133,7 @@ class Compiler:
                 else:
                     print("ERROR: Resolver block not properly terminated with return.", file=sys.stderr)
                     print("    Block incorrectly terminated with:", file=sys.stderr)
-                    print("      {}".format(self.last_stmt), file=sys.stderr)
+                    print(f"      {self.last_stmt}", file=sys.stderr)
                     sys.exit(1)
 
         # Check the statement for a Watiba expresion
@@ -173,7 +165,7 @@ if __name__ == "__main__":
 
     in_file = sys.argv[1]
     if not re.match(r".*\.wt$", in_file):
-        print("ERROR: Input file must be type .wt.  Found {}".format(in_file))
+        print(f"ERROR: Input file must be type .wt.  Found {in_file}")
         sys.exit(1)
 
     out_file = in_file.replace('.wt', '.py', 1)

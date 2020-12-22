@@ -27,6 +27,9 @@ class Watiba(Exception):
     def __init__(self):
         self.spawn_ctlr = WTSpawnController()
 
+    def ssh(self, host, cmd, context=True):
+        return self.bash(f'ssh {host} "{cmd}"', context)
+
     # cmd - command string to execute
     # context = track or not track current dir
     # Returns:
@@ -41,7 +44,7 @@ class Watiba(Exception):
 
         # Tack on this command to see what the current dir is after the user's command is executed
         ctx = ' && echo "_watiba_cwd_($(pwd))_"' if context else ''
-        p = Popen("{}{}".format(cmd, ctx),
+        p = Popen(f"{cmd}{ctx}",
                   shell=True,
                   stdout=PIPE,
                   stderr=PIPE,
@@ -95,6 +98,6 @@ class Watiba(Exception):
             self.spawn_ctlr.start(l_promise)
 
         except WTSpawnException as ex:
-            print("ERROR.  w_async thread execution failed. {}".format(ex.promise.command))
+            print(f"ERROR.  w_async thread execution failed. {ex.promise.command}")
 
         return l_promise
