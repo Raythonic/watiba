@@ -30,8 +30,8 @@ class WTSpawnController():
         self.promises = [p for p in self.promises if not p.resolved()]
 
     def default_error(self, promise, promise_count):
-        print("ERROR: Maximum promise/thread count reached: {}".format(promise_count))
-        print("  Shell command that exceeded max: {}".format(promise.command))
+        print(f"ERROR: Maximum promise/thread count reached: {promise_count}")
+        print(f"  Shell command that exceeded max: {promise.command}")
         promise.tree_dump()
         raise WTSpawnException(promise, "Promises not resolved by expiration period")
 
