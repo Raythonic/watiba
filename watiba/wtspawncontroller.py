@@ -6,6 +6,7 @@ Raythonic@gmail.com
 '''
 
 import time
+import threading
 
 
 class WTSpawnException(Exception):
@@ -22,7 +23,8 @@ class WTSpawnController():
                      "sleep-ceiling": 3,  # Maximum sleep value
                      "sleep-increment": .125,  # Incremental sleep value
                      "expire": -1,  # Default: no expiration
-                     "error": self.default_error  # Default error callback
+                     "error": self.default_error, # Default error callback,
+                     "hosts": ["localhost"]  # Where to run the command. Default locally
                      }
 
     # clean out any promises that have resolved
@@ -36,7 +38,7 @@ class WTSpawnController():
         raise WTSpawnException(promise, "Promises not resolved by expiration period")
 
     # Start a thread belonging to the passed promise
-    def start(self, promise):
+    def start(self, promise, thread_callback, thread_args):
         track_promise = True
         ex_count = self.args["expire"]
         loop_counter = 0
@@ -83,7 +85,13 @@ class WTSpawnController():
         '''
         # Run the command and call the resolver if some other process out there didn't kill it first
         if not promise.killed:
-            promise.thread.start()
+            for host in self.args["hosts"]:
+                thread_args["host"] = host
+                try:
+                    promise.thread = threading.Thread(target=thread_callback, args=(thread_args,))
+                    promise.thread.start()
+                except Exception as ex:
+                    raise ex
 
     # Merge in parameters settings
     def set_parms(self, parms):
