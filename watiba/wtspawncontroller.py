@@ -26,7 +26,7 @@ class WTSpawnController():
                      "error": self.default_error,  # Default error callback,
                      "hosts": ["localhost"]  # Where to run the command. Default locally
                      }
-        self.temp_id = "a"
+        self.temp_id = "x"
 
     # clean out any promises that have resolved
     def promises_gc(self):
@@ -91,7 +91,7 @@ class WTSpawnController():
                 try:
                     promise.attach(self.temp_id,
                                    threading.Thread(target=thread_callback, args=(promise, self.temp_id, thread_args,)))
-                    self.temp_id += "a"
+                    self.temp_id += self.temp_id
                     promise.last_thread().start()
                 except Exception as ex:
                     raise ex

@@ -29,7 +29,6 @@ class Watiba(Exception):
 
     # Called by spawned thread
     # Dir context is not kept by the spawn expression
-    #
     # Returns WTOutput object
     def execute(self, cmd, host):
         context = False
@@ -39,7 +38,6 @@ class Watiba(Exception):
             return self.ssh(cmd, host)
 
     # Run command remotely
-    #
     # Returns WTOutput object
     def ssh(self, cmd, host, context=True):
         return self.bash(f'ssh {host} "{cmd}"', context)
