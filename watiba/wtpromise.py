@@ -78,8 +78,9 @@ class WTPromise(Exception):
     def detach(self, thread_id):
         del self.threads[thread_id]
 
-    def last_thread(self):
-        return self.threads[-1]
+    # Getter for WTOutput object
+    def get_output(self, host="localhost"):
+        return self.output[host]
 
     # Resolve the parent promise if one exists
     def resolve_parent(self):
