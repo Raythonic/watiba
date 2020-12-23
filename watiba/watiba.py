@@ -95,14 +95,14 @@ class Watiba(Exception):
             #  Replace our temporary location in the thread dictionary with the one we want: by thread id
             promise.reattach(temp_id, threading.get_ident())
 
-            # Execute the command in a new thread
+            # Execute the command in a new thread (this is synchronously run)
             promise.output[thread_args["host"]] = self.execute(thread_args["command"], thread_args["host"])
 
             # This thread complete.  Detach it from the promise
             promise.detach(threading.get_ident())
 
             # Are we the last thread to finish for this promise?  Yes-call resolver
-            if len(promise.threads) < 1:
+            if promise.complete():
                 # Call the resolver and use its return value for promise resolution
                 promise.set_resolution(thread_args["resolver"](thread_args["promise"], copy.copy(thread_args["spawn-args"])))
 

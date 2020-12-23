@@ -78,6 +78,10 @@ class WTPromise(Exception):
     def detach(self, thread_id):
         del self.threads[thread_id]
 
+    # Determine if promise is complete (not resolved!)
+    def complete(self):
+        return True if len(self.threads) < 1 else False
+
     # Getter for WTOutput object
     def get_output(self, host="localhost"):
         return self.output[host]
