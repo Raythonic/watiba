@@ -23,9 +23,10 @@ class WTSpawnController():
                      "sleep-ceiling": 3,  # Maximum sleep value
                      "sleep-increment": .125,  # Incremental sleep value
                      "expire": -1,  # Default: no expiration
-                     "error": self.default_error, # Default error callback,
+                     "error": self.default_error,  # Default error callback,
                      "hosts": ["localhost"]  # Where to run the command. Default locally
                      }
+        self.temp_id = "a"
 
     # clean out any promises that have resolved
     def promises_gc(self):
@@ -49,7 +50,7 @@ class WTSpawnController():
 
         # Check to see if we somehow are already tracking this promise (shouldn't happen)
         for p in self.promises:
-            if p.resolved() or (p.thread_id == promise.thread_id and p.command == promise.command):
+            if p.resolved():
                 track_promise = False
 
         # Add this promise to our tracking list
@@ -88,8 +89,10 @@ class WTSpawnController():
             for host in self.args["hosts"]:
                 thread_args["host"] = host
                 try:
-                    promise.thread = threading.Thread(target=thread_callback, args=(thread_args,))
-                    promise.thread.start()
+                    promise.attach(self.temp_id,
+                                   threading.Thread(target=thread_callback, args=(promise, self.temp_id, thread_args,)))
+                    self.temp_id += "a"
+                    promise.last_thread().start()
                 except Exception as ex:
                     raise ex
 
