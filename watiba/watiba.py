@@ -29,6 +29,8 @@ class Watiba(Exception):
 
     # Called by spawned thread
     # Dir context is not kept by the spawn expression
+    #
+    # Returns WTOutput object
     def execute(self, cmd, host):
         context = False
         if host == "localhost":
@@ -37,6 +39,8 @@ class Watiba(Exception):
             return self.ssh(cmd, host)
 
     # Run command remotely
+    #
+    # Returns WTOutput object
     def ssh(self, cmd, host, context=True):
         return self.bash(f'ssh {host} "{cmd}"', context)
 
@@ -88,19 +92,24 @@ class Watiba(Exception):
             # Link this child promise to its parent
             l_promise.relate(parent_locals['promise'])
 
-        def run_command(thread_args):
-            thread_args["promise"].thread_id = threading.get_ident()
+        def run_command(promise, temp_id, thread_args):
+            # Since we cannot know our thread id until running in the thread, this pattern was adopted
+            #  Replace our temporary location in the thread dictionary with the one we want: by thread id
+            promise.reattach(temp_id, threading.get_ident())
 
             # Execute the command in a new thread
-            thread_args["promise"].output = self.execute(thread_args["command"], thread_args["host"])
+            promise.output[thread_args["host"]] = self.execute(thread_args["command"], thread_args["host"])
 
-            # Call the resolver and use its return value for promise resolution
-            # The OR is to ensure we don't override a resolved promise from a race condition!
-            # once some thread marks it resolved, it's resolved.
-            thread_args["promise"].resolution |= thread_args["resolver"](thread_args["promise"], copy.copy(thread_args["spawn-args"]))
+            # This thread complete.  Detach it from the promise
+            promise.detach(threading.get_ident())
+
+            # Are we the last thread to finish for this promise?  Yes-call resolver
+            if len(promise.threads) < 1:
+                # Call the resolver and use its return value for promise resolution
+                promise.set_resolution(thread_args["resolver"](thread_args["promise"], copy.copy(thread_args["spawn-args"])))
 
         try:
-            args = {"command":command, "resolver":resolver, "promise":l_promise, "spawn-args": spawn_args}
+            args = {"command":command, "resolver":resolver, "spawn-args": spawn_args}
 
             # Control the threads (the controller starts the thread)
             self.spawn_ctlr.start(l_promise, run_command, args)

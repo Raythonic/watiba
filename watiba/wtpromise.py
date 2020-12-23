@@ -26,12 +26,11 @@ class WTKillException(Exception):
 # The object returned for Watbia thread spawns
 class WTPromise(Exception):
     def __init__(self, command):
-        self.output = WTOutput()
+        self.output = {}
         self.resolution = False
         self.start_time = time.time()
         self.end_time = time.time()
-        self.thread = None
-        self.thread_id = -1
+        self.threads = []
         self.killed = False
         self.watcher = None
         self.children = []
@@ -44,8 +43,14 @@ class WTPromise(Exception):
         return self.resolution
 
     def set_resolved(self):
+        self.set_resolution(True)
+
+    # Set resolution state from resolver
+    # The OR is to ensure we don't override a resolved promise from a race condition!
+    # once some thread marks it resolved, it's resolved.
+    def set_resolution(self, resolution):
         self.end_time = time.time()
-        self.resolution = True
+        self.resolution |= resolution
 
     # kill() here just in case it's needed.  Not documenting right now.
     # This would only work in some rare case where you issue kill() BEFORE the thread starts.  This prevents the
@@ -55,10 +60,26 @@ class WTPromise(Exception):
     # the user's code has access to a promise before its thread is started--and they may just want to stop it from
     # starting.  So, making that possible.
     def kill(self):
-        if not self.resolved() and self.thread_id < 0:
+        if not self.resolved() and len(self.threads) > 0:
             self.killed = True
         else:
             raise WTKillException(self, f'Kill failed.  Command {"running" if not self.resolved() else "completed"}.')
+
+    # Attach a new thread to this promise
+    def attach(self, temp_id, thread):
+        self.threads[temp_id] = thread
+
+    # Reattach a thread to this promise under its now-known thread id
+    def reattach(self, temp_id, thread_id):
+        self.threads[thread_id] = self.threads[temp_id]
+        del self.threads[temp_id]
+
+    # Detach a thread from the is promise
+    def detach(self, thread_id):
+        del self.threads[thread_id]
+
+    def last_thread(self):
+        return self.threads[-1]
 
     # Resolve the parent promise if one exists
     def resolve_parent(self):
