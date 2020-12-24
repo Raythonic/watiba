@@ -31,6 +31,7 @@ class WTPromise(Exception):
         self.start_time = time.time()
         self.end_time = time.time()
         self.threads = []
+        self.temp_id = ""
         self.killed = False
         self.watcher = None
         self.children = []
@@ -39,9 +40,11 @@ class WTPromise(Exception):
         self.depth = 0
         self.__WTPROMISE_STAMP__ = True
 
+    # Getter to check promise state
     def resolved(self):
         return self.resolution
 
+    # Set promise to resolved state
     def set_resolved(self):
         self.set_resolution(True)
 
@@ -52,18 +55,24 @@ class WTPromise(Exception):
         self.end_time = time.time()
         self.resolution |= resolution
 
+    ####################################################################################################################
     # kill() here just in case it's needed.  Not documenting right now.
-    # This would only work in some rare case where you issue kill() BEFORE the thread starts.  This prevents the
-    # thread from starting, it does not kill a running thread.  Since the caller under normal circumstances cannot
-    # access the promise until the thread is started, it's not likely to be useful.  So why have it?  Because a
-    # promise is inserted in the promise tree before the thread is started, so there remains a slim window when
-    # the user's code has access to a promise before its thread is started--and they may just want to stop it from
-    # starting.  So, making that possible.
+    # This would only work in some rare case where you issue kill() BEFORE any thread on this promise starts.
+    # This prevents a thread from starting, it does not kill a running thread.  Since the caller under normal
+    # circumstances cannot access the promise until the thread is started, it's not likely to be useful.
+    # So why have it?  Because a promise is inserted in the promise tree before the thread is started, so there
+    # remains a slim window when the user's code has access to a promise before any thread executes-and they may
+    # just want to stop it first.  So, making that possible.  You're welcome.
     def kill(self):
         if not self.resolved() and len(self.threads) > 0:
             self.killed = True
         else:
             raise WTKillException(self, f'Kill failed.  Command {"running" if not self.resolved() else "completed"}.')
+
+    # Issue a temporary id for thread creation
+    def get_temp_id(self):
+        self.temp_id += "x"
+        return self.temp_id
 
     # Attach a new thread to this promise
     def attach(self, temp_id, thread):
@@ -73,6 +82,7 @@ class WTPromise(Exception):
     def reattach(self, temp_id, thread_id):
         self.threads[thread_id] = self.threads[temp_id]
         del self.threads[temp_id]
+        self.temp_id = self.temp_id[:-1] if len(self.temp_id) > 1 else self.temp_id
 
     # Detach a thread from the is promise
     def detach(self, thread_id):
