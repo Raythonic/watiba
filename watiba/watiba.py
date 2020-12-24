@@ -104,7 +104,7 @@ class Watiba(Exception):
             # Are we the last thread to finish for this promise?  Yes-call resolver
             if promise.complete():
                 # Call the resolver and use its return value for promise resolution
-                promise.set_resolution(thread_args["resolver"](thread_args["promise"], copy.copy(thread_args["spawn-args"])))
+                promise.set_resolution(thread_args["resolver"](promise , copy.copy(thread_args["spawn-args"])))
 
         try:
             args = {"command":command, "resolver":resolver, "spawn-args": spawn_args}
