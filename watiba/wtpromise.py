@@ -29,7 +29,7 @@ class WTPromise(Exception):
         self.output = {}
         self.resolution = False
         self.start_time = time.time()
-        self.end_time = time.time()
+        self.end_time = None
         self.threads = []
         self.thread_times = {}
         self.temp_id = ""
@@ -85,9 +85,9 @@ class WTPromise(Exception):
         self.thread_times[thread_id] = {"start-time": time.time()}
         del self.threads[temp_id]
 
-    # Detach a thread from the is promise
+    # Detach a thread from this promise
     def detach(self, thread_id):
-        self.thread_times[thread_id] = {"end-time": time.time()}
+        self.thread_times[thread_id]["end-time"] = time.time()
         del self.threads[thread_id]
 
     # Determine if promise is complete (not resolved!)
@@ -187,7 +187,7 @@ class WTPromise(Exception):
 
         # Set out starting position
         p = n
-        promise_time = round(p.end_time - p.start_time, 4) if p.resolved() else round(time.time() - p.start_time, 4)
+        promise_time = round(self.end_time, 4) if self.end_time else round(time.time() - p.start_time, 4)
         print("{}+ {}: `{}` ({}, {})".format(dashes,
                                              "root" if p.depth < 1 else p.depth,
                                              p.command,
