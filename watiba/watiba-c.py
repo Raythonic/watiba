@@ -91,7 +91,7 @@ class Compiler:
         # Add in args if there's any
         resolver_args = parms["match"].group(args_idx) if parms["match"].group(args_idx) else "{}"
 
-        # Queue up asyc call which is executed (spit out) at the end of the w_spawn block
+        # Queue up async call which is executed (spit out) at the end of the w_spawn block
         self.spawn_call.append(
             f'{parms["indentation"]}{promise_assign}_watiba_.spawn({cmd}, {resolver_name}, {resolver_args}, {"locals()"}, {host})')
 
