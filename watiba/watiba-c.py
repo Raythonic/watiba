@@ -66,7 +66,7 @@ class Compiler:
         self.output.append(f'_watiba_.spawn_ctlr.set_parms({parms["match"].group(1)})')
 
     # Handle spawn code blocks (with host specified)
-    def spawn_generator_hist_host(self, parms):
+    def spawn_generator_with_host(self, parms):
         self.spawn_generator(parms, host=parms["match"].group(3))
 
     # Handle spawn code blocks
