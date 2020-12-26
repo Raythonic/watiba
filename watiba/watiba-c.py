@@ -91,7 +91,8 @@ class Compiler:
         # Add in args if there's any
         resolver_args = parms["match"].group(args_idx) if parms["match"].group(args_idx) else "{}"
 
-        h = "f'{host}'" if host and host[0] != "$" else host
+        h = f'"{host}"' if host and host[0] != "$" else host
+        h = h.replace("$", "") if h and h[0] == "$" else h
 
         # Queue up async call which is executed (spit out) at the end of the w_spawn block
         self.spawn_call.append(
