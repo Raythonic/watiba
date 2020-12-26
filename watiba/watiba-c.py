@@ -67,7 +67,7 @@ class Compiler:
 
     # Handle spawn code blocks (with host specified)
     def spawn_generator_with_host(self, parms):
-        self.spawn_generator(parms, host=parms["match"].group(3))
+        self.spawn_generator(parms, parms["match"].group(3))
 
     # Handle spawn code blocks
     def spawn_generator(self, parms, host=None):
