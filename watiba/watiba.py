@@ -77,7 +77,7 @@ class Watiba(Exception):
         out.cwd = os.getcwd()
         return out
 
-    def spawn(self, command, resolver, spawn_args, parent_locals):
+    def spawn(self, command, resolver, spawn_args, parent_locals, host=None):
         # Create a new promise object
         l_promise = WTPromise(command)
 
@@ -110,7 +110,7 @@ class Watiba(Exception):
             args = {"command":command, "resolver":resolver, "spawn-args": spawn_args}
 
             # Control the threads (the controller starts the thread)
-            self.spawn_ctlr.start(l_promise, run_command, args)
+            self.spawn_ctlr.start(l_promise, run_command, args, host)
 
         except WTSpawnException as ex:
             print(f"ERROR.  w_async thread execution failed. {ex.promise.command}")

@@ -36,6 +36,9 @@ class Compiler:
         # Regex expressions for Watiba commands (order matters otherwise backticks would win over spawn)
         self.expressions = {
             # p = spawn `cmd`: block
+            "^(\S.*)?spawn \s*`(\S.*)`@(\S.*) \s*?(\S.*)?:.*": self.spawn_generator_with_host,
+
+            # p = spawn `cmd`: block
             "^(\S.*)?spawn \s*`(\S.*)`\s*?(\S.*)?:.*": self.spawn_generator,
 
             # spawn-ctl {args}
@@ -62,11 +65,15 @@ class Compiler:
     def spawn_ctl_args(self, parms):
         self.output.append(f'_watiba_.spawn_ctlr.set_parms({parms["match"].group(1)})')
 
+    # Handle spawn code blocks (with host specified)
+    def spawn_generator_hist_host(self, parms):
+        self.spawn_generator(parms, host=parms["match"].group(3))
+
     # Handle spawn code blocks
-    def spawn_generator(self, parms):
+    def spawn_generator(self, parms, host=None):
         assign_idx = 1
         cmd_idx = 2
-        args_idx = 3
+        args_idx = 3 if not host else 4
 
         # Build the spawn call that will be located just after the resolver block
         quote_style = "'" if "'" not in parms["match"].group(cmd_idx) else '"'
@@ -86,7 +93,7 @@ class Compiler:
 
         # Queue up asyc call which is executed (spit out) at the end of the w_spawn block
         self.spawn_call.append(
-            f'{parms["indentation"]}{promise_assign}_watiba_.spawn({cmd}, {resolver_name}, {resolver_args}, {"locals()"})')
+            f'{parms["indentation"]}{promise_assign}_watiba_.spawn({cmd}, {resolver_name}, {resolver_args}, {"locals()"}, {host})')
 
         # Convert spawn `cmd`: statement to proper Python function definition
         self.output.append(f'{parms["indentation"]}def {resolver_name}(promise, args):')
