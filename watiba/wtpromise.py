@@ -187,13 +187,13 @@ class WTPromise(Exception):
 
         # Set out starting position
         p = n
-        promise_time = round(self.end_time, 4) if self.end_time else round(time.time() - p.start_time, 4)
+        promise_time = round(self.end_time - self.start_time, 4) if self.end_time else round(time.time() - p.start_time, 4)
         print("{}+ {}: `{}` ({}, {})".format(dashes,
                                              "root" if p.depth < 1 else p.depth,
                                              p.command,
                                              "Resolved" if p.resolved() else "Unresolved",
                                              f"Promise time: {promise_time} seconds",
-                                             f"Thread count: {p.len(self.threads)}"
+                                             f"Threads running: {p.len(self.threads)}"
                                              ), file=sys.stderr)
 
         for child in p.children:
