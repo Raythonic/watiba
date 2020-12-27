@@ -76,7 +76,7 @@ for dir in `ls -d watiba*`.stdout:
     prom = spawn `$tar` {"dir": dir}: # tar this dir
         print("{} tar complete".format(args["dir"]))
         done = "echo 'done' > /tmp/{}/done".format(args["dir"])
-        spawn `$done`@walkubu {"dir":dir}:  # mark this dir done
+        spawn `$done` {"dir":dir}:  # mark this dir done
             print("Done with {}".format(args["dir"]))
             promise.resolve_parent()
             spawn `date`:

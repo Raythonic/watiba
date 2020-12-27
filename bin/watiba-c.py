@@ -1,5 +1,5 @@
 #!/bin/python3
-versions = ["Watiba 0.1.214", "Python 3.8"]
+versions = ["Watiba 0.1.215", "Python 3.8"]
 '''
 Watiba pre-complier.  Watiba commands are BASH embedded commands between backtick characters (i.e. `), like traditional Bash captures.
 
@@ -93,9 +93,12 @@ class Compiler:
         # Add in args if there's any
         resolver_args = parms["match"].group(args_idx) if parms["match"].group(args_idx) else "{}"
 
+        h = f'"{host}"' if host and host[0] != "$" else host
+        h = h.replace("$", "") if h and h[0] == "$" else h
+
         # Queue up async call which is executed (spit out) at the end of the w_spawn block
         self.spawn_call.append(
-            f'{parms["indentation"]}{promise_assign}_watiba_.spawn({cmd}, {resolver_name}, {resolver_args}, {"locals()"}, {host})')
+            f'{parms["indentation"]}{promise_assign}_watiba_.spawn({cmd}, {resolver_name}, {resolver_args}, {"locals()"}, {h})')
 
         # Convert spawn `cmd`: statement to proper Python function definition
         self.output.append(f'{parms["indentation"]}def {resolver_name}(promise, args):')
