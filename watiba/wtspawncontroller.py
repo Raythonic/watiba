@@ -39,7 +39,12 @@ class WTSpawnController():
 
     # Start a thread belonging to the passed promise
     def start(self, promise, thread_callback, thread_args, host=None):
-        host_list = self.args["hosts"] if not host else [host]
+        host_list = None
+        if host:
+            if type(host) == list:
+                host_list = host
+            elif type(host) == str:
+                host_list = [host]
         track_promise = True
         ex_count = self.args["expire"]
         loop_counter = 0
