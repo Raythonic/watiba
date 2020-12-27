@@ -35,6 +35,9 @@ class Compiler:
 
         # Regex expressions for Watiba commands (order matters otherwise backticks would win over spawn)
         self.expressions = {
+            # p = spawn `cmd`@host: block
+            "^(\S.*)?spawn \s*`(\S.*)`@(\S.*) \s*?(\S.*)?:.*": self.spawn_generator_with_host,
+
             # p = spawn `cmd`: block
             "^(\S.*)?spawn \s*`(\S.*)`@(\S.*) \s*?(\S.*)?:.*": self.spawn_generator_with_host,
 
@@ -43,6 +46,9 @@ class Compiler:
 
             # spawn-ctl {args}
             "^spawn-ctl \s*(\S.*)": self.spawn_ctl_args,
+
+            # chain {host:cmd...
+            "^chain \s*(\S.*)": self.chain_generator,
 
             # `cmd`
             ".*?([\-])?`(\S.*?)`.*?": self.backticks_generator
@@ -60,6 +66,10 @@ class Compiler:
                 print("    Block incorrectly terminated with:", file=sys.stderr)
                 print(f"      {self.last_stmt}", file=sys.stderr)
                 sys.exit(1)
+
+    # Generate chain command
+    def chain_generator(self, parms):
+        self.output.append(f'_watiba_.chain({parms["match"].group(1)})')
 
     # Set spawn controller args
     def spawn_ctl_args(self, parms):

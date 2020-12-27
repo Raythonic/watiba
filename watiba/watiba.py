@@ -116,3 +116,9 @@ class Watiba(Exception):
             print(f"ERROR.  w_async thread execution failed. {ex.promise.command}")
 
         return l_promise
+
+    def chain(self, parms, context=True):
+        output = {}
+
+        for host, cmd in parms.items():
+            output[host] = self.ssh(cmd, host, context)
