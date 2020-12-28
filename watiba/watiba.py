@@ -141,13 +141,12 @@ class Watiba(Exception):
         output = {}
 
         for host, cmd in parms.items():
-            pipe_output = self.check_pipes(host, pipes)
+            pipe_from = self.check_pipes(host, pipes)
 
-            # Is this host supposed to receive piped stdout?  If so, pipe_output is that source host
-            if pipe_output and pipe_output in output:
-                for line in output[pipe_output].stdout:
-                    c = f'echo "{line} | {cmd}'
-                    output[host] = self.ssh(c, host, context)
+            # Is this host supposed to receive piped stdout?  If so, pipe_from is that source host
+            if pipe_from and pipe_from in output:
+                for line in output[pipe_from].stdout:
+                    output[host] = self.ssh(f'echo "{line}" | {cmd}', host, context)
             else:
                 output[host] = self.ssh(cmd, host, context)
 
