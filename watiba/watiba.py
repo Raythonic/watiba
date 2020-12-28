@@ -123,12 +123,35 @@ class Watiba(Exception):
 
         return l_promise
 
+    def check_pipes(self, target, pipes):
+        retval = []
+
+        for h,p in pipes.items():
+            # is the host target passed to us in the array?
+            if target in p:
+                return h  # Return source host
+        return None
+
+
     # chain commands across various servers.  (Run sequentially and with regard to exit code.  A bad exit code causes
     # an exception to be thrown.
-    def chain(self, parms, context=True):
+    # Pass "pipes" dictionary to link, i.e. pipe, the STDOUT of one host to another
+    # Returns dictionary of WTOutput objects by host name: {host:WTOutput, ...}
+    def chain(self, parms, context=True, pipes={}):
         output = {}
 
         for host, cmd in parms.items():
-            output[host] = self.ssh(cmd, host, context)
+            pipe_output = self.check_pipes(host, pipes)
+
+            # Is this host supposed to receive piped stdout?  If so, pipe_output is that source host
+            if pipe_output and pipe_output in output:
+                for line in output[pipe_output].stdout:
+                    c = f'echo "{line} | {cmd}'
+                    output[host] = self.ssh(c, host, context)
+            else:
+                output[host] = self.ssh(cmd, host, context)
+
             if output[host].exit_code != 0:
                 raise WTChainException(host, cmd, output[host])
+
+        return output
