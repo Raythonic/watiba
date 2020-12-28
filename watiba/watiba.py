@@ -16,6 +16,12 @@ from watiba.wtspawncontroller import WTSpawnController, WTSpawnException
 from watiba.wtpromise import WTPromise
 from watiba.wtoutput import WTOutput
 
+class WTChainException(Exception):
+    def __init__(self, host, command, output):
+        self.host = host
+        self.command = command
+        self.output = output
+
 
 ###############################################################################################################
 ########################################## Watiba #############################################################
@@ -117,8 +123,12 @@ class Watiba(Exception):
 
         return l_promise
 
+    # chain commands across various servers.  (Run sequentially and with regard to exit code.  A bad exit code causes
+    # an exception to be thrown.
     def chain(self, parms, context=True):
         output = {}
 
         for host, cmd in parms.items():
             output[host] = self.ssh(cmd, host, context)
+            if output[host].exit_code != 0:
+                raise WTChainException(host, cmd, output[host])
