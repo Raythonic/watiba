@@ -50,6 +50,9 @@ class Compiler:
             # chain {host:cmd...
             "^chain \s*(\S.*)": self.chain_generator,
 
+            # `cmd`@host
+            ".*?([\-])?`(\S.*?)`@(\S.*) .*?": self.backticks_generator_with_host
+
             # `cmd`
             ".*?([\-])?`(\S.*?)`.*?": self.backticks_generator
         }
@@ -112,7 +115,16 @@ class Compiler:
         self.output.append(f'{parms["indentation"]}def {resolver_name}(promise, args):')
 
     # Generator for `cmd` expressions
-    def backticks_generator(self, parms):
+    def backticks_generator_with_host(self, parms):
+        host = parms["match"].group(3)
+        if host[0] == "$":
+            host = host.replace("$", "")
+        else:
+            host = f'"{host}"'
+        self.backticks_generator(parms, host)
+
+    # Generator for `cmd` expressions
+    def backticks_generator(self, parms, host=None):
         s = str(parms["statement"])
 
         # Run through the statement and replace ALL the backticked shell commands with Watiba function calls
@@ -131,8 +143,10 @@ class Compiler:
             else:
                 quote_style = "'" if cmd.find("'") < 0 else '"'
                 cmd = f"{quote_style}{cmd}{quote_style}"
-            s = s.replace(repl_str, f"{watiba_ref}.bash({cmd}, {context})", 1)
-
+            if not host:
+                s = s.replace(repl_str, f"{watiba_ref}.bash({cmd}, {context})", 1)
+            else:
+                s = s.replace(repl_str, f"{watiba_ref}.ssh({cmd}, {host}, {context})", 1)
             # Test for more backticked commands
             m = re.search(parms["pattern"], s)
 
