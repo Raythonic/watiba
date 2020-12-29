@@ -135,12 +135,20 @@ class Watiba(Exception):
 
     # chain commands across various servers.  (Run sequentially and with regard to exit code.  A bad exit code causes
     # an exception to be thrown.
-    # Pass "pipes" dictionary to link, i.e. pipe, the STDOUT of one host to another
+    # Pass "pipes" dictionary to link, i.e. pipe, the STDOUT or STDERR of one host to another
+    #  {"stdout":
+    #       [{"sourceHost":["targetHost1", "targetHost2", ...]},
+    #   "stderr":
+    #       [{"sourceHost":["targetHost1,...]}]]
+    #  }
     # Returns dictionary of WTOutput objects by host name: {host:WTOutput, ...}
-    def chain(self, parms, context=True, pipes={}):
+    def chain(self, parms, context=True):
         output = {}
+        pipes = parms["pipes"]
 
-        for host, cmd in parms.items():
+
+
+        for host, cmd in hosts.items():
             pipe_from = self.check_pipes(host, pipes)
 
             # Is this host supposed to receive piped stdout?  If so, pipe_from is that source host
