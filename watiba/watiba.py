@@ -16,6 +16,7 @@ from watiba.wtspawncontroller import WTSpawnController, WTSpawnException
 from watiba.wtpromise import WTPromise
 from watiba.wtoutput import WTOutput
 
+
 class WTChainException(Exception):
     def __init__(self, host, command, output):
         self.host = host
@@ -110,10 +111,10 @@ class Watiba(Exception):
             # Are we the last thread to finish for this promise?  Yes-call resolver
             if promise.complete():
                 # Call the resolver and use its return value for promise resolution
-                promise.set_resolution(thread_args["resolver"](promise , copy.copy(thread_args["spawn-args"])))
+                promise.set_resolution(thread_args["resolver"](promise, copy.copy(thread_args["spawn-args"])))
 
         try:
-            args = {"command":command, "resolver":resolver, "spawn-args": spawn_args}
+            args = {"command": command, "resolver": resolver, "spawn-args": spawn_args}
 
             # Control the threads (the controller starts the thread)
             self.spawn_ctlr.start(l_promise, run_command, args, host)
@@ -130,15 +131,13 @@ class Watiba(Exception):
                 return pipes[host]
         return []
 
-
     # chain commands across various servers.  (Run sequentially and with regard to exit code.  A bad exit code causes
     # an exception to be thrown.
-    # Pass "pipes" dictionary to link, i.e. pipe, the STDOUT or STDERR of one host to another
-    #  {"stdout":
-    #       [{"sourceHost":["targetHost1", "targetHost2", ...]},
-    #   "stderr":
-    #       [{"sourceHost":["targetHost1,...]}]]
-    #  }
+    #  A dictionary structure must be passed by the user's program as follows:
+    #       {"hosts": ["host1", "host2", ...],  # These are the hosts to run the command on and is required
+    #        "stdout": {"source-host": ["target-host1", "target-host2", ...], # Pipe stdout from source to target(s) (optional)
+    #        "stderr": "source-host": ["target-host1", "target-host2", ...], # Pipe stderr from source to target(s) (optional)
+    #       }
     # Returns dictionary of WTOutput objects by host name: {host:WTOutput, ...}
     def chain(self, parms, context=True):
         output = {}
