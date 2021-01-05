@@ -123,14 +123,12 @@ class Watiba(Exception):
 
         return l_promise
 
-    def check_pipes(self, target, pipes):
-        retval = []
-
-        for h,p in pipes.items():
+    def check_pipes(self, source, pipes):
+        for host in pipes:
             # is the host target passed to us in the array?
-            if target in p:
-                return h  # Return source host
-        return None
+            if host == source:
+                return pipes[host]
+        return []
 
 
     # chain commands across various servers.  (Run sequentially and with regard to exit code.  A bad exit code causes
@@ -144,21 +142,25 @@ class Watiba(Exception):
     # Returns dictionary of WTOutput objects by host name: {host:WTOutput, ...}
     def chain(self, parms, context=True):
         output = {}
-        pipes = parms["pipes"]
+        cmd = parms["match"].group(1)
+        if "hosts" not in parms:
+            raise WTChainException("No host", cmd, None)
 
+        hosts = parms["hosts"]
+        pipe_stdout = parms["stdout"] if "stdout" in parms else None
+        pipe_stderr = parms["stderr"] if "stderr" in parms else None
 
-
-        for host, cmd in hosts.items():
-            pipe_from = self.check_pipes(host, pipes)
-
-            # Is this host supposed to receive piped stdout?  If so, pipe_from is that source host
-            if pipe_from and pipe_from in output:
-                for line in output[pipe_from].stdout:
-                    output[host] = self.ssh(f'echo "{line}" | {cmd}', host, context)
-            else:
-                output[host] = self.ssh(cmd, host, context)
-
+        for host in hosts:
+            output[host] = self.ssh(cmd, host)
             if output[host].exit_code != 0:
                 raise WTChainException(host, cmd, output[host])
+            if pipe_stdout:
+                for pipe_to in self.check_pipes(host, pipe_stdout):
+                    for line in output[host].stdout:
+                        output[host] = self.ssh(f'echo "{line}" | {cmd}', pipe_to, context)
+            elif pipe_stderr:
+                for pipe_to in self.check_pipes(host, pipe_stderr):
+                    for line in output[host].stderr:
+                        output[host] = self.ssh(f'echo "{line}" | {cmd}', pipe_to, context)
 
         return output
