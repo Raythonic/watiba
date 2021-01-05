@@ -149,15 +149,23 @@ class Watiba(Exception):
         pipe_stdout = parms["stdout"] if "stdout" in parms else None
         pipe_stderr = parms["stderr"] if "stderr" in parms else None
 
+        # Loop through each host and run the command on it
         for host in hosts:
+            # Run command remotely through SSH
             output[host] = self.ssh(cmd, host)
+
+            # If the command fails, bomb the whole execution
             if output[host].exit_code != 0:
                 raise WTChainException(host, cmd, output[host])
+
+            # If we are supposed to pipe the stdout, do it
             if pipe_stdout:
                 for pipe_to in self.check_pipes(host, pipe_stdout):
                     for line in output[host].stdout:
                         output[host] = self.ssh(f'echo "{line}" | {cmd}', pipe_to, context)
-            elif pipe_stderr:
+
+            # If we are supposed to pipe the stderr, do it
+            if pipe_stderr:
                 for pipe_to in self.check_pipes(host, pipe_stderr):
                     for line in output[host].stderr:
                         output[host] = self.ssh(f'echo "{line}" | {cmd}', pipe_to, context)
