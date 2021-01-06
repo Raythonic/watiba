@@ -125,21 +125,19 @@ class Watiba(Exception):
         return l_promise
 
     # Pipe either stdout or stderr to some target host with some target cmd
-    def pipe(self, pipe_source, pipe_target, output=True):
-        # This array determines the source type
-        pipe_output = {True:pipe_source.stdout, False:pipe_source.stderr}
-
+    def pipe(self, pipe_source, pipe_target):
         # Pipe output to target host command
         for pipe_to, cmd in pipe_target.items():
-            for line in pipe_output[output]:
+            for line in pipe_source:
+                # The output for piped command is not kept
                 self.ssh(f'echo "{line}" | {cmd}', pipe_to)
 
     # chain commands across various servers.  (Run sequentially and with regard to exit code.  A bad exit code causes
     # an exception to be thrown.
     #  A dictionary structure must be passed by the user's program as follows:
     #       {"hosts": ["host1", "host2", ...],  # These are the hosts to run the command on and is required
-    #        "stdout": {"source-host": ["target-host1", "target-host2", ...], # Pipe stdout from source to target(s) (optional)
-    #        "stderr": "source-host": ["target-host1", "target-host2", ...], # Pipe stderr from source to target(s) (optional)
+    #        "stdout": {"source-host": {"target-host1":cmd, "target-host2":cmd, ...}}, # Pipe stdout from source to target(s) (optional)
+    #        "stderr": {"source-host": {"target-host1":cmd, "target-host2":cmd, ...}}   # Pipe stderr from source to target(s) (optional)
     #       }
     # Returns dictionary of WTOutput objects by host name: {host:WTOutput, ...}
     def chain(self, cmd, parms, context=True):
@@ -160,12 +158,12 @@ class Watiba(Exception):
             if output[host].exit_code != 0:
                 raise WTChainException(host, cmd, output[host])
 
-            # If we are supposed to pipe the stdout, do it
+            # If we are supposed to pipe the stdout for this host, do it
             if host in pipe_stdout:
-                self.pipe(output[host], pipe_stdout, True)
+                self.pipe(output[host].stdout, pipe_stdout)
 
-            # If we are supposed to pipe the stdout, do it
+            # If we are supposed to pipe the stdout for this host, do it
             if host in pipe_stderr:
-                self.pipe(output[host], pipe_stderr, False)
+                self.pipe(output[host].stderr, pipe_stderr)
 
         return output
