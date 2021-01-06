@@ -489,6 +489,67 @@ remotename = "serverB"
 out = `ls -lrt`@$remotename
 ```
 
+# Command Chaining
+Watiba extends its remote command execution to chaining commands across multiple remote hosts.  This is achieved
+by the _chain_ expression.  This expression will execute the backticked command across a list of hosts, passed by
+the user, sequentially, synchronously until the hosts list is exhausted, or the command fails.  _chain_ returns a
+Python dictionary where the keys are the host names and the values the WTOutput from the command run on that host.
+
+Examples:
+```
+out = chain `tar -zcvf backup/file.tar.gz dir/*` {"hosts", ["serverA", "serverB"]}
+for host,output in out.items():
+    print(f'{host} exit code: {output.exit_code}')
+    for line in output.stderr:
+        print(line)
+```
+## Piping Output with Chain
+The _chain_ expression supports piping STDOUT and/or STDERR to other commands executed on remote servers.  Complex
+arrangements can be constructed through the Python dictionary passed to the _chain_ expression.  The dictionary
+contents function as follows:
+- "hosts": [server, server, ...]   This entry instructions _chain_ on which hosts the backticked command will run.
+    This is a required entry.
+    
+- "stdout": {server:command, server:command, ...}
+    This is an optional entry.
+  
+- "stderr": {server:command, server:command, ...}
+    This is an optional entry.
+
+Just like a _chain_ expression that does not pipe output, the return object is a dictionary of WTOutput object keyed
+by the host name from the _hosts_ list and *not* from the commands recieving the piped output.
+
+If any command fails, a WTChainException is raised.
+
+Examples:  
+```
+# This is a simple chain with no piping
+try:
+    args = {"hosts": ["serverA", "serverB", "serverC"]}
+    out = chain `ls -lrt dir/` args
+    for host, output in out.items():
+        print(f'{host} exit code: {output.exit_code}')
+except WTChainException as ex:
+    print(f'ERROR: {ex.msg}, {ex.host}, {ex.command}, {ex.output.stderr})
+```
+```
+# This is a more complex chain that runs the _ls -lrt_ command on each server listed in _hosts_
+# and pipes the STDOUT output from serverC to serverV and serverD, to those commands, and serverB's STDERR
+# to serverX and its command
+try:
+    args = {"hosts": ["serverA", "serverB", "serverC"],
+                "stdout": {"serverC":{"serverV": "grep something", "serverD":"grep somethingelse"}},
+                "stderr": {"serverB":{"serverX": "cat /tmp/serverC.err"}}
+           }
+    out = chain `ls -lrt dir/` args
+    for host, output in out.items():
+        print(f'{host} exit code: {output.exit_code}')
+except WTChainException as ex:
+    print(f'ERROR: {ex.msg}, {ex.host}, {ex.command}, {ex.output.stderr})
+```
+
+####How does this work?
+Watiba will run 
 
 # Installation
 ## PIP
