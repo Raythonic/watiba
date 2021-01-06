@@ -51,7 +51,7 @@ class Compiler:
             "^chain \s*`(\S.*)` \s*(\S.*)": self.chain_generator,
 
             # `cmd`@host
-            ".*?([\-])?`(\S.*?)`@(\S.*) .*?": self.backticks_generator_with_host
+            ".*?([\-])?`(\S.*?)`@(\S.*) .*?": self.backticks_generator_with_host,
 
             # `cmd`
             ".*?([\-])?`(\S.*?)`.*?": self.backticks_generator
