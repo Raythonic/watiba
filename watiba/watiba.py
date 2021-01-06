@@ -145,8 +145,8 @@ class Watiba(Exception):
             raise WTChainException("No host", cmd if cmd else parms["co"], None)
 
         hosts = parms["hosts"]
-        pipe_stdout = parms["stdout"] if "stdout" in parms else None
-        pipe_stderr = parms["stderr"] if "stderr" in parms else None
+        pipe_stdout = parms["stdout"] if "stdout" in parms else {}
+        pipe_stderr = parms["stderr"] if "stderr" in parms else {}
 
         # Loop through each host and run the command on it
         for host in hosts:
@@ -158,11 +158,11 @@ class Watiba(Exception):
                 raise WTChainException(host, cmd, output[host])
 
             # If we are supposed to pipe the stdout, do it
-            if pipe_stdout and host in pipe_stdout:
+            if host in pipe_stdout:
                 self.pipe(output[host], pipe_stdout)
 
             # If we are supposed to pipe the stdout, do it
-            if pipe_stderr and host in pipe_stderr:
+            if host in pipe_stderr:
                 self.pipe(output[host], pipe_stderr)
 
         return output
