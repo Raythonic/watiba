@@ -140,10 +140,10 @@ class Watiba(Exception):
     #        "stderr": {"source-host": {"target-host1":cmd, "target-host2":cmd, ...}}   # Pipe stderr from source to target(s) (optional)
     #       }
     # Returns dictionary of WTOutput objects by host name: {host:WTOutput, ...}
-    def chain(self, cmd, parms, context=True):
+    def chain(self, cmd, parms):
         output = {}
         if "hosts" not in parms:
-            raise WTChainException("No host", cmd if cmd else cmd, None)
+            raise WTChainException("No hosts in argument dict", cmd, None)
 
         hosts = parms["hosts"]
         pipe_stdout = parms["stdout"] if "stdout" in parms else {}
