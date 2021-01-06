@@ -464,6 +464,32 @@ num_of_spawns = promise.spawn_count()  # Returns number of nodes in the promise 
 num_of_resolved_promises = promise.resolved_count() # Returns the number of promises resolved in tree
 ``` 
 
+# Remote Execution
+Shell commands can be executed remotely.  This is achieved though the SSH command, issued by Watiba, and has the 
+following requirements:
+- OpenSSH is installed on the local and remote hosts
+- The local SSH key is in the remote's _authorized_keys_ file.  _The details of this
+  process is beyond the scope of this README.  For those instructions, consult www.ssh.com_
+
+To execute a command remotely, an _@host_ parameter is suffixed to the backticked command.  The host name can be a
+literal or a variable.  To employ a variable, prepend a _$_ to the name following _@_.  
+Examples:
+```
+p = spawn `ls -lrt`@remoteserver {parms}
+```  
+```
+remotename = "serverB"
+p = spawn `ls -lrt`@$remotename {parms}
+```
+```
+out = `ls -lrt`@remoteserver
+```
+```
+remotename = "serverB"
+out = `ls -lrt`@$remotename
+```
+
+
 # Installation
 ## PIP
 If you installed this as a Python package, e.g. pip, then the pre-compiler can be found
