@@ -162,7 +162,7 @@ class Watiba(Exception):
             if host in pipe_stdout:
                 self.pipe(output[host].stdout, pipe_stdout)
 
-            # If we are supposed to pipe the stdout for this host, do it
+            # If we are supposed to pipe the stderr for this host, do it
             if host in pipe_stderr:
                 self.pipe(output[host].stderr, pipe_stderr)
 
