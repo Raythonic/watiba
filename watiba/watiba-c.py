@@ -48,7 +48,7 @@ class Compiler:
             "^spawn-ctl \s*(\S.*)": self.spawn_ctl_args,
 
             # chain {host:cmd...
-            "^chain \s*(\S.*)": self.chain_generator,
+            "^chain \s*`(\S.*)` \s*(\S.*)": self.chain_generator,
 
             # `cmd`@host
             ".*?([\-])?`(\S.*?)`@(\S.*) .*?": self.backticks_generator_with_host
@@ -72,7 +72,7 @@ class Compiler:
 
     # Generate chain command
     def chain_generator(self, parms):
-        self.output.append(f'_watiba_.chain({parms["match"].group(1)})')
+        self.output.append(f'_watiba_.chain({parms["match"].group(1)}, {parms["match"].group(2)})')
 
     # Set spawn controller args
     def spawn_ctl_args(self, parms):
