@@ -464,7 +464,7 @@ num_of_spawns = promise.spawn_count()  # Returns number of nodes in the promise 
 num_of_resolved_promises = promise.resolved_count() # Returns the number of promises resolved in tree
 ``` 
 
-# Remote Execution
+## Remote Execution
 Shell commands can be executed remotely.  This is achieved though the SSH command, issued by Watiba, and has the 
 following requirements:
 - OpenSSH is installed on the local and remote hosts
@@ -489,7 +489,7 @@ remotename = "serverB"
 out = `ls -lrt`@$remotename
 ```
 
-# Command Chaining
+## Command Chaining
 Watiba extends its remote command execution to chaining commands across multiple remote hosts.  This is achieved
 by the _chain_ expression.  This expression will execute the backticked command across a list of hosts, passed by
 the user, sequentially, synchronously until the hosts list is exhausted, or the command fails.  _chain_ returns a
