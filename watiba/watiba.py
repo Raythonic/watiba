@@ -145,7 +145,7 @@ class Watiba(Exception):
     def chain(self, cmd, parms, context=True):
         output = {}
         if "hosts" not in parms:
-            raise WTChainException("No host", cmd if cmd else parms["co"], None)
+            raise WTChainException("No host", cmd if cmd else cmd, None)
 
         hosts = parms["hosts"]
         pipe_stdout = parms["stdout"] if "stdout" in parms else {}
