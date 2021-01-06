@@ -126,7 +126,10 @@ class Watiba(Exception):
 
     # Pipe either stdout or stderr to some target host with some target cmd
     def pipe(self, pipe_source, pipe_target, output=True):
+        # This array determines the source type
         pipe_output = {True:pipe_source.stdout, False:pipe_source.stderr}
+
+        # Pipe output to target host command
         for pipe_to, cmd in pipe_target.items():
             for line in pipe_output[output]:
                 self.ssh(f'echo "{line}" | {cmd}', pipe_to)
@@ -159,10 +162,10 @@ class Watiba(Exception):
 
             # If we are supposed to pipe the stdout, do it
             if host in pipe_stdout:
-                self.pipe(output[host], pipe_stdout)
+                self.pipe(output[host], pipe_stdout, True)
 
             # If we are supposed to pipe the stdout, do it
             if host in pipe_stderr:
-                self.pipe(output[host], pipe_stderr)
+                self.pipe(output[host], pipe_stderr, False)
 
         return output
