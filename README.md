@@ -4,6 +4,15 @@ commands within Python applications.  It is similar to other languages' syntacti
 XML or HTML is integrated into a language such as JavaScript.  That is the concept applied here but integrating
 BASH shell commands with Python.
 
+As you browse this document, you'll Watiba is rich with features for shell command integration with Python.
+
+Features:
+- Shell command integration with Python code
+- Current directory context maintained across commands throughout your Python code
+- Async/promise support for integrated shell commands
+- Remote shell command execution
+- Remote shell command chaining and piping
+
 ## Usage
 Watiba files, suffixed with ".wt", are Python programs containing embedded shell commands. 
 Shell commands are expressed within backtick characters emulating BASH's original capture syntax.
