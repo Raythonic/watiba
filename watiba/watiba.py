@@ -18,8 +18,9 @@ from watiba.wtoutput import WTOutput
 
 
 class WTChainException(Exception):
-    def __init__(self, host, command, output):
+    def __init__(self, msg, host, command, output):
         self.host = host
+        self.msg = msg
         self.command = command
         self.output = output
 
@@ -129,8 +130,11 @@ class Watiba(Exception):
         # Pipe output to target host command
         for pipe_to, cmd in pipe_target.items():
             for line in pipe_source:
-                # The output for piped command is not kept
-                self.ssh(f'echo "{line}" | {cmd}', pipe_to)
+                # The output for piped command is not kept, but is checked for the exit code
+                o = self.ssh(f'echo "{line}" | {cmd}', pipe_to)
+                if o.exit_code != 0:
+                    raise WTChainException(f'Piped command failed on {pipe_to}.  Error code: {o.exit_code}', pipe_to,
+                                           cmd, o)
 
     # chain commands across various servers.  (Run sequentially and with regard to exit code.  A bad exit code causes
     # an exception to be thrown.
@@ -143,7 +147,7 @@ class Watiba(Exception):
     def chain(self, cmd, parms):
         output = {}
         if "hosts" not in parms:
-            raise WTChainException("No hosts in argument dict", cmd, None)
+            raise WTChainException("No hosts in argument dict", "none", cmd, None)
 
         hosts = parms["hosts"]
         pipe_stdout = parms["stdout"] if "stdout" in parms else {}
@@ -156,7 +160,8 @@ class Watiba(Exception):
 
             # If the command fails, bomb the whole execution
             if output[host].exit_code != 0:
-                raise WTChainException(host, cmd, output[host])
+                raise WTChainException(f'Command failed on {host}. Error code: {output[host].exit_code}', host, cmd,
+                                       output[host])
 
             # If we are supposed to pipe the stdout for this host, do it
             if host in pipe_stdout:
