@@ -533,7 +533,7 @@ except WTChainException as ex:
     print(f'ERROR: {ex.msg}, {ex.host}, {ex.command}, {ex.output.stderr})
 ```
 ```
-# This is a more complex chain that runs the _ls -lrt_ command on each server listed in _hosts_
+# This is a more complex chain that runs the "ls -lrt" command on each server listed in "hosts"
 # and pipes the STDOUT output from serverC to serverV and serverD, to those commands, and serverB's STDERR
 # to serverX and its command
 try:
@@ -549,7 +549,13 @@ except WTChainException as ex:
 ```
 
 ####How does this work?
-Watiba will run 
+Watiba will run the backticked command in the expression on each host listed in _hosts_, in sequence and synchronously.
+If there is a "stdout" found in the arguments, then it will name the source host as the key, i.e. the host from which
+STDOUT will be read, and fed to each host and command listed under that host.  This is true for STDERR as well.
+
+The method in which Watiba feeds the piped output is through a an _echo_ command shell piped to the command to be run
+on that host.  So, "stdout": {"serverC":{"serverV": "grep something"}} causes Watiba to read each line of STDOUT from
+serverC and issue ```echo "$line" | grep something``` on serverV.  It is piping from serverC to serverV.
 
 # Installation
 ## PIP
