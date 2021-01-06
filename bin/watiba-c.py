@@ -1,5 +1,5 @@
 #!/bin/python3
-versions = ["Watiba 0.1.215", "Python 3.8"]
+versions = ["Watiba 0.1.216", "Python 3.8"]
 '''
 Watiba pre-complier.  Watiba commands are BASH embedded commands between backtick characters (i.e. `), like traditional Bash captures.
 
@@ -37,6 +37,9 @@ class Compiler:
 
         # Regex expressions for Watiba commands (order matters otherwise backticks would win over spawn)
         self.expressions = {
+            # p = spawn `cmd`@host: block
+            "^(\S.*)?spawn \s*`(\S.*)`@(\S.*) \s*?(\S.*)?:.*": self.spawn_generator_with_host,
+
             # p = spawn `cmd`: block
             "^(\S.*)?spawn \s*`(\S.*)`@(\S.*) \s*?(\S.*)?:.*": self.spawn_generator_with_host,
 
@@ -45,6 +48,12 @@ class Compiler:
 
             # spawn-ctl {args}
             "^spawn-ctl \s*(\S.*)": self.spawn_ctl_args,
+
+            # chain {host:cmd...
+            "^chain \s*`(\S.*)` \s*(\S.*)": self.chain_generator,
+
+            # `cmd`@host
+            ".*?([\-])?`(\S.*?)`@(\S.*) .*?": self.backticks_generator_with_host
 
             # `cmd`
             ".*?([\-])?`(\S.*?)`.*?": self.backticks_generator
@@ -62,6 +71,10 @@ class Compiler:
                 print("    Block incorrectly terminated with:", file=sys.stderr)
                 print(f"      {self.last_stmt}", file=sys.stderr)
                 sys.exit(1)
+
+    # Generate chain command
+    def chain_generator(self, parms):
+        self.output.append(f'_watiba_.chain({parms["match"].group(1)}, {parms["match"].group(2)})')
 
     # Set spawn controller args
     def spawn_ctl_args(self, parms):
@@ -104,7 +117,16 @@ class Compiler:
         self.output.append(f'{parms["indentation"]}def {resolver_name}(promise, args):')
 
     # Generator for `cmd` expressions
-    def backticks_generator(self, parms):
+    def backticks_generator_with_host(self, parms):
+        host = parms["match"].group(3)
+        if host[0] == "$":
+            host = host.replace("$", "")
+        else:
+            host = f'"{host}"'
+        self.backticks_generator(parms, host)
+
+    # Generator for `cmd` expressions
+    def backticks_generator(self, parms, host=None):
         s = str(parms["statement"])
 
         # Run through the statement and replace ALL the backticked shell commands with Watiba function calls
@@ -123,8 +145,10 @@ class Compiler:
             else:
                 quote_style = "'" if cmd.find("'") < 0 else '"'
                 cmd = f"{quote_style}{cmd}{quote_style}"
-            s = s.replace(repl_str, f"{watiba_ref}.bash({cmd}, {context})", 1)
-
+            if not host:
+                s = s.replace(repl_str, f"{watiba_ref}.bash({cmd}, {context})", 1)
+            else:
+                s = s.replace(repl_str, f"{watiba_ref}.ssh({cmd}, {host}, {context})", 1)
             # Test for more backticked commands
             m = re.search(parms["pattern"], s)
 
