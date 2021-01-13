@@ -512,7 +512,7 @@ for host,output in out.items():
     for line in output.stderr:
         print(line)
 ```
-## Piping Output with Chain
+## Piping Output with Chain (Experimental)
 The _chain_ expression supports piping STDOUT and/or STDERR to other commands executed on remote servers.  Complex
 arrangements can be constructed through the Python dictionary passed to the _chain_ expression.  The dictionary
 contents function as follows:
@@ -529,6 +529,9 @@ Just like a _chain_ expression that does not pipe output, the return object is a
 by the host name from the _hosts_ list and *not* from the commands recieving the piped output.
 
 If any command fails, a WTChainException is raised.
+
+_Note_: _The piping feature is experimental as of this release, and a better design will eventually
+supercede it._
 
 Examples:  
 ```
@@ -548,7 +551,7 @@ except WTChainException as ex:
 try:
     args = {"hosts": ["serverA", "serverB", "serverC"],
                 "stdout": {"serverC":{"serverV": "grep something", "serverD":"grep somethingelse"}},
-                "stderr": {"serverB":{"serverX": "cat /tmp/serverC.err"}}
+                "stderr": {"serverB":{"serverX": "cat >> /tmp/serverC.err"}}
            }
     out = chain `ls -lrt dir/` args
     for host, output in out.items():
