@@ -4,7 +4,7 @@ commands within Python applications.  It is similar to other languages' syntacti
 XML or HTML is integrated into a language such as JavaScript.  That is the concept applied here but integrating
 BASH shell commands with Python.
 
-As you browse this document, you'll Watiba is rich with features for shell command integration with Python.
+As you browse this document, you'll find Watiba is rich with features for shell command integration with Python.
 
 Features:
 - Shell command integration with Python code
