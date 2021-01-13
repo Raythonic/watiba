@@ -98,7 +98,7 @@ class WTSpawnController():
                 try:
                     promise.attach(temp_id,
                                    threading.Thread(target=thread_callback, args=(promise, temp_id, thread_args,)))
-                    promise.last_thread().start()
+                    promise.threads[temp_id].start()
                 except Exception as ex:
                     raise ex
 
