@@ -30,7 +30,7 @@ class WTPromise(Exception):
         self.resolution = False
         self.start_time = time.time()
         self.end_time = None
-        self.threads = []
+        self.threads = {}
         self.thread_times = {}
         self.temp_id = ""
         self.killed = False
