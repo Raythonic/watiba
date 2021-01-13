@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: watiba
-Version: 0.2.12
+Version: 0.2.13
 Summary: Python syntactical sugar for embedded shell commands
 Home-page: https://github.com/Raythonic/watiba
 Author: Ray Walker
@@ -520,7 +520,7 @@ Description: # Watiba
             for line in output.stderr:
                 print(line)
         ```
-        ## Piping Output with Chain
+        ## Piping Output with Chain (Experimental)
         The _chain_ expression supports piping STDOUT and/or STDERR to other commands executed on remote servers.  Complex
         arrangements can be constructed through the Python dictionary passed to the _chain_ expression.  The dictionary
         contents function as follows:
@@ -537,6 +537,9 @@ Description: # Watiba
         by the host name from the _hosts_ list and *not* from the commands recieving the piped output.
         
         If any command fails, a WTChainException is raised.
+        
+        _Note_: _The piping feature is experimental as of this release, and a better design will eventually
+        supercede it._
         
         Examples:  
         ```
@@ -556,7 +559,7 @@ Description: # Watiba
         try:
             args = {"hosts": ["serverA", "serverB", "serverC"],
                         "stdout": {"serverC":{"serverV": "grep something", "serverD":"grep somethingelse"}},
-                        "stderr": {"serverB":{"serverX": "cat /tmp/serverC.err"}}
+                        "stderr": {"serverB":{"serverX": "cat >> /tmp/serverC.err"}}
                    }
             out = chain `ls -lrt dir/` args
             for host, output in out.items():
