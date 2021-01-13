@@ -94,9 +94,10 @@ class WTSpawnController():
         if not promise.killed:
             for h in host_list:
                 thread_args["host"] = h
+                temp_id = promise.get_temp_id()
                 try:
-                    promise.attach(
-                        threading.Thread(target=thread_callback, args=(promise, promise.get_temp_id(), thread_args,)))
+                    promise.attach(temp_id,
+                        threading.Thread(target=thread_callback, args=(promise, temp_id, thread_args,)))
                     promise.last_thread().start()
                 except Exception as ex:
                     raise ex
