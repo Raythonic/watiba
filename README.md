@@ -143,29 +143,6 @@ This exception is raised by the default error method. This method as well as oth
 can be overridden.  The controller's purpose is to not allow run away threads and provide signaling of possible
 hung threads.
 
-_Example of file that overrides spawn controller parameters_:
-```
-#!/usr/bin/python3.8
-def spawn_expired(promise, count):
-    print("I do nothing just to demonstrate the error callback.")
-    print("This command failed {} at this threshold {}".format(promise.command, count)
-    
-    raise Exception("Too many threads.")
-    
-if __name__ == "__main__":
-    # Example showing default values
-    parms = {"max": 10, # Max number of threads allowed before slowdown mode
-         "sleep-floor": .125,  # Starting sleep value
-         "sleep-ceiling": 3,  # Maximum sleep value
-         "sleep-increment": .125,  # Incremental sleep value
-         "expire": -1,  # Default: no expiration
-         "error": spawn_expired  # Method called upon slowdown expiration
-    }
-     
-    # Set spawn controller parameter values
-    spawn-ctl parms
-```
-
 Spawn control parameters:
 - _max_ - **Integer** The maximum number of spawned commands allowed before the controller enters slowdown mode
 - _sleep-floor_ - **Seconds** The starting sleep value when the controller enters slowdown mode
@@ -407,6 +384,29 @@ p = spawn `ls -lrt`:
             return True # Resolve child promise
         return False # Do NOT resolve parent promise here
 p.join()  # Wait for ALL promises to be resolved
+```
+
+_Example of file that overrides spawn controller parameters_:
+```
+#!/usr/bin/python3.8
+def spawn_expired(promise, count):
+    print("I do nothing just to demonstrate the error callback.")
+    print("This command failed {} at this threshold {}".format(promise.command, count)
+    
+    raise Exception("Too many threads.")
+    
+if __name__ == "__main__":
+    # Example showing default values
+    parms = {"max": 10, # Max number of threads allowed before slowdown mode
+         "sleep-floor": .125,  # Starting sleep value
+         "sleep-ceiling": 3,  # Maximum sleep value
+         "sleep-increment": .125,  # Incremental sleep value
+         "expire": -1,  # Default: no expiration
+         "error": spawn_expired  # Method called upon slowdown expiration
+    }
+     
+    # Set spawn controller parameter values
+    spawn-ctl parms
 ```
 
 ### Results from Spawned Commands
