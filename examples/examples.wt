@@ -140,5 +140,24 @@ p = spawn `echo "hello" && sleep 5` args:
 p.watch(watcher)
 print("watch() does not pause like join or wait")
 
+# Example of chaining commands.  Server names are those of developer and won't apply to your environment.
+out = chain `ls -lrt` {"hosts": ["walkubu", "walkubu2"]}
+for host,output in out.items():
+    print(f'{host} exit code: {output.exit_code}')
+    for line in output.stderr:
+        print(line)
+
+cmd = "ls -laF"
+out = chain `$cmd` {"hosts": ["walkubu", "walkubu2"]}
+for host,output in out.items():
+    print(f'{host} exit code: {output.exit_code}')
+    for line in output.stderr:
+        print(line)
+
+
+chain `$cmd` {"hosts": ["walkubu", "walkubu2"]}
+
+chain `ls -lrt` {"hosts": ["walkubu", "walkubu2"]}
+
 print("test complete.")
 
