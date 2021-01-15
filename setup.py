@@ -1,7 +1,12 @@
 import setuptools
+import os.path
 
-with open("doc/watiba.md", "r") as fh:
-    long_description = fh.read()
+if os.path.exists("doc"):
+    with open("doc/watiba.md", "r") as fh:
+        long_description = fh.read()
+else:
+    with open("README.md", "r") as fh:
+        long_description = fh.read()
 
 with open("watiba/version.py", "r") as fh:
     new_version = fh.read().strip()
