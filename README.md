@@ -48,16 +48,21 @@ watbia module.  Follow these steps to install Watiba locally.
 ```
 
 # Must install Watiba package
-pip3 install watiba
+pip install watiba
 
 # Now run the pre-compiler
-{watiba installation location}/bin/watiba-c.py your_file.wt > your_file.py
+{watiba cloned location}/bin/watiba-c.py your_file.wt > your_file.py
 ```
 
 Optionally, you can copy watiba-c.py to a location in your PATH or add {watiba installation location}/bin/
 to your exported PATH environment variable:
 ```
-export PATH=${PATH}:{watiba installation location}/bin
+export PATH=${PATH}:{watiba cloned location}/bin
+```
+
+For example, if you cloned this to /home/user/github/watiba, simply source or add this to your .bashrc file:
+```
+export PATH=${PATH}:/home/user/github/watiba/bin
 ```
 
 # Pre-compiling
