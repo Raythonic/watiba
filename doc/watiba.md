@@ -145,14 +145,26 @@ hung threads.
 
 Spawn control parameters:
 - _max_ - **Integer** The maximum number of spawned commands allowed before the controller enters slowdown mode
+  
+   **Default: 10**
 - _sleep-floor_ - **Seconds** The starting sleep value when the controller enters slowdown mode
+  
+   **Default: .125**
 - _sleep-increment_ - **Seconds** The amount of seconds sleep will increase every third cycle when in slowdown mode
+  
+   **Default: .125**
 - _sleep-ceiling_ - **Seconds** The highest length sleep value allowed when in slowdown mode.  (As slow as it will get.)
+  
+   **Default: 3**
 - _expire_ - **Integer** Total number of slowdown cycles allowed before the error method is called
+  
+   **Default: No expiration**
 - _error_ - **Method** Callback method invoked when slowdown mode expires.  By default, this will throw an exception.
         This method is passed 2 arguments:
   - _promise_ - The promise attempting execution at the time of expiration
-  - _count_ - The thread count (unresolved promises) at the time of expiration 
+  - _count_ - The thread count (unresolved promises) at the time of expiration
+    
+  **Default: Generic error handler**
     
 _spawn-ctl_ only overrides the values it sets and does not affect values not specified.  _spawn-ctl_ statements can
 set whichever values it wants, can be dispersed throughout your code (i.e. multiple _spawn-ctl_ statements) and 
