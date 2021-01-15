@@ -50,20 +50,13 @@ watbia module.  Follow these steps to install Watiba locally.
 # Must install Watiba package
 pip3 install watiba
 
-# Now edit makefile and run make
-cd {to where you git cloned watiba}/watiba
+# Now run the pre-compiler
+{watiba installation location}/bin/watiba-c.py your_file.wt > your_file.py
 
-# 1. Edit makefile
-# 2. Change the top two variables to your target destinations
-# 3. venv = /home/rwalk/Projects/python3/venv/lib64/python3.8/site-packages/
-#    bin = /home/rwalk/bin/watiba-c
-#        -- CHANGE TO --
-#    venv = {your Python venv environment}
-#    bin = {your bin directory and file name}
-
-# Execute command
-make
-
+Optionally, you can copy watiba-c.py to a location in your PATH or add {watiba installation location}/bin/
+to your exported PATH environment variable:
+```
+export PATH=${PATH}:{watiba installation location}/bin
 ```
 
 # Pre-compiling
