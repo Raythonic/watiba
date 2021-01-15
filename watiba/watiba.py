@@ -46,6 +46,7 @@ class Watiba(Exception):
             return self.ssh(cmd, host)
 
     # Run command remotely
+    # Allow port to be specified
     # Returns WTOutput object
     def ssh(self, cmd, host, ssh_port=22, context=True):
         return self.bash(f'ssh -p {ssh_port} {host} "{cmd}"', context)
