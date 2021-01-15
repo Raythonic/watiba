@@ -608,8 +608,6 @@ to your exported PATH environment variable:
 export PATH=${PATH}:{watiba installation location}/bin
 ```
 
-```
-
 # Pre-compiling
 Once you've installed watiba-c.py into your path, you can execute it to pre-compile
 your .wt (Watiba) code.  Output will be written to STDOUT, so you'll need to redirect
