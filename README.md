@@ -52,6 +52,7 @@ pip3 install watiba
 
 # Now run the pre-compiler
 {watiba installation location}/bin/watiba-c.py your_file.wt > your_file.py
+```
 
 Optionally, you can copy watiba-c.py to a location in your PATH or add {watiba installation location}/bin/
 to your exported PATH environment variable:
