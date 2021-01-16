@@ -539,10 +539,10 @@ the resolver block, and in the spawn expression if there is an assignment in tha
 The result properties can then be accessed as followed:</p>
 
 <ul>
-<li><strong>promise.output.stdout</strong> - array of output lines from the command normalized for display</li>
-<li><strong>promise.output.stderr</strong> - array of standard error output lines from the command normalized for display</li>
-<li><strong>promise.output.exit_code</strong> - integer exit code value from command</li>
-<li><strong>promise.output.cwd</strong> - current working directory after command was executed</li>
+<li><strong>promise.output[host].stdout</strong> - array of output lines from the command normalized for display</li>
+<li><strong>promise.output[host].stderr</strong> - array of standard error output lines from the command normalized for display</li>
+<li><strong>promise.output[host].exit_code</strong> - integer exit code value from command</li>
+<li><strong>promise.output[host].cwd</strong> - current working directory after command was executed</li>
 </ul>
 
 <p><em>Notes:</em>
@@ -563,7 +563,7 @@ The result properties can then be accessed as followed:</p>
 
 <p>d = 'date "+%Y/%m/%d"'
 spawn <code>$d</code>:
-    print(promise.output.stdout[0])
+    print(promise.output["localhost"].stdout[0])
     return True</p>
 
 <p>```</p>
@@ -579,9 +579,9 @@ spawn <code>$d</code>:
 <h1>run "ls -lrt" command asynchronously</h1>
 
 <p>p = spawn <code>ls -lrt</code>:
-    print("Exit code: {}".format(promise.output.exit_code))
-    print("CWD: {}".format(promise.output.cwd))
-    print("STDERR: {}".format(promise.output.stderr))</p>
+    print("Exit code: {}".format(promise.output["localhost"].exit_code))
+    print("CWD: {}".format(promise.output["localhost"].cwd))
+    print("STDERR: {}".format(promise.output["localhost"].stderr))</p>
 
 <pre><code># Loop through STDOUT from command
 for l in promise.output["localhost"].stdout:
