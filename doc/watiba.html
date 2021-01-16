@@ -152,6 +152,38 @@ to the caller of <em>spawn</em>.  The promise object is passed to the <em>resolv
 outer code can check its state with a call to <em>resolved()</em> on the <em>returned</em> promise object.  Output from the command
 is found in <em>promise.output</em>.  The examples throughout this README and in the <em>examples.wt</em> file make this clear.</p>
 
+<h5>Useful properties in promise structure</h5>
+
+<p>A promise is either returned in assignment from outermost spawn, or passed to child spawns in argument "promise".</p>
+
+<ul>
+<li><strong>output</strong> Dictionary with host names as key and values output objects holding stdout, stderr, exit_code, etc.
+If no remote commands were issued for the spawn, then output is found in key "localhost".
+<code>
+ promise.output["localhost"].stdout
+ promise.output["localhost"].stderr
+ promise.output["localhost"].exit_code
+ promise.output["localhost"].cwd
+</code></li>
+<li><strong>children</strong> Array of children promises for this promise node</li>
+<li><strong>parent</strong> Reference to parent promise node of this child promise. None if root promise.</li>
+<li><strong>command</strong> Shell command issued for this promise</li>
+<li><strong>resolved()</strong> Method to determine if this promise was marked resolved</li>
+<li><strong>start_time</strong> Time value of when spawned command started</li>
+<li><strong>end_time</strong> Time value of when spawned command was marked resolved</li>
+<li><strong>thread_times</strong> Multi-dimensional dictionary where thread id is the key referencing thread's start
+                  time, key "start-time" and thread's end time, key "end-time".</li>
+</ul>
+
+<p><code>
+        promise.thread_times[thread_id]["start-time"]
+        promise.thread_times[thread_id]["end-time"]
+</code>
+            Notes:
+            1. Until the thread id is known, a temporary key is used.  If you see a key of x's, like "xxx...",
+               then that is the temporary id.
+            2. Thread information is available by promise method dump_tree()</p>
+
 <h3>Spawn Controller</h3>
 
 <p>All spawned threads are managed by Watiba's Spawn Controller.  The controller watches for too many threads and
@@ -228,7 +260,7 @@ my_promise = spawn `cmd`:
 p = spawn</code>tar -zcvf /tmp/file.tar.gz /home/user/dir`:
     # Resolver block to which "promise" and "args" are passed
     # Resolver block is called when spawned command has completed
-    for line in promise.stderr:
+    for line in promise.output["localhost"].stderr:
         print(line)</p>
 
 <pre><code># This marks the promise resolved
@@ -389,7 +421,7 @@ root_promise = spawn</code>ls -lr<code>:
 
 <p><code>
 root_promise = spawn `ls -lr`:
-    for file in promise.stdout:
+    for file in promise.output["localhost"].stdout:
         t = "touch {}".format(file)
         spawn `$t` {"file" file}:  # This promise is a child of root
             print("{} updated".format(promise.args["file"]))
@@ -412,7 +444,7 @@ Note: "args" is optional and can be omitted
 <p><em>Example of joining parent and children promises</em>:
 <code>``
 p = spawn</code>ls *.txt<code>:
-    for f in promise.output.stdout:
+    for f in promise.output["localhost"].stdout:
         cmd = "tar -zcvf {}.tar.gz {}".format(f)
         spawn</code>$cmd` {"file":f}:
             print("{} completed".format(f)
@@ -442,7 +474,7 @@ Note: "args" is optional and can be omitted
 <p><em>Example of waiting on just the parent promise</em>:
 <code>``
 p = spawn</code>ls *.txt<code>:
-    for f in promise.output.stdout:
+    for f in promise.output["localhost"].stdout:
         cmd = "tar -zcvf {}.tar.gz {}".format(f)
         spawn</code>$cmd` {"file":f}:
             print("{} completed".format(f)
@@ -461,7 +493,7 @@ except Exception as ex:
 <p><em>Resolving a parent promise</em>:
 <code>
 p = spawn `ls -lrt`:
-    for f in promise.output.stdout:
+    for f in promise.output["localhost"].stdout:
         cmd = "touch {}".format(f)
         # Spawn command from this resolver and pass our promise
         spawn `$cmd`:
@@ -475,7 +507,7 @@ p.join()  # Wait for ALL promises to be resolved
 <p><em>Example of file that overrides spawn controller parameters</em>:
 ```</p>
 
-<h1>!/usr/bin/python3.8</h1>
+<h1>!/usr/bin/python3</h1>
 
 <p>def spawn_expired(promise, count):
     print("I do nothing just to demonstrate the error callback.")
@@ -552,7 +584,7 @@ spawn <code>$d</code>:
     print("STDERR: {}".format(promise.output.stderr))</p>
 
 <pre><code># Loop through STDOUT from command
-for l in promise.output.stdout:
+for l in promise.output["localhost"].stdout:
     print(l)
 `echo "Done" &gt; /tmp/done`
 
@@ -599,17 +631,25 @@ watiba-ctl {"ssh-port": 2233}
 Examples:
 <code>buildoutcfg
 p = spawn `ls -lrt`@remoteserver {parms}
+for line in p.output[remoteserver].stdout:
+    print(line)
 </code> <br />
 <code>buildoutcfg
 remotename = "serverB"
 p = spawn `ls -lrt`@$remotename {parms}
+for line in p.output[remotename].stdout:
+    print(line)
 </code>
 <code>buildoutcfg
 out = `ls -lrt`@remoteserver
+for line in out.stdout:
+    print(line)
 </code>
 <code>buildoutcfg
 remotename = "serverB"
 out = `ls -lrt`@$remotename
+for line in out.stdout:
+    print(line)
 </code></p>
 
 <h2>Command Chaining</h2>
@@ -820,13 +860,12 @@ if cmd<em>results.exit</em>code == 0:
 <p>xc = <code>lsvv -lrt</code>.exit_code
 print("Return code: {}".format(xc))</p>
 
-<h1>Example of running a command asynchronously and using the resolver callback code block</h1>
+<h1>Example of running a command asynchronously and resolving promise</h1>
 
 <p>spawn <code>cd /tmp &amp;&amp; tar -zxvf tarball.tar.gz</code>:
-    for l in promise.output.stderr:
+    for l in promise.output["localhost"].stderr:
         print(l)
-print("This prints before the tar output.")
-<code>sleep 5</code>  # Pause for 5 seconds so spawn can complete</p>
+    return True  # Mark promise resolved</p>
 
 <h1>List dirs from CWD, iterate through them, spawn a tar command</h1>
 
