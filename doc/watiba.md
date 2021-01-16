@@ -572,15 +572,18 @@ watiba-ctl {"ssh-port": 2233}
 ```
 Examples:
 ```buildoutcfg
-p = spawn `ls -lrt`@remoteserver {parms}
-for line in p.get_output(remoteserver).stdout:
-    print(line)
+p = spawn `ls -lrt`@remoteserver {parms}:
+    for line in promise.get_output(remoteserver).stdout:
+        print(line)
+    return True
+     
 ```  
 ```buildoutcfg
 remotename = "serverB"
-p = spawn `ls -lrt`@$remotename {parms}
-for line in p.get_output(remotename).stdout:
-    print(line)
+p = spawn `ls -lrt`@$remotename {parms}:
+    for line in p.get_output(remotename).stdout:
+        print(line)
+    return True
 ```
 ```buildoutcfg
 out = `ls -lrt`@remoteserver
