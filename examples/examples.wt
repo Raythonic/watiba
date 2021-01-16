@@ -128,14 +128,17 @@ except Exception as ex:
 # Remotely executed commands from spawn
 
 # Spawn command on remote host "walkubu2"
-p = spawn `pwd && hostname`@walkubu2:
-    for line in promise.get_output("walkubu2").stdout
+p = spawn `pwd`@walkubu2:
+    for linex in promise.get_output("walkubu2").stdout:
+        print(linex)
     return True
+p.join()
 
 # Spawn command on remote host "walkubu" with variable
 remote = "walkubu"
 p = spawn `pwd && hostname`@$remote:
-    for line in promise.get_output(remote).stdout
+    for liney in promise.get_output(remote).stdout:
+        print(liney)
     return True
 
 
@@ -164,15 +167,15 @@ watiba-ctl {"ssh-port":32}
 out = chain `ls -lrt` {"hosts": ["walkubu", "walkubu2"]}
 for host,output in out.items():
     print(f'{host} exit code: {output.exit_code}')
-    for line in output.stderr:
-        print(line)
+    for linez in output.stderr:
+        print(linez)
 
 cmd = "ls -laF"
 out = chain `$cmd` {"hosts": ["walkubu", "walkubu2"]}
 for host,output in out.items():
     print(f'{host} exit code: {output.exit_code}')
-    for line in output.stderr:
-        print(line)
+    for linea in output.stderr:
+        print(linea)
 
 
 chain `$cmd` {"hosts": ["walkubu", "walkubu2"]}

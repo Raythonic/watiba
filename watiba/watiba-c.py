@@ -44,7 +44,7 @@ class Compiler:
             # p = spawn `cmd`@host args: block
             "^(\S.*)?spawn \s*`(\S.*)`@(\S.*) \s*?(\S.*)?:.*": self.spawn_generator_with_host,
 
-            # p = spawn `cmd`: block
+            # p = spawn `cmd` args: block
             "^(\S.*)?spawn \s*`(\S.*)`\s*?(\S.*)?:.*": self.spawn_generator,
 
             # spawn-ctl {args}
@@ -95,7 +95,7 @@ class Compiler:
 
     # Handle spawn code blocks (with host specified)
     def spawn_generator_with_host(self, parms):
-        self.spawn_generator(parms, parms["match"].group(3))
+        self.spawn_generator(parms, host=parms["match"].group(3))
 
     # Handle spawn code blocks
     def spawn_generator(self, parms, host=None):
@@ -174,9 +174,11 @@ class Compiler:
         s = str(stmt)
 
         # Spit out spawn call if it's queued up (on block breaks)
-        if len(s.strip()) > 0 and s.lstrip()[0] != "#" and len(s) - len(s.lstrip()) < len(self.last_stmt) - len(
-                self.last_stmt.lstrip()):
-            if len(self.spawn_call) > 0:
+        if len(s.strip()) > 0 and \
+                s.lstrip()[0] != "#" and \
+                len(s) - len(s.lstrip()) < len(self.last_stmt) - len(self.last_stmt.lstrip()):
+            #print(f"INDENT TRIGGERED: ({s}){len(s) - len(s.lstrip())} vs. ({self.last_stmt}){len(self.last_stmt) - len(self.last_stmt.lstrip())}", file=sys.stderr)
+            if len(self.spawn_call) > 0 and len(self.spawn_call[-1]) - len(self.spawn_call[-1].lstrip()) == len(s) - len(s.lstrip()):
                 if re.search("^return ", self.last_stmt.strip()):
                     print(self.spawn_call.pop())
                 else:
@@ -231,9 +233,10 @@ if __name__ == "__main__":
                 for o in c.output:
                     print(o)
                 c.output = []
+
                 if len(statement.strip()) > 0:
-                    c.last_stmt = statement if len(statement.strip()) > 0 and statement.lstrip()[
-                        0] not in nothingness else c.last_stmt
+                    c.last_stmt = statement if statement.lstrip()[0] not in nothingness else c.last_stmt
+
 
     # Flush out any queued spawn statement calls
     c.flush()
