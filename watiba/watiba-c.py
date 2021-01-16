@@ -47,6 +47,9 @@ class Compiler:
             # spawn-ctl {args}
             "^spawn-ctl \s*(\S.*)": self.spawn_ctl_args,
 
+            # watbia-ctl {args}
+            "^watiba-ctl \s*(\S.*)": self.watiba_ctl_args,
+
             # chain {host:cmd...
             "^(\S.*)?chain \s*`(\S.*)` \s*(\S.*)": self.chain_generator,
 
@@ -81,6 +84,10 @@ class Compiler:
     # Set spawn controller args
     def spawn_ctl_args(self, parms):
         self.output.append(f'_watiba_.spawn_ctlr.set_parms({parms["match"].group(1)})')
+
+    # Set watiba control args
+    def watiba_ctl_args(self, parms):
+        self.output.append(f'_watiba_.set_parms({parms["match"].group(1)})')
 
     # Handle spawn code blocks (with host specified)
     def spawn_generator_with_host(self, parms):

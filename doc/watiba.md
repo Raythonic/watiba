@@ -494,18 +494,24 @@ following requirements:
 
 To execute a command remotely, an _@host_ parameter is suffixed to the backticked command.  The host name can be a
 literal or a variable.  To employ a variable, prepend a _$_ to the name following _@_.  
-Examples:
+
+To change the default SSH port 22 to a custom value, add to your Watiba code:  ```watiba-ctl {"ssh-port": custom port}```
+Example:
+```buildoutcfg
+watiba-ctl {"ssh-port": 2233}
 ```
+Examples:
+```buildoutcfg
 p = spawn `ls -lrt`@remoteserver {parms}
 ```  
-```
+```buildoutcfg
 remotename = "serverB"
 p = spawn `ls -lrt`@$remotename {parms}
 ```
-```
+```buildoutcfg
 out = `ls -lrt`@remoteserver
 ```
-```
+```buildoutcfg
 remotename = "serverB"
 out = `ls -lrt`@$remotename
 ```

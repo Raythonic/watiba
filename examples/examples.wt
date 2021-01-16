@@ -140,6 +140,8 @@ p = spawn `echo "hello" && sleep 5` args:
 p.watch(watcher)
 print("watch() does not pause like join or wait")
 
+watiba-ctl {"ssh-port":32}
+
 # Example of chaining commands.  Server names are those of developer and won't apply to your environment.
 out = chain `ls -lrt` {"hosts": ["walkubu", "walkubu2"]}
 for host,output in out.items():

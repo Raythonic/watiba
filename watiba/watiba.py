@@ -34,6 +34,11 @@ class Watiba(Exception):
 
     def __init__(self):
         self.spawn_ctlr = WTSpawnController()
+        self.parms = {"ssh-port":22}
+
+    def set_parms(self, args):
+        for k,v in args.items():
+            self.parms[k] = v
 
     # Called by spawned thread
     # Dir context is not kept by the spawn expression
@@ -46,10 +51,9 @@ class Watiba(Exception):
             return self.ssh(cmd, host)
 
     # Run command remotely
-    # Allow port to be specified
     # Returns WTOutput object
-    def ssh(self, cmd, host, ssh_port=22, context=True):
-        return self.bash(f'ssh -p {ssh_port} {host} "{cmd}"', context)
+    def ssh(self, cmd, host, context=True):
+        return self.bash(f'ssh -p {self.parms["ssh_port"}} {host} "{cmd}"', context)
 
     # cmd - command string to execute
     # context = track or not track current dir
@@ -146,7 +150,6 @@ class Watiba(Exception):
     #       }
     # Returns dictionary of WTOutput objects by host name: {host:WTOutput, ...}
     def chain(self, cmd, parms):
-        ssh_port = parms["ssh-port"] if "ssh-port" in parms else 22
         output = {}
         if "hosts" not in parms:
             raise WTChainException("No hosts in argument dict", "none", cmd, None)
@@ -157,7 +160,7 @@ class Watiba(Exception):
         # Loop through each host and run the command on it
         for host in parms["hosts"]:
             # Run command remotely through SSH
-            output[host] = self.ssh(cmd, host, ssh_port)
+            output[host] = self.ssh(cmd, host)
 
             # If the command fails, bomb the whole execution
             if output[host].exit_code != 0:
