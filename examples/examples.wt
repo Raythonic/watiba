@@ -132,7 +132,7 @@ p = spawn `pwd && hostname`@walkubu2:
     for line in promise.get_output("walkubu2").stdout
     return True
 
-# Spawn command on remote host "walkubu2" with variable
+# Spawn command on remote host "walkubu" with variable
 remote = "walkubu"
 p = spawn `pwd && hostname`@$remote:
     for line in promise.get_output(remote).stdout
