@@ -218,8 +218,11 @@ p = spawn `tar -zcvf /tmp/file.tar.gz /home/user/dir`:
     return True
     
 # Wait for spawned command to resolve (not merely complete)
-p.join()
-print("tar complete")
+try:
+    p.join()
+    print("tar resolved")
+except Exception as ex:
+    print(ex.args)
 ```
 
 **Join, Wait, or Watch**
@@ -248,7 +251,7 @@ Examples:
 ```
 # Spawn a thread running this command
 p = spawn `ls -lrt`:
-    resolver block
+    ## resolver block ##
     return True
     
 # Wait for promises, pause for 1/4 second each iteration, and throw an exception after 4 iterations (1 second)
