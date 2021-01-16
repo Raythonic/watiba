@@ -290,14 +290,41 @@ to the promise on which it is called and is how it is different than _join_.  _w
 promise state but the one it's called for, whereas _join_ considers the one it's called for **and** anything below it
 in the tree.
 
-The promise tree can be printed:
+The promise tree can be printed with the ```dump_tree()``` method on the promise.  This method is intended for
+diagnostic purposes where it must be determined why spawned commands hung.
 ```
+# Simple example with no child promises
 p = spawn `date`:
     return True
     
 p.tree_dump()  # Dump tree from root
 # or
 p.tree_dump(subtree_node)  # Dump tree from node in argument
+```
+
+Example dumping tree from subtree node:
+```buildoutcfg
+# Complex example with child and grandchild promises
+# Demonstrates how to dump the promise tree from various points within it
+p = spawn `date`:
+    # Spawn child command (child promise)
+    spawn `pwd`:
+        # Spawn a grandchild to the parent promise
+        spawn `python --version`:
+            promise.tree_dump(promise)  # Dump the subtree from this point down
+            return False
+    # Spawn another child
+     spawn `echo "blah"`:
+         # Resolve parent promise
+         promise.resolve_parent()
+         # Resolve child promise
+        return True
+    # Do NOT resolve parent promise, let child do that
+    return False
+p.join()
+p.tree_dump(p.children[0])  # Dump subtree from first child on down
+p.tree_dump(p.children[1])  # Dump subtree from the second child
+p.tree_dump(p.children[0].children[0]) # Dump subtree from the grandchild 
 ```
 
 _Parent and child joins shown in these two examples_:
