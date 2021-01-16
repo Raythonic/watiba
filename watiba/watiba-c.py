@@ -38,7 +38,10 @@ class Compiler:
             # p = spawn `cmd`@host: block
             "^(\S.*)?spawn \s*`(\S.*)`@(\S.*) \s*?(\S.*)?:.*": self.spawn_generator_with_host,
 
-            # p = spawn `cmd`: block
+            # p = spawn `cmd`@host: block
+            "^(\S.*)?spawn \s*`(\S.*)`@(\S.*)\s*?(\S.*)?:.*": self.spawn_generator_with_host,
+
+            # p = spawn `cmd`@host args: block
             "^(\S.*)?spawn \s*`(\S.*)`@(\S.*) \s*?(\S.*)?:.*": self.spawn_generator_with_host,
 
             # p = spawn `cmd`: block

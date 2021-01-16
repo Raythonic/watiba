@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: watiba
-Version: 0.2.89
+Version: 0.2.91
 Summary: Python syntactical sugar for embedded shell commands
 Home-page: https://github.com/Raythonic/watiba
 Author: Ray Walker
@@ -147,7 +147,8 @@ Description: # Watiba
         A promise is either returned in assignment from outermost spawn, or passed to child spawns in argument "promise".
         
         - **output** Dictionary with host names as key and values output objects holding stdout, stderr, exit_code, etc.
-            If no remote commands were issued for the spawn, then output is found in key "localhost".
+            If no remote commands were issued for the spawn, then output is found in key "localhost".  Use the
+            _get_output(host)_ to access this object.  If host is omitted, it defaults to "localhost".
           ```
              promise.get_output().stdout
              promise.get_output().stderr
@@ -580,13 +581,13 @@ Description: # Watiba
         Examples:
         ```buildoutcfg
         p = spawn `ls -lrt`@remoteserver {parms}
-        for line in p.output[remoteserver].stdout:
+        for line in p.get_output(remoteserver).stdout:
             print(line)
         ```  
         ```buildoutcfg
         remotename = "serverB"
         p = spawn `ls -lrt`@$remotename {parms}
-        for line in p.output[remotename].stdout:
+        for line in p.get_output(remotename).stdout:
             print(line)
         ```
         ```buildoutcfg
