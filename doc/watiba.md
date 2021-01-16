@@ -244,7 +244,7 @@ is resolved.  _watch_ expiration is expressed in **seconds**, unlike _join_ and 
 _iterations_ paused at the sleep value.  _watch_'s polling cycle pause is .250 seconds, so the expiration value is
 multiplied by 4.  The default expiration is 15 seconds.
 
-Examples with controlling parameters:
+Examples:
 ```
 # Spawn a thread running this command
 p = spawn `ls -lrt`:
