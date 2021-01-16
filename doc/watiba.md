@@ -206,6 +206,22 @@ my_promise = spawn `cmd`:
     return resolved or unresolved (True or False)
 ```
 
+_Simple spawn example_:
+```buildoutcfg
+p = spawn `tar -zcvf /tmp/file.tar.gz /home/user/dir`:
+    # Resolver block to which "promise" and "args" are passed
+    # Resolver block is called when spawned command has completed
+    for line in promise.stderr:
+        print(line)
+    
+    # This marks the promise resolved
+    return True
+    
+# Wait for spawned command to complete
+p.join()
+print("tar complete")
+```
+
 **Join, Wait, or Watch**
 
 Once commands are spawned, the caller can wait for _all_ promises, including inner or child promises, to complete, or
