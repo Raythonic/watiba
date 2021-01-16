@@ -1,5 +1,5 @@
 #!/bin/python3
-versions = ["Watiba 0.2.70", "Python 3.8"]
+versions = ["Watiba 0.2.73", "Python 3.8"]
 '''
 Watiba pre-complier.  Watiba commands are BASH embedded commands between backtick characters (i.e. `), like traditional Bash captures.
 
@@ -78,7 +78,8 @@ class Compiler:
     # Generate chain command
     def chain_generator(self, parms):
         assignment = parms["match"].group(1) if parms["match"].group(1) else ""
-        cmd = f'"{parms["match"].group(2)}"' if parms["match"].group(2)[0] != "$" else parms["match"].group(2).replace("$", "")
+        quote_type = "'" if "'" not in parms["match"].group(2) else '"'
+        cmd = f'{quote_type}{parms["match"].group(2)}{quote_type}' if parms["match"].group(2)[0] != "$" else parms["match"].group(2).replace("$", "")
         args = parms["match"].group(3)
 
         self.output.append(f'{assignment}_watiba_.chain({cmd}, {args})')
