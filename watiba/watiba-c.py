@@ -174,11 +174,19 @@ class Compiler:
         s = str(stmt)
 
         # Spit out spawn call if it's queued up (on block breaks)
-        if len(s.strip()) > 0 and \
-                s.lstrip()[0] != "#" and \
-                len(s) - len(s.lstrip()) < len(self.last_stmt) - len(self.last_stmt.lstrip()):
-            #print(f"INDENT TRIGGERED: ({s}){len(s) - len(s.lstrip())} vs. ({self.last_stmt}){len(self.last_stmt) - len(self.last_stmt.lstrip())}", file=sys.stderr)
-            if len(self.spawn_call) > 0 and len(self.spawn_call[-1]) - len(self.spawn_call[-1].lstrip()) == len(s) - len(s.lstrip()):
+
+        # Indention level of current statement
+        stmt_level = len(s) - len(s.lstrip()) if len(s.strip()) and s.lstrip()[0] != "#" else -1
+
+        # Indention level of last spawn expression
+        spawn_level = len(self.spawn_call[-1]) - len(self.spawn_call[-1].lstrip()) if len(self.spawn_call) > 0 else -1
+
+        # If we're on an indention change and there's valid levels to compare,
+        #   check if we're done with the resolver block
+        level_completed = stmt_level == spawn_level if stmt_level != -1 and spawn_level != -1 else False
+
+        # If done with the resolver block, did it terminate with a resolve value?
+        if level_completed:
                 if re.search("^return ", self.last_stmt.strip()):
                     print(self.spawn_call.pop())
                 else:
