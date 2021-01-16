@@ -160,10 +160,10 @@ is found in <em>promise.output</em>.  The examples throughout this README and in
 <li><strong>output</strong> Dictionary with host names as key and values output objects holding stdout, stderr, exit_code, etc.
 If no remote commands were issued for the spawn, then output is found in key "localhost".
 <code>
- promise.output["localhost"].stdout
- promise.output["localhost"].stderr
- promise.output["localhost"].exit_code
- promise.output["localhost"].cwd
+ promise.get_output().stdout
+ promise.get_output().stderr
+ promise.get_output().exit_code
+ promise.get_output().cwd
 </code></li>
 <li><strong>children</strong> Array of children promises for this promise node</li>
 <li><strong>parent</strong> Reference to parent promise node of this child promise. None if root promise.</li>
@@ -260,7 +260,7 @@ my_promise = spawn `cmd`:
 p = spawn</code>tar -zcvf /tmp/file.tar.gz /home/user/dir`:
     # Resolver block to which "promise" and "args" are passed
     # Resolver block is called when spawned command has completed
-    for line in promise.output["localhost"].stderr:
+    for line in promise.get_output().stderr:
         print(line)</p>
 
 <pre><code># This marks the promise resolved
@@ -421,7 +421,7 @@ root_promise = spawn</code>ls -lr<code>:
 
 <p><code>
 root_promise = spawn `ls -lr`:
-    for file in promise.output["localhost"].stdout:
+    for file in promise.get_output().stdout:
         t = "touch {}".format(file)
         spawn `$t` {"file" file}:  # This promise is a child of root
             print("{} updated".format(promise.args["file"]))
@@ -444,7 +444,7 @@ Note: "args" is optional and can be omitted
 <p><em>Example of joining parent and children promises</em>:
 <code>``
 p = spawn</code>ls *.txt<code>:
-    for f in promise.output["localhost"].stdout:
+    for f in promise.get_output().stdout:
         cmd = "tar -zcvf {}.tar.gz {}".format(f)
         spawn</code>$cmd` {"file":f}:
             print("{} completed".format(f)
@@ -474,7 +474,7 @@ Note: "args" is optional and can be omitted
 <p><em>Example of waiting on just the parent promise</em>:
 <code>``
 p = spawn</code>ls *.txt<code>:
-    for f in promise.output["localhost"].stdout:
+    for f in promise.get_output().stdout:
         cmd = "tar -zcvf {}.tar.gz {}".format(f)
         spawn</code>$cmd` {"file":f}:
             print("{} completed".format(f)
@@ -493,7 +493,7 @@ except Exception as ex:
 <p><em>Resolving a parent promise</em>:
 <code>
 p = spawn `ls -lrt`:
-    for f in promise.output["localhost"].stdout:
+    for f in promise.get_output().stdout:
         cmd = "touch {}".format(f)
         # Spawn command from this resolver and pass our promise
         spawn `$cmd`:
@@ -534,15 +534,15 @@ spawn-ctl parms
 
 <h3>Results from Spawned Commands</h3>
 
-<p>Spawned commands return their results in the <em>promise.output</em> property of the <em>promise</em> object passed to
+<p>Spawned commands return their results in the <em>promise.get</em>output()_ property of the <em>promise</em> object passed to
 the resolver block, and in the spawn expression if there is an assignment in that spawn expression. <br />
 The result properties can then be accessed as followed:</p>
 
 <ul>
-<li><strong>promise.output[host].stdout</strong> - array of output lines from the command normalized for display</li>
-<li><strong>promise.output[host].stderr</strong> - array of standard error output lines from the command normalized for display</li>
-<li><strong>promise.output[host].exit_code</strong> - integer exit code value from command</li>
-<li><strong>promise.output[host].cwd</strong> - current working directory after command was executed</li>
+<li><strong>promise.get_output().stdout</strong> - array of output lines from the command normalized for display</li>
+<li><strong>promise.get_output().stderr</strong> - array of standard error output lines from the command normalized for display</li>
+<li><strong>promise.get<em>output().exit</em>code</strong> - integer exit code value from command</li>
+<li><strong>promise.get_output().cwd</strong> - current working directory after command was executed</li>
 </ul>
 
 <p><em>Notes:</em>
@@ -563,7 +563,7 @@ The result properties can then be accessed as followed:</p>
 
 <p>d = 'date "+%Y/%m/%d"'
 spawn <code>$d</code>:
-    print(promise.output["localhost"].stdout[0])
+    print(promise.get_output().stdout[0])
     return True</p>
 
 <p>```</p>
@@ -579,12 +579,12 @@ spawn <code>$d</code>:
 <h1>run "ls -lrt" command asynchronously</h1>
 
 <p>p = spawn <code>ls -lrt</code>:
-    print("Exit code: {}".format(promise.output["localhost"].exit_code))
-    print("CWD: {}".format(promise.output["localhost"].cwd))
-    print("STDERR: {}".format(promise.output["localhost"].stderr))</p>
+    print("Exit code: {}".format(promise.get<em>output().exit</em>code))
+    print("CWD: {}".format(promise.get<em>output().cwd))
+    print("STDERR: {}".format(promise.get</em>output().stderr))</p>
 
 <pre><code># Loop through STDOUT from command
-for l in promise.output["localhost"].stdout:
+for l in promise.get_output().stdout:
     print(l)
 `echo "Done" &gt; /tmp/done`
 
@@ -863,7 +863,7 @@ print("Return code: {}".format(xc))</p>
 <h1>Example of running a command asynchronously and resolving promise</h1>
 
 <p>spawn <code>cd /tmp &amp;&amp; tar -zxvf tarball.tar.gz</code>:
-    for l in promise.output["localhost"].stderr:
+    for l in promise.get_output().stderr:
         print(l)
     return True  # Mark promise resolved</p>
 
