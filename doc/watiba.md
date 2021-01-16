@@ -492,10 +492,10 @@ Spawned commands return their results in the _promise.output_ property of the _p
 the resolver block, and in the spawn expression if there is an assignment in that spawn expression.  
 The result properties can then be accessed as followed:
  
-- **promise.output.stdout** - array of output lines from the command normalized for display
-- **promise.output.stderr** - array of standard error output lines from the command normalized for display
-- **promise.output.exit_code** - integer exit code value from command
-- **promise.output.cwd** - current working directory after command was executed
+- **promise.output[host].stdout** - array of output lines from the command normalized for display
+- **promise.output[host].stderr** - array of standard error output lines from the command normalized for display
+- **promise.output[host].exit_code** - integer exit code value from command
+- **promise.output[host].cwd** - current working directory after command was executed
 
 _Notes:_
 1. Watiba backticked commands can exist within the resolver 
@@ -513,7 +513,7 @@ _Simple example with the shell command as a Python variable_:
 # run "date" command asynchronously 
 d = 'date "+%Y/%m/%d"'
 spawn `$d`:
-    print(promise.output.stdout[0])
+    print(promise.output["localhost"].stdout[0])
     return True
 
 ```
@@ -527,9 +527,9 @@ print("Running Watiba spawn with wait")
 
 # run "ls -lrt" command asynchronously 
 p = spawn `ls -lrt`:
-    print("Exit code: {}".format(promise.output.exit_code))
-    print("CWD: {}".format(promise.output.cwd))
-    print("STDERR: {}".format(promise.output.stderr))
+    print("Exit code: {}".format(promise.output["localhost"].exit_code))
+    print("CWD: {}".format(promise.output["localhost"].cwd))
+    print("STDERR: {}".format(promise.output["localhost"].stderr))
 
     # Loop through STDOUT from command
     for l in promise.output["localhost"].stdout:
