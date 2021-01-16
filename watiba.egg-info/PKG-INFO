@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: watiba
-Version: 0.2.81
+Version: 0.2.82
 Summary: Python syntactical sugar for embedded shell commands
 Home-page: https://github.com/Raythonic/watiba
 Author: Ray Walker
@@ -207,26 +207,30 @@ Description: # Watiba
             return resolved or unresolved (True or False)
          ```
             
-        _For spawns within class definitions_:
-        ```
-        my_promise = self.spawn `cmd` [args]:
-            resolver block (promise, args)
-            args passed in args
-            return resolved or unresolved (True or False)
-        ```
-            
         _Spawn with resolver arguments omitted_:
         ```
         my_promise = spawn `cmd`:
             resolver block (promise, args)
             return resolved or unresolved (True or False)
         ```
-                
-        _For spawns within class definitions resolver arguments omitted_:
-        ```
-        my_promise = self.spawn `cmd`:
-            resolver block (promise, args)
-            return resolved or unresolved (True or False)
+        
+        _Simple spawn example_:
+        ```buildoutcfg
+        p = spawn `tar -zcvf /tmp/file.tar.gz /home/user/dir`:
+            # Resolver block to which "promise" and "args" are passed
+            # Resolver block is called when spawned command has completed
+            for line in promise.stderr:
+                print(line)
+            
+            # This marks the promise resolved
+            return True
+            
+        # Wait for spawned command to resolve (not merely complete)
+        try:
+            p.join()
+            print("tar resolved")
+        except Exception as ex:
+            print(ex.args)
         ```
         
         **Join, Wait, or Watch**
@@ -251,11 +255,11 @@ Description: # Watiba
         _iterations_ paused at the sleep value.  _watch_'s polling cycle pause is .250 seconds, so the expiration value is
         multiplied by 4.  The default expiration is 15 seconds.
         
-        Examples with controlling parameters:
+        Examples:
         ```
         # Spawn a thread running this command
         p = spawn `ls -lrt`:
-            resolver block
+            ## resolver block ##
             return True
             
         # Wait for promises, pause for 1/4 second each iteration, and throw an exception after 4 iterations (1 second)
@@ -294,14 +298,47 @@ Description: # Watiba
         promise state but the one it's called for, whereas _join_ considers the one it's called for **and** anything below it
         in the tree.
         
-        The promise tree can be printed:
+        The promise tree can be printed with the ```dump_tree()``` method on the promise.  This method is intended for
+        diagnostic purposes where it must be determined why spawned commands hung.  ```dump_tree(subtree)``` accepts
+        a subtree promise as an argument.  If no arguments are passed, ```dump_tree()``` dumps from the root promise on down.
         ```
+        # Simple example with no child promises
         p = spawn `date`:
             return True
             
         p.tree_dump()  # Dump tree from root
         # or
-        p.tree_dump(subtree_node)  # Dump tree from node in argument
+        p.tree_dump(subtree_promise)  # Dump tree from node in argument
+        ```
+        
+        Example dumping tree from subtree node:
+        ```buildoutcfg
+        # Complex example with child and grandchild promises
+        # Demonstrates how to dump the promise tree from various points within it
+        p = spawn `date`:
+            # Spawn child command (child promise)
+            spawn `pwd`:
+                # Spawn a grandchild to the parent promise
+                spawn `python --version`:
+                    promise.tree_dump(promise)  # Dump the subtree from this point down
+                    return False
+            # Spawn another child
+             spawn `echo "blah"`:
+                 # Resolve parent promise
+                 promise.resolve_parent()
+                 # Resolve child promise
+                return True
+            # Do NOT resolve parent promise, let child do that
+            return False
+            
+        p.join()
+        p.tree_dump(p.children[0])  # Dump subtree from first child on down
+        p.tree_dump(p.children[1])  # Dump subtree from the second child
+        p.tree_dump(p.children[0].children[0]) # Dump subtree from the grandchild 
+        
+        # Dump all children
+        for c in p.children:
+            p.tree_dump(c)
         ```
         
         _Parent and child joins shown in these two examples_:

@@ -216,14 +216,6 @@ my_promise = spawn `cmd` [args]:
     return resolved or unresolved (True or False)
 </code></p>
 
-<p><em>For spawns within class definitions</em>:
-<code>
-my_promise = self.spawn `cmd` [args]:
-    resolver block (promise, args)
-    args passed in args
-    return resolved or unresolved (True or False)
-</code></p>
-
 <p><em>Spawn with resolver arguments omitted</em>:
 <code>
 my_promise = spawn `cmd`:
@@ -231,12 +223,26 @@ my_promise = spawn `cmd`:
     return resolved or unresolved (True or False)
 </code></p>
 
-<p><em>For spawns within class definitions resolver arguments omitted</em>:
-<code>
-my_promise = self.spawn `cmd`:
-    resolver block (promise, args)
-    return resolved or unresolved (True or False)
-</code></p>
+<p><em>Simple spawn example</em>:
+<code>``buildoutcfg
+p = spawn</code>tar -zcvf /tmp/file.tar.gz /home/user/dir`:
+    # Resolver block to which "promise" and "args" are passed
+    # Resolver block is called when spawned command has completed
+    for line in promise.stderr:
+        print(line)</p>
+
+<pre><code># This marks the promise resolved
+return True
+</code></pre>
+
+<h1>Wait for spawned command to resolve (not merely complete)</h1>
+
+<p>try:
+    p.join()
+    print("tar resolved")
+except Exception as ex:
+    print(ex.args)
+```</p>
 
 <p><strong>Join, Wait, or Watch</strong></p>
 
@@ -260,13 +266,13 @@ is resolved.  <em>watch</em> expiration is expressed in <strong>seconds</strong>
 <em>iterations</em> paused at the sleep value.  <em>watch</em>'s polling cycle pause is .250 seconds, so the expiration value is
 multiplied by 4.  The default expiration is 15 seconds.</p>
 
-<p>Examples with controlling parameters:
+<p>Examples:
 ```</p>
 
 <h1>Spawn a thread running this command</h1>
 
 <p>p = spawn <code>ls -lrt</code>:
-    resolver block
+    ## resolver block ##
     return True</p>
 
 <h1>Wait for promises, pause for 1/4 second each iteration, and throw an exception after 4 iterations (1 second)</h1>
@@ -311,16 +317,55 @@ to the promise on which it is called and is how it is different than <em>join</e
 promise state but the one it's called for, whereas <em>join</em> considers the one it's called for <strong>and</strong> anything below it
 in the tree.</p>
 
-<p>The promise tree can be printed:
-<code>``
-p = spawn</code>date`:
+<p>The promise tree can be printed with the <code>dump_tree()</code> method on the promise.  This method is intended for
+diagnostic purposes where it must be determined why spawned commands hung.  <code>dump_tree(subtree)</code> accepts
+a subtree promise as an argument.  If no arguments are passed, <code>dump_tree()</code> dumps from the root promise on down.
+```</p>
+
+<h1>Simple example with no child promises</h1>
+
+<p>p = spawn <code>date</code>:
     return True</p>
 
 <p>p.tree_dump()  # Dump tree from root</p>
 
 <h1>or</h1>
 
-<p>p.tree<em>dump(subtree</em>node)  # Dump tree from node in argument
+<p>p.tree<em>dump(subtree</em>promise)  # Dump tree from node in argument
+```</p>
+
+<p>Example dumping tree from subtree node:
+```buildoutcfg</p>
+
+<h1>Complex example with child and grandchild promises</h1>
+
+<h1>Demonstrates how to dump the promise tree from various points within it</h1>
+
+<p>p = spawn <code>date</code>:
+    # Spawn child command (child promise)
+    spawn <code>pwd</code>:
+        # Spawn a grandchild to the parent promise
+        spawn <code>python --version</code>:
+            promise.tree<em>dump(promise)  # Dump the subtree from this point down
+            return False
+    # Spawn another child
+     spawn <code>echo "blah"</code>:
+         # Resolve parent promise
+         promise.resolve</em>parent()
+         # Resolve child promise
+        return True
+    # Do NOT resolve parent promise, let child do that
+    return False</p>
+
+<p>p.join()
+p.tree<em>dump(p.children[0])  # Dump subtree from first child on down
+p.tree</em>dump(p.children[1])  # Dump subtree from the second child
+p.tree_dump(p.children[0].children[0]) # Dump subtree from the grandchild </p>
+
+<h1>Dump all children</h1>
+
+<p>for c in p.children:
+    p.tree_dump(c)
 ```</p>
 
 <p><em>Parent and child joins shown in these two examples</em>:</p>
