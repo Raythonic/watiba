@@ -491,6 +491,9 @@ following requirements:
 - OpenSSH is installed on the local and remote hosts
 - The local SSH key is in the remote's _authorized_keys_ file.  _The details of this
   process is beyond the scope of this README.  For those instructions, consult www.ssh.com_
+  
+- Make sure that SSH'ing to the target host does not cause any prompts.  Test first by manually entering 
+  ```ssh {user}@{host} "ls -lrt"```.  For example, ```ssh rwalk@walkubu "ls -lrt"```
 
 To execute a command remotely, an _@host_ parameter is suffixed to the backticked command.  The host name can be a
 literal or a variable.  To employ a variable, prepend a _$_ to the name following _@_.  
