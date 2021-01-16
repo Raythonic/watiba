@@ -1,0 +1,805 @@
+<h1>Watiba</h1>
+
+<p>Watiba, pronounced wah-TEE-bah, is a lightweight Python pre-compiler for embedding Linux shell 
+commands within Python applications.  It is similar to other languages' syntactical enhancements where
+XML or HTML is integrated into a language such as JavaScript.  That is the concept applied here but integrating
+BASH shell commands with Python.</p>
+
+<p>As you browse this document, you'll find Watiba is rich with features for shell command integration with Python.</p>
+
+<p>Features:
+- Shell command integration with Python code
+- Current directory context maintained across commands throughout your Python code
+- Async/promise support for integrated shell commands
+- Remote shell command execution
+- Remote shell command chaining and piping</p>
+
+<h2>Usage</h2>
+
+<p>Watiba files, suffixed with ".wt", are Python programs containing embedded shell commands. 
+Shell commands are expressed within backtick characters emulating BASH's original capture syntax.
+They can be placed in any Python statement or expression.  Watiba keeps track of the current working directory 
+after the execution of any shell command so that all subsequent shell commands keep context.  For example:</p>
+
+<p>```</p>
+
+<h1>!/usr/bin/python3</h1>
+
+<p>if <strong>name</strong> == "<strong>main</strong>":
+    <code>cd /tmp</code>
+    for l in <code>ls -lrt</code>.stdout:
+        print(l)
+```</p>
+
+<p>This loop will display the file list from /tmp. The <code>ls -lrt</code> is run in the 
+context of previous <code>cd /tmp</code>.  </p>
+
+<h4>Commands Expressed as Variables</h4>
+
+<p>Commands within backticks can <em>be</em> a variable, but cannot contain snippets of Python code or Python variables. 
+The statement within the backticks <em>must</em> be either a pure shell command or a Python variable containing a pure
+shell command.  To execute commands in a Python variable, prefix the variable name between backticks with a dollar sign.</p>
+
+<p><em>A command variable is denoted by prepending a dollar sign on the variable name within backticks</em>:
+```</p>
+
+<h1>Set the Python variable to the command</h1>
+
+<p>touch_cmd = "touch /tmp/blah.txt"</p>
+
+<h1>Execute it</h1>
+
+<p><code>$touch_cmd</code>  # Execute the command within Python variable touch_cmd
+```</p>
+
+<p><em>This example demonstrates keeping dir context and executing a command by variable</em>:
+```</p>
+
+<h1>!/usr/bin/python3</h1>
+
+<p>if <strong>name</strong> == "<strong>main</strong>":
+    # Change CWD to /tmp
+    <code>cd /tmp</code></p>
+
+<pre><code># Set a command string
+my_cmd = "tar -zxvf blah.tar.gz"
+
+# Execute that command and save the result object in variable "w"
+w = `$my_cmd`
+if w.exit_code == 0:
+    for l in w.stderr:
+        print(l)
+</code></pre>
+
+<p>```</p>
+
+<p><em>An example of building a command from other variables and then executing it within 
+a print() statement</em>:
+<code>
+in_file = "some_file.txt"
+my_cmd = "cat {}".format(in_file)
+print(`$my_cmd`.stdout)
+</code></p>
+
+<p><em>These constructs are <strong>not</strong> supported</em>:
+ ```
+file_name = "blah.txt"</p>
+
+<h1>Python variable within backticks</h1>
+
+<p><code>touch file_name</code>  # NOT SUPPORTED!</p>
+
+<h1>Attempting to access Python variable with dollar sign</h1>
+
+<p><code>touch $file_name</code> # NOT SUPPORTED!</p>
+
+<h1>Python within backticks is NOT SUPPORTED!</h1>
+
+<p><code>if x not in l: ls -lrt x</code>
+```</p>
+
+<h3>Directory Context</h3>
+
+<p>An important Watiba usage point is directory context is kept for dispersed shell commands.
+Any command that changes the shell's CWD is discovered and kept by Watiba.  Watiba achieves 
+this by tagging a <code>&amp;&amp; echo pwd</code> to the user's command, locating the result in the command's STDOUT, 
+and finally setting the Python environment to that CWD with <code>os.chdir(dir)</code>.  This is automatic and 
+opaque to the user.  The user will not see the results of the generated suffix.  If the <code>echo</code> 
+suffix presents a problem for the user, it can be eliminated by prefixing the leading backtick with a
+dash.  The dash turns off the context track, by not suffixing the command, and so causes Watiba to
+lose its context.  However, the context is maintained <em>within</em> the set of commands in the backticks just not
+when it returns.  For example, <strong>out = -\<code>cd /tmp &amp;&amp; ls -lrt\</code></strong> honors the <code>cd</code> within the scope
+of that execution line, but not for any backticked commands that follow later in your code.</p>
+
+<p><strong><em>Warning!</em></strong> The dash will cause Watiba to lose its directory context should the command
+cause a CWD change either explicitly or implicitly.</p>
+
+<p><em>Example</em>:
+<code>``
+</code>cd /tmp`  # Context will be kept</p>
+
+<h1>This will print from /home/user, but context is NOT kept</h1>
+
+<p>for line in -<code>cd /home/user &amp;&amp; ls -lrt</code>.stdout:
+    print(line) </p>
+
+<h1>This will print from /tmp, not /home/user</h1>
+
+<p>for line in <code>ls -lrt</code>.stdout:
+    print(line)
+```</p>
+
+<h3>Command Results</h3>
+
+<p>The results of the command issued in backticks are available in the properties
+of the object returned by Watiba.  Following are those properties:</p>
+
+<ul>
+<li>stdout - <strong>array</strong> of output lines from the command normalized for display</li>
+<li>stderr - <strong>array</strong> of standard error output lines from the command normalized for display</li>
+<li>exit_code - <strong>integer</strong> exit code value from command</li>
+<li>cwd - <strong>string</strong> current working directory after command was executed</li>
+</ul>
+
+<h2>Asynchronous Spawning and Promises</h2>
+
+<p>Shell commands can be executed asynchronously with a defined resolver callback block.  Each <em>spawn</em> expression creates
+and runs a new OS thread. The resolver is a callback block that follows the Watiba <em>spawn</em> expression.  The spawn 
+feature is executed when a <code>spawn `cmd` args: resolver block</code> code block is encountered. The 
+resolver is passed the results in the promise object. (The promise structure contains the properties 
+defined in "Results from Spawned Command" of this README.)  The <em>spawn</em> expression also returns a <em>promise</em> object 
+to the caller of <em>spawn</em>.  The promise object is passed to the <em>resolver block</em> in argument <em>promise</em>.  The 
+outer code can check its state with a call to <em>resolved()</em> on the <em>returned</em> promise object.  Output from the command
+is found in <em>promise.output</em>.  The examples throughout this README and in the <em>examples.wt</em> file make this clear.</p>
+
+<h3>Spawn Controller</h3>
+
+<p>All spawned threads are managed by Watiba's Spawn Controller.  The controller watches for too many threads and
+incrementally slows down each thread start when that threshold is exceeded until either all the promises in the tree
+resolve, or an expiration count is reached, at which time an exception is thrown on the last spawned command. <br />
+This exception is raised by the default error method. This method as well as other spawn controlling parameters 
+can be overridden.  The controller's purpose is to not allow run away threads and provide signaling of possible
+hung threads.</p>
+
+<p>Spawn control parameters:
+- <em>max</em> - <strong>Integer</strong> The maximum number of spawned commands allowed before the controller enters slowdown mode</p>
+
+<p><strong>Default: 10</strong>
+- <em>sleep-floor</em> - <strong>Seconds</strong> The starting sleep value when the controller enters slowdown mode</p>
+
+<p><strong>Default: .125</strong>
+- <em>sleep-increment</em> - <strong>Seconds</strong> The amount of seconds sleep will increase every third cycle when in slowdown mode</p>
+
+<p><strong>Default: .125</strong>
+- <em>sleep-ceiling</em> - <strong>Seconds</strong> The highest length sleep value allowed when in slowdown mode.  (As slow as it will get.)</p>
+
+<p><strong>Default: 3</strong>
+- <em>expire</em> - <strong>Integer</strong> Total number of slowdown cycles allowed before the error method is called</p>
+
+<p><strong>Default: No expiration</strong>
+- <em>error</em> - <strong>Method</strong> Callback method invoked when slowdown mode expires.  By default, this will throw an exception.
+        This method is passed 2 arguments:
+  - <em>promise</em> - The promise attempting execution at the time of expiration
+  - <em>count</em> - The thread count (unresolved promises) at the time of expiration</p>
+
+<p><strong>Default: Generic error handler</strong></p>
+
+<p><em>spawn-ctl</em> only overrides the values it sets and does not affect values not specified.  <em>spawn-ctl</em> statements can
+set whichever values it wants, can be dispersed throughout your code (i.e. multiple <em>spawn-ctl</em> statements) and 
+only affects spawns subsequent to its setting at execution time.</p>
+
+<p><em>Notes:</em>
+1. Arguments can be passed to the resolver by specifying a trailing variable after the command.  If the arguments
+variable is omitted, an empty dictionary, i.e. {}, is passed to the resolver in <em>args</em>.
+<strong><em>Warning!</em></strong> Python threading does not deep copy objects passed as arguments to threads.  What you place in <code>args</code>
+of the spawn expression will only be shallow copied so if there are references to other objects, it's not likely to 
+   survive the copy.
+2. The resolver must return <em>True</em> to set the promise to resolved, or <em>False</em> to leave it unresolved.
+3. A resolver can also set the promise to resolved by calling <code>promise.set_resolved()</code>.  This is handy in cases where
+a resolver has spawned another command and doesn't want the outer promise resolved until the inner resolvers are done. 
+To resolve an outer, i.e. parent, resolver issue <em>promise.resolve</em>parent()<em>.  Then the parent resolver can return
+_False</em> at the end of its block so it leaves the resolved determination to the inner resolver block.
+4. Each promise object holds its OS thread object in property <em>thread</em> and its thread id in property <em>thread</em>id<em>. This
+can be useful for controlling the thread directly.  For example, to signal a kill. 
+5. _spawn-ctl</em> has no affect on <em>join</em>, <em>wait</em>, or <em>watch</em>.  This is because <em>spawn-ctl</em> establishes an upper end
+throttle on the overall spawning process.  When the number of spawns hits the max value, throttling (i.e. slowdown 
+   mode) takes affect and will expire if none of the promises resolve.  Conversely, the arguments used by <em>join</em>, 
+   <em>wait</em> and <em>watch</em> control the sleep cycle and expiration of just those calls, not the spawned threads as a whole. When
+   an expiration is set for, say, <em>join</em>, then that join will expire at that time.  When an expiration is set in
+   <em>spawn-ctl</em>, then if all the spawned threads as a whole don't resolve in time then an expiration function is called.</p>
+
+<p><strong><em>Spawn Syntax:</em></strong>
+<code>
+my_promise = spawn `cmd` [args]:
+    resolver block (promise, args)
+    args passed in args
+    return resolved or unresolved (True or False)
+</code></p>
+
+<p><em>For spawns within class definitions</em>:
+<code>
+my_promise = self.spawn `cmd` [args]:
+    resolver block (promise, args)
+    args passed in args
+    return resolved or unresolved (True or False)
+</code></p>
+
+<p><em>Spawn with resolver arguments omitted</em>:
+<code>
+my_promise = spawn `cmd`:
+    resolver block (promise, args)
+    return resolved or unresolved (True or False)
+</code></p>
+
+<p><em>For spawns within class definitions resolver arguments omitted</em>:
+<code>
+my_promise = self.spawn `cmd`:
+    resolver block (promise, args)
+    return resolved or unresolved (True or False)
+</code></p>
+
+<p><strong>Join, Wait, or Watch</strong></p>
+
+<p>Once commands are spawned, the caller can wait for <em>all</em> promises, including inner or child promises, to complete, or
+the caller can wait for just a specific promise to complete.  To wait for all <em>child</em> promises including
+the promise on which you're calling this method, call <em>join()</em>.  It will wait for that promise and all its children. To 
+wait for just one specific promise, call <em>wait()</em> on the promise of interest.  To wait for <em>all</em> promises in 
+the promise tree, call <em>join()</em> on the root promise.</p>
+
+<p><em>join</em> and <em>wait</em> can be controlled through parameters.  Each are iterators paused with a sleep method and will throw
+an expiration exception should you set a limit for iterations.  If an expiration value is not set,
+no exception will be thrown and the cycle will run only until the promise(s) are resolved.  <em>join</em> and <em>wait</em> are not
+affected by <em>spawn-ctl</em>.</p>
+
+<p><em>watch</em> is called to establish a separate asynchronous thread that will call back a function of your choosing should
+the command the promise is attached to times out.  This is different than <em>join</em> and <em>wait</em> in that <em>watch</em> is not synchronous 
+and does not pause.  This is used to keep an eye on a spawned command and take action should it hang.  Your watcher
+function is passed the promise on which the watcher was attached, and the arguments, if any, from the spawn expression.
+If your command does not time out (i.e. hangs and expires), the watcher thread will quietly go away when the promise
+is resolved.  <em>watch</em> expiration is expressed in <strong>seconds</strong>, unlike <em>join</em> and <em>wait</em> which are expressed as total
+<em>iterations</em> paused at the sleep value.  <em>watch</em>'s polling cycle pause is .250 seconds, so the expiration value is
+multiplied by 4.  The default expiration is 15 seconds.</p>
+
+<p>Examples with controlling parameters:
+```</p>
+
+<h1>Spawn a thread running this command</h1>
+
+<p>p = spawn <code>ls -lrt</code>:
+    resolver block
+    return True</p>
+
+<h1>Wait for promises, pause for 1/4 second each iteration, and throw an exception after 4 iterations (1 second)</h1>
+
+<p>try:
+    p.join({"sleep": .250, "expire": 4})
+except Exception as ex:
+    print(ex.args)</p>
+
+<h1>Wait for this promise, pause for 1 second each iteration, and throw an exception after 5 iterations (5 seconds)</h1>
+
+<p>try:
+    p.wait({"sleep": 1, "expire": 5})
+except Exception as ex:
+    print(ex.args)</p>
+
+<h1>My watcher function (called if spawned command never resolves by its experation period)</h1>
+
+<p>def watcher(promise, args):
+    print("This promise is likely hung: {}".format(promise.command))
+    print("and I still have the spawn expression's args: {}".format(args))</p>
+
+<p>p = spawn <code>echo "hello" &amp;&amp; sleep 5</code> args:
+    print("Args passed to me: {}".format(args))
+    return True</p>
+
+<h1>Attach a watcher to this thread.  It will be called upon experation.</h1>
+
+<p>p.watch(watcher)
+print("watch() does not pause like join or wait")</p>
+
+<h1>Attach a watcher that will expire in 5 seconds</h1>
+
+<p>p.watch(watcher, {"expire": 5})
+```</p>
+
+<h4>Promise Tree</h4>
+
+<p>Each <em>spawn</em> issued inserts its promise object into the promise tree.  The outermost <em>spawn</em> will generate the root
+promise and each inner <em>spawn</em> will be among its children.  There's no limit to how far it can nest.  <em>wait</em> only applies
+to the promise on which it is called and is how it is different than <em>join</em>.  <em>wait</em> does not consider any other
+promise state but the one it's called for, whereas <em>join</em> considers the one it's called for <strong>and</strong> anything below it
+in the tree.</p>
+
+<p>The promise tree can be printed:
+<code>``
+p = spawn</code>date`:
+    return True</p>
+
+<p>p.tree_dump()  # Dump tree from root</p>
+
+<h1>or</h1>
+
+<p>p.tree<em>dump(subtree</em>node)  # Dump tree from node in argument
+```</p>
+
+<p><em>Parent and child joins shown in these two examples</em>:</p>
+
+<p><code>`` 
+root_promise = spawn</code>ls -lr<code>:
+    for file in promise.stdout:
+        t = "touch {}".format(file)
+        spawn</code>$t<code>{"file" file}:  # This promise is a child of root
+            print("{} updated".format(promise.args["file"]))
+            spawn</code>echo "done" > /tmp/done"`:  # Another child promise (root's grandchild)
+                print("Complete")
+                promise.resolve<em>parent()
+                return True
+            promise.resolve</em>parent()
+            return False
+    return False</p>
+
+<p>root_promise.join()  # Wait on the root promise and all its children.  Thus, waiting for everything.
+```</p>
+
+<p><code>
+root_promise = spawn `ls -lr`:
+    for file in promise.stdout:
+        t = "touch {}".format(file)
+        spawn `$t` {"file" file}:  # This promise is a child of root
+            print("{} updated".format(promise.args["file"]))
+            promise.join() # Wait for this promise and its children but not its parent (root)
+            spawn `echo "done" &gt; /tmp/done"`:
+                print("Complete")
+</code></p>
+
+<p><strong><em>join</em> syntax</strong>:
+<code>
+promise.join(optional args)
+Where args is a Python dictionary with the following options:
+    "sleep" - seconds of sleep for each iteration (fractions such as .5 are honored)
+        default: .5 seconds
+    "expire" - number of sleep iterations until an excpetions is raised
+        default: no expiration
+Note: "args" is optional and can be omitted
+</code></p>
+
+<p><em>Example of joining parent and children promises</em>:
+<code>``
+p = spawn</code>ls *.txt<code>:
+    for f in promise.output.stdout:
+        cmd = "tar -zcvf {}.tar.gz {}".format(f)
+        spawn</code>$cmd` {"file":f}:
+            print("{} completed".format(f)
+            promise.resolve_parent()
+            return True
+    return False</p>
+
+<h1>Wait for all commands to complete</h1>
+
+<p>try:
+    p.join({"sleep":1, "expire":20})
+except Exception as ex:
+    print(ex.args)
+```</p>
+
+<p><strong><em>wait</em> syntax</strong>
+<code>
+promise.wait(optional args)
+Where args is a Python dictionary with the following options:
+    "sleep" - seconds of sleep for each iteration (fractions such as .5 are honored)
+        default: .5 seconds
+    "expire" - number of sleep iterations until an excpetions is raised
+        default: no expiration
+Note: "args" is optional and can be omitted
+</code></p>
+
+<p><em>Example of waiting on just the parent promise</em>:
+<code>``
+p = spawn</code>ls *.txt<code>:
+    for f in promise.output.stdout:
+        cmd = "tar -zcvf {}.tar.gz {}".format(f)
+        spawn</code>$cmd` {"file":f}:
+            print("{} completed".format(f)
+            promise.resolve_parent() # Wait completes here
+            return True
+    return False</p>
+
+<h1>Wait for just the parent promise to complete</h1>
+
+<p>try:
+    p.wait({"sleep":1, "expire":20})
+except Exception as ex:
+    print(ex.args)
+```</p>
+
+<p><em>Resolving a parent promise</em>:
+<code>
+p = spawn `ls -lrt`:
+    for f in promise.output.stdout:
+        cmd = "touch {}".format(f)
+        # Spawn command from this resolver and pass our promise
+        spawn `$cmd`:
+            print("Resolving all promises")
+            promise.resolve_parent() # Resolve parent promise here
+            return True # Resolve child promise
+        return False # Do NOT resolve parent promise here
+p.join()  # Wait for ALL promises to be resolved
+</code></p>
+
+<p><em>Example of file that overrides spawn controller parameters</em>:
+```</p>
+
+<h1>!/usr/bin/python3.8</h1>
+
+<p>def spawn_expired(promise, count):
+    print("I do nothing just to demonstrate the error callback.")
+    print("This command failed {} at this threshold {}".format(promise.command, count)</p>
+
+<pre><code>raise Exception("Too many threads.")
+</code></pre>
+
+<p>if <strong>name</strong> == "<strong>main</strong>":
+    # Example showing default values
+    parms = {"max": 10, # Max number of threads allowed before slowdown mode
+         "sleep-floor": .125,  # Starting sleep value
+         "sleep-ceiling": 3,  # Maximum sleep value
+         "sleep-increment": .125,  # Incremental sleep value
+         "expire": -1,  # Default: no expiration
+         "error": spawn_expired  # Method called upon slowdown expiration
+    }</p>
+
+<pre><code># Set spawn controller parameter values
+spawn-ctl parms
+</code></pre>
+
+<p>```</p>
+
+<h3>Results from Spawned Commands</h3>
+
+<p>Spawned commands return their results in the <em>promise.output</em> property of the <em>promise</em> object passed to
+the resolver block, and in the spawn expression if there is an assignment in that spawn expression. <br />
+The result properties can then be accessed as followed:</p>
+
+<ul>
+<li><strong>promise.output.stdout</strong> - array of output lines from the command normalized for display</li>
+<li><strong>promise.output.stderr</strong> - array of standard error output lines from the command normalized for display</li>
+<li><strong>promise.output.exit_code</strong> - integer exit code value from command</li>
+<li><strong>promise.output.cwd</strong> - current working directory after command was executed</li>
+</ul>
+
+<p><em>Notes:</em>
+1. Watiba backticked commands can exist within the resolver 
+2. Other <em>spawn</em> blocks can be embedded within a resolver (recursion allowed)
+3. The command within the <em>spawn</em> definition can be a variable
+    (The same rules apply as for all backticked shell commands.  This means the variable must contain
+   pure shell commands.)
+4. The leading dash to ignore CWD <em>cannot</em> be used in the <em>spawn</em> expression
+5. The <em>promise.output</em> object is not available until <em>promise.resolved()</em> returns True</p>
+
+<p><em>Simple example with the shell command as a Python variable</em>:
+```</p>
+
+<h1>!/usr/bin/python3</h1>
+
+<h1>run "date" command asynchronously</h1>
+
+<p>d = 'date "+%Y/%m/%d"'
+spawn <code>$d</code>:
+    print(promise.output.stdout[0])
+    return True</p>
+
+<p>```</p>
+
+<p><em>Example with shell commands executed within resolver block</em>:
+```</p>
+
+<h1>!/usr/bin/python3</h1>
+
+<p>print("Running Watiba spawn with wait")
+<code>rm /tmp/done</code></p>
+
+<h1>run "ls -lrt" command asynchronously</h1>
+
+<p>p = spawn <code>ls -lrt</code>:
+    print("Exit code: {}".format(promise.output.exit_code))
+    print("CWD: {}".format(promise.output.cwd))
+    print("STDERR: {}".format(promise.output.stderr))</p>
+
+<pre><code># Loop through STDOUT from command
+for l in promise.output.stdout:
+    print(l)
+`echo "Done" &gt; /tmp/done`
+
+# Resolve promise
+return True
+</code></pre>
+
+<h1>Pause until spawn command is complete</h1>
+
+<p>p.wait()
+print("complete")</p>
+
+<p>```</p>
+
+<h3>Thread Counting</h3>
+
+<p>To access to the number of threads your code has spawned.
+<code>
+num_of_spawns = promise.spawn_count()  # Returns number of nodes in the promise tree
+num_of_resolved_promises = promise.resolved_count() # Returns the number of promises resolved in tree
+</code> </p>
+
+<h2>Remote Execution</h2>
+
+<p>Shell commands can be executed remotely.  This is achieved though the SSH command, issued by Watiba, and has the 
+following requirements:
+- OpenSSH is installed on the local and remote hosts
+- The local SSH key is in the remote's <em>authorized</em>keys_ file.  <em>The details of this
+  process is beyond the scope of this README.  For those instructions, consult www.ssh.com</em></p>
+
+<ul>
+<li>Make sure that SSH'ing to the target host does not cause any prompts.  Test first by manually entering 
+<code>ssh {user}@{host} "ls -lrt"</code>.  For example, <code>ssh rwalk@walkubu "ls -lrt"</code></li>
+</ul>
+
+<p>To execute a command remotely, an <em>@host</em> parameter is suffixed to the backticked command.  The host name can be a
+literal or a variable.  To employ a variable, prepend a <em>$</em> to the name following <em>@</em>.  </p>
+
+<p>To change the default SSH port 22 to a custom value, add to your Watiba code:  <code>watiba-ctl {"ssh-port": custom port}</code>
+Example:
+<code>buildoutcfg
+watiba-ctl {"ssh-port": 2233}
+</code>
+Examples:
+<code>buildoutcfg
+p = spawn `ls -lrt`@remoteserver {parms}
+</code> <br />
+<code>buildoutcfg
+remotename = "serverB"
+p = spawn `ls -lrt`@$remotename {parms}
+</code>
+<code>buildoutcfg
+out = `ls -lrt`@remoteserver
+</code>
+<code>buildoutcfg
+remotename = "serverB"
+out = `ls -lrt`@$remotename
+</code></p>
+
+<h2>Command Chaining</h2>
+
+<p>Watiba extends its remote command execution to chaining commands across multiple remote hosts.  This is achieved
+by the <em>chain</em> expression.  This expression will execute the backticked command across a list of hosts, passed by
+the user, sequentially, synchronously until the hosts list is exhausted, or the command fails.  <em>chain</em> returns a
+Python dictionary where the keys are the host names and the values the WTOutput from the command run on that host.</p>
+
+<p>Examples:
+<code>
+out = chain `tar -zcvf backup/file.tar.gz dir/*` {"hosts", ["serverA", "serverB"]}
+for host,output in out.items():
+    print(f'{host} exit code: {output.exit_code}')
+    for line in output.stderr:
+        print(line)
+</code></p>
+
+<h2>Piping Output with Chain (Experimental)</h2>
+
+<p>The <em>chain</em> expression supports piping STDOUT and/or STDERR to other commands executed on remote servers.  Complex
+arrangements can be constructed through the Python dictionary passed to the <em>chain</em> expression.  The dictionary
+contents function as follows:
+- "hosts": [server, server, ...]   This entry instructions <em>chain</em> on which hosts the backticked command will run.
+    This is a required entry.</p>
+
+<ul>
+<li><p>"stdout": {server:command, server:command, ...}
+This is an optional entry.</p></li>
+<li><p>"stderr": {server:command, server:command, ...}
+This is an optional entry.</p></li>
+</ul>
+
+<p>Just like a <em>chain</em> expression that does not pipe output, the return object is a dictionary of WTOutput object keyed
+by the host name from the <em>hosts</em> list and <em>not</em> from the commands recieving the piped output.</p>
+
+<p>If any command fails, a WTChainException is raised.</p>
+
+<p><em>Note</em>: <em>The piping feature is experimental as of this release, and a better design will eventually
+supercede it.</em></p>
+
+<p>Examples: <br />
+```</p>
+
+<h1>This is a simple chain with no piping</h1>
+
+<p>try:
+    args = {"hosts": ["serverA", "serverB", "serverC"]}
+    out = chain <code>ls -lrt dir/</code> args
+    for host, output in out.items():
+        print(f'{host} exit code: {output.exit_code}')
+except WTChainException as ex:
+    print(f'ERROR: {ex.msg}, {ex.host}, {ex.command}, {ex.output.stderr})
+<code>
+</code></p>
+
+<h1>This is a more complex chain that runs the "ls -lrt" command on each server listed in "hosts"</h1>
+
+<h1>and pipes the STDOUT output from serverC to serverV and serverD, to those commands, and serverB's STDERR</h1>
+
+<h1>to serverX and its command</h1>
+
+<p>try:
+    args = {"hosts": ["serverA", "serverB", "serverC"],
+                "stdout": {"serverC":{"serverV": "grep something", "serverD":"grep somethingelse"}},
+                "stderr": {"serverB":{"serverX": "cat >> /tmp/serverC.err"}}
+           }
+    out = chain <code>ls -lrt dir/</code> args
+    for host, output in out.items():
+        print(f'{host} exit code: {output.exit_code}')
+except WTChainException as ex:
+    print(f'ERROR: {ex.msg}, {ex.host}, {ex.command}, {ex.output.stderr})
+```</p>
+
+<h4>How does this work?</h4>
+
+<p>Watiba will run the backticked command in the expression on each host listed in <em>hosts</em>, in sequence and synchronously.
+If there is a "stdout" found in the arguments, then it will name the source host as the key, i.e. the host from which
+STDOUT will be read, and fed to each host and command listed under that host.  This is true for STDERR as well.</p>
+
+<p>The method in which Watiba feeds the piped output is through a an <em>echo</em> command shell piped to the command to be run
+on that host.  So, "stdout": {"serverC":{"serverV": "grep something"}} causes Watiba to read each line of STDOUT from
+serverC and issue <code>echo "$line" | grep something</code> on serverV.  It is piping from serverC to serverV.</p>
+
+<h1>Installation</h1>
+
+<h2>PIP</h2>
+
+<p>If you installed this as a Python package, e.g. pip, then the pre-compiler can be found
+where the package was installed.  For example:
+<code>
+/home/{user}/.local/lib/python3.8/site-packages/watiba/watiba-c.py
+</code>
+This file can be copied to any directory in your PATH.  It is stand-alone and can be copied
+anywhere you need.</p>
+
+<h2>GITHUB</h2>
+
+<p>If you cloned this from github, you'll still need to install the package with pip, first, for the
+watbia module.  Follow these steps to install Watiba locally.
+```</p>
+
+<h2>Must install Watiba package</h2>
+
+<p>pip install watiba</p>
+
+<h1>Now run the pre-compiler</h1>
+
+<p>{watiba cloned location}/bin/watiba-c.py your<em>file.wt > your</em>file.py
+```</p>
+
+<p>Optionally, you can copy watiba-c.py to a location in your PATH or add {watiba installation location}/bin/
+to your exported PATH environment variable:
+<code>
+export PATH=${PATH}:{watiba cloned location}/bin
+</code></p>
+
+<p>For example, if you cloned this to /home/user/github/watiba, simply source or add this to your .bashrc file:
+<code>
+export PATH=${PATH}:/home/user/github/watiba/bin
+</code></p>
+
+<h1>Pre-compiling</h1>
+
+<p>Once you've installed watiba-c.py into your path, you can execute it to pre-compile
+your .wt (Watiba) code.  Output will be written to STDOUT, so you'll need to redirect
+it to your final Python file.  Example follows:
+<code>
+watiba-c.py my_file.wt &gt; my_file.py
+chmod +x my_file.py
+./my_file.py
+</code>
+To show the Watiba version of your pre-compiler, enter:
+<code>
+watiba-c.py version
+</code></p>
+
+<h3>Examples</h3>
+
+<p><strong>my_file.wt</strong></p>
+
+<p>```</p>
+
+<h1>!/usr/bin/python3</h1>
+
+<h1>Stand alone commands.  One with directory context, one without</h1>
+
+<h1>This CWD will be active until a subsequent command changes it</h1>
+
+<p><code>cd /tmp</code></p>
+
+<h1>Simple statement utilizing command and results in one statement</h1>
+
+<p>print(<code>cd /tmp</code>.cwd)</p>
+
+<h1>This will not change the Watiba CWD context, because of the dash prefix, but within</h1>
+
+<h1>the command itself the cd is honored.  file.txt is created in /home/user/blah but</h1>
+
+<h1>this does not impact the CWD of any subsequent commands.  They</h1>
+
+<h1>are still operating from the previous cd command to /tmp</h1>
+
+<p>-<code>cd /home/user/blah &amp;&amp; touch file.txt</code></p>
+
+<h1>This will print "/tmp" <em>not</em> /home because of the leading dash on the command</h1>
+
+<p>print("CWD is not /home: {}".format(-<code>cd /home</code>.cwd))</p>
+
+<h1>This will find text files in /tmp/, not /home/user/blah  (CWD context!)</h1>
+
+<p>w=<code>find . -name '*.txt'</code>
+for l in w.stdout:
+    print("File: {}".format(l))</p>
+
+<h1>Embedding commands in print expressions that will print the stderr output, which tar writes to</h1>
+
+<p>print(<code>echo "Some textual comment" &gt; /tmp/blah.txt &amp;&amp; tar -zcvf /tmp/blah.tar.gz /tmp</code>).stdout)</p>
+
+<h1>This will print the first line of stdout from the echo</h1>
+
+<p>print(<code>echo "hello!"</code>.stdout[0])</p>
+
+<h1>Example of more than one command in a statement line</h1>
+
+<p>if len(<code>ls -lrt</code>.stdout) > 0 or len(-<code>cd /tmp</code>.stdout) > 0:
+    print("You have stdout or stderr messages")</p>
+
+<h1>Example of a command as a Python varible and</h1>
+
+<h1>receiving a Watiba object</h1>
+
+<p>cmd = "tar -zcvf /tmp/watiba<em>test.tar.gz /mnt/data/git/watiba/src"
+cmd</em>results = <code>$cmd</code>
+if cmd<em>results.exit</em>code == 0:
+    for l in cmd_results.stderr:
+        print(l)</p>
+
+<h1>Simple reading of command output</h1>
+
+<h1>Iterate on the stdout property</h1>
+
+<p>for l in <code>cat blah.txt</code>.stdout:
+    print(l)</p>
+
+<h1>Example of a failed command to see its exit code</h1>
+
+<p>xc = <code>lsvv -lrt</code>.exit_code
+print("Return code: {}".format(xc))</p>
+
+<h1>Example of running a command asynchronously and using the resolver callback code block</h1>
+
+<p>spawn <code>cd /tmp &amp;&amp; tar -zxvf tarball.tar.gz</code>:
+    for l in promise.output.stderr:
+        print(l)
+print("This prints before the tar output.")
+<code>sleep 5</code>  # Pause for 5 seconds so spawn can complete</p>
+
+<h1>List dirs from CWD, iterate through them, spawn a tar command</h1>
+
+<h1>then within the resolver, spawn a move command</h1>
+
+<h1>Demonstrates spawns within resolvers</h1>
+
+<p>for dir in <code>ls -d *</code>.stdout:
+    tar = "tar -zcvf {}.tar.gz {}"
+    prom = spawn <code>$tar</code> {"dir": dir}:
+        print("{} tar complete".format(args["dir"]))
+        mv = "mv -r {}/* /tmp/.".format(args["dir"])
+        spawn <code>$mv</code>:
+            print("Move done")
+            # Resolve outer promise
+            promise.resolve_parent()
+            return True
+        # Do not resolve this promise yet.  Let the inner resolver do it
+        return False
+    prom.join()
+```</p>
