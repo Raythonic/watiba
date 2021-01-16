@@ -291,7 +291,8 @@ promise state but the one it's called for, whereas _join_ considers the one it's
 in the tree.
 
 The promise tree can be printed with the ```dump_tree()``` method on the promise.  This method is intended for
-diagnostic purposes where it must be determined why spawned commands hung.
+diagnostic purposes where it must be determined why spawned commands hung.  ```dump_tree(subtree)``` accepts
+a subtree promise as an argument.  If no arguments are passed, ```dump_tree()``` dumps from the root promise on down.
 ```
 # Simple example with no child promises
 p = spawn `date`:
@@ -299,7 +300,7 @@ p = spawn `date`:
     
 p.tree_dump()  # Dump tree from root
 # or
-p.tree_dump(subtree_node)  # Dump tree from node in argument
+p.tree_dump(subtree_promise)  # Dump tree from node in argument
 ```
 
 Example dumping tree from subtree node:
@@ -321,10 +322,15 @@ p = spawn `date`:
         return True
     # Do NOT resolve parent promise, let child do that
     return False
+    
 p.join()
 p.tree_dump(p.children[0])  # Dump subtree from first child on down
 p.tree_dump(p.children[1])  # Dump subtree from the second child
 p.tree_dump(p.children[0].children[0]) # Dump subtree from the grandchild 
+
+# Dump all children
+for c in p.children:
+    p.tree_dump(c)
 ```
 
 _Parent and child joins shown in these two examples_:
