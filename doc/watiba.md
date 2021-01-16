@@ -205,13 +205,6 @@ my_promise = spawn `cmd`:
     resolver block (promise, args)
     return resolved or unresolved (True or False)
 ```
-        
-_For spawns within class definitions resolver arguments omitted_:
-```
-my_promise = self.spawn `cmd`:
-    resolver block (promise, args)
-    return resolved or unresolved (True or False)
-```
 
 **Join, Wait, or Watch**
 
