@@ -80,7 +80,7 @@ class Compiler:
         cmd = f'{quote_type}{parms["match"].group(2)}{quote_type}' if parms["match"].group(2)[0] != "$" else parms["match"].group(2).replace("$", "")
         args = parms["match"].group(3)
 
-        self.output.append(f'{assignment}_}.chain({cmd}, {args})')
+        self.output.append(f'{assignment}{watiba_ref}.chain({cmd}, {args})')
 
     # Set spawn controller args
     def spawn_ctl_args(self, parms):
