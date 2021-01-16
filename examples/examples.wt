@@ -113,6 +113,8 @@ args = {"count": global_counter + 1,
 
 p = spawn `echo "hello" && sleep 5` args:
     print("Args passed to me: {}".format(args))
+    # Print output
+    print(promise.output["localhost"].stdout)
     return True
 
 # Wait for promise to resolve
@@ -140,6 +142,7 @@ p = spawn `echo "hello" && sleep 5` args:
 p.watch(watcher)
 print("watch() does not pause like join or wait")
 
+# Set a custom port
 watiba-ctl {"ssh-port":32}
 
 # Example of chaining commands.  Server names are those of developer and won't apply to your environment.
