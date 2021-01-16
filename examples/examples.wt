@@ -114,7 +114,7 @@ args = {"count": global_counter + 1,
 p = spawn `echo "hello" && sleep 5` args:
     print("Args passed to me: {}".format(args))
     # Print output
-    print(promise.output["localhost"].stdout)
+    print(promise.get_output().stdout)
     return True
 
 # Wait for promise to resolve
