@@ -176,7 +176,7 @@ class Compiler:
         # Spit out spawn call if it's queued up (on block breaks)
 
         # Indention level of current statement
-        stmt_level = len(s) - len(s.lstrip()) if len(s.strip()) and s.lstrip()[0] != "#" else -1
+        stmt_level = len(s) - len(s.lstrip()) if len(s.strip()) > 0 and s.lstrip()[0] != "#" else -1
 
         # Indention level of last spawn expression
         spawn_level = len(self.spawn_call[-1]) - len(self.spawn_call[-1].lstrip()) if len(self.spawn_call) > 0 else -1
