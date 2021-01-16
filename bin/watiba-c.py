@@ -1,5 +1,5 @@
 #!/bin/python3
-versions = ["Watiba 0.2.161", "Python 3.8"]
+versions = ["Watiba 0.3.1", "Python 3.8"]
 '''
 Watiba pre-complier.  Watiba commands are BASH embedded commands between backtick characters (i.e. `), like traditional Bash captures.
 

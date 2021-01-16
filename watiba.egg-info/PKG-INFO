@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: watiba
-Version: 0.2.161
+Version: 0.3.1
 Summary: Python syntactical sugar for embedded shell commands
 Home-page: https://github.com/Raythonic/watiba
 Author: Ray Walker
@@ -580,15 +580,18 @@ Description: # Watiba
         ```
         Examples:
         ```buildoutcfg
-        p = spawn `ls -lrt`@remoteserver {parms}
-        for line in p.get_output(remoteserver).stdout:
-            print(line)
+        p = spawn `ls -lrt`@remoteserver {parms}:
+            for line in promise.get_output(remoteserver).stdout:
+                print(line)
+            return True
+             
         ```  
         ```buildoutcfg
         remotename = "serverB"
-        p = spawn `ls -lrt`@$remotename {parms}
-        for line in p.get_output(remotename).stdout:
-            print(line)
+        p = spawn `ls -lrt`@$remotename {parms}:
+            for line in p.get_output(remotename).stdout:
+                print(line)
+            return True
         ```
         ```buildoutcfg
         out = `ls -lrt`@remoteserver

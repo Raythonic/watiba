@@ -630,28 +630,31 @@ Example:
 watiba-ctl {"ssh-port": 2233}
 </code>
 Examples:
-<code>buildoutcfg
-p = spawn `ls -lrt`@remoteserver {parms}
-for line in p.get_output(remoteserver).stdout:
-    print(line)
-</code> <br />
-<code>buildoutcfg
+<code>``buildoutcfg
+p = spawn</code>ls -lrt`@remoteserver {parms}:
+    for line in promise.get_output(remoteserver).stdout:
+        print(line)
+    return True</p>
+
+<p><code>
+</code>buildoutcfg
 remotename = "serverB"
-p = spawn `ls -lrt`@$remotename {parms}
-for line in p.get_output(remotename).stdout:
-    print(line)
-</code>
-<code>buildoutcfg
-out = `ls -lrt`@remoteserver
+p = spawn <code>ls -lrt</code>@$remotename {parms}:
+    for line in p.get_output(remotename).stdout:
+        print(line)
+    return True
+<code>
+</code>buildoutcfg
+out = <code>ls -lrt</code>@remoteserver
 for line in out.stdout:
     print(line)
-</code>
-<code>buildoutcfg
+<code>
+</code>buildoutcfg
 remotename = "serverB"
-out = `ls -lrt`@$remotename
+out = <code>ls -lrt</code>@$remotename
 for line in out.stdout:
     print(line)
-</code></p>
+```</p>
 
 <h2>Command Chaining</h2>
 
