@@ -183,10 +183,10 @@ class Compiler:
 
         # If we're on an indention change and there's valid levels to compare,
         #   check if we're done with the resolver block
-        level_completed = stmt_level == spawn_level if stmt_level != -1 else False
+        resolver_level_completed = stmt_level == spawn_level if stmt_level != -1 else False
 
         # If done with the resolver block, did it terminate with a resolve value?
-        if level_completed:
+        if resolver_level_completed:
                 if re.search("^return ", self.last_stmt.strip()):
                     print(self.spawn_call.pop())
                 else:

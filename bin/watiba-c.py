@@ -1,5 +1,5 @@
 #!/bin/python3
-versions = ["Watiba 0.2.156", "Python 3.8"]
+versions = ["Watiba 0.2.158", "Python 3.8"]
 '''
 Watiba pre-complier.  Watiba commands are BASH embedded commands between backtick characters (i.e. `), like traditional Bash captures.
 
@@ -185,10 +185,10 @@ class Compiler:
 
         # If we're on an indention change and there's valid levels to compare,
         #   check if we're done with the resolver block
-        level_completed = stmt_level == spawn_level if stmt_level != -1 and spawn_level != -1 else False
+        resolver_level_completed = stmt_level == spawn_level if stmt_level != -1 else False
 
         # If done with the resolver block, did it terminate with a resolve value?
-        if level_completed:
+        if resolver_level_completed:
                 if re.search("^return ", self.last_stmt.strip()):
                     print(self.spawn_call.pop())
                 else:
