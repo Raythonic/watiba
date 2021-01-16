@@ -217,7 +217,7 @@ p = spawn `tar -zcvf /tmp/file.tar.gz /home/user/dir`:
     # This marks the promise resolved
     return True
     
-# Wait for spawned command to complete
+# Wait for spawned command to resolve (not merely complete)
 p.join()
 print("tar complete")
 ```
