@@ -80,15 +80,15 @@ class Compiler:
         cmd = f'{quote_type}{parms["match"].group(2)}{quote_type}' if parms["match"].group(2)[0] != "$" else parms["match"].group(2).replace("$", "")
         args = parms["match"].group(3)
 
-        self.output.append(f'{assignment}_watiba_.chain({cmd}, {args})')
+        self.output.append(f'{assignment}_}.chain({cmd}, {args})')
 
     # Set spawn controller args
     def spawn_ctl_args(self, parms):
-        self.output.append(f'_watiba_.spawn_ctlr.set_parms({parms["match"].group(1)})')
+        self.output.append(f'{watiba_ref}.spawn_ctlr.set_parms({parms["match"].group(1)})')
 
     # Set watiba control args
     def watiba_ctl_args(self, parms):
-        self.output.append(f'_watiba_.set_parms({parms["match"].group(1)})')
+        self.output.append(f'{watiba_ref}.set_parms({parms["match"].group(1)})')
 
     # Handle spawn code blocks (with host specified)
     def spawn_generator_with_host(self, parms):
@@ -121,7 +121,7 @@ class Compiler:
 
         # Queue up async call which is executed (spit out) at the end of the w_spawn block
         self.spawn_call.append(
-            f'{parms["indentation"]}{promise_assign}_watiba_.spawn({cmd}, {resolver_name}, {resolver_args}, {"locals()"}, {h})')
+            f'{parms["indentation"]}{promise_assign}{watiba_ref}.spawn({cmd}, {resolver_name}, {resolver_args}, {"locals()"}, {h})')
 
         # Convert spawn `cmd`: statement to proper Python function definition
         self.output.append(f'{parms["indentation"]}def {resolver_name}(promise, args):')
@@ -214,7 +214,6 @@ if __name__ == "__main__":
         print(f"ERROR: Input file must be type .wt.  Found {in_file}")
         sys.exit(1)
 
-    out_file = in_file.replace('.wt', '.py', 1)
     c = None
 
     # Statements to ignore when looking for block terminations
