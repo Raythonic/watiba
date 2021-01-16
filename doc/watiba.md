@@ -211,7 +211,7 @@ _Simple spawn example_:
 p = spawn `tar -zcvf /tmp/file.tar.gz /home/user/dir`:
     # Resolver block to which "promise" and "args" are passed
     # Resolver block is called when spawned command has completed
-    for line in promise.stderr:
+    for line in promise.output.stderr:
         print(line)
     
     # This marks the promise resolved
