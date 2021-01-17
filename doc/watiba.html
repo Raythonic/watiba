@@ -77,7 +77,7 @@ if w.exit_code == 0:
 a print() statement</em>:
 <code>
 in_file = "some_file.txt"
-my_cmd = "cat {}".format(in_file)
+my_cmd = f"cat {in_file}"
 print(`$my_cmd`.stdout)
 </code></p>
 
@@ -331,7 +331,7 @@ except Exception as ex:
     print("and I still have the spawn expression's args: {}".format(args))</p>
 
 <p>p = spawn <code>echo "hello" &amp;&amp; sleep 5</code> args:
-    print("Args passed to me: {}".format(args))
+    print(f"Args passed to me: {args}")
     return True</p>
 
 <h1>Attach a watcher to this thread.  It will be called upon experation.</h1>
@@ -410,7 +410,7 @@ root_promise = spawn</code>ls -lr<code>:
     for file in promise.stdout:
         t = "touch {}".format(file)
         spawn</code>$t<code>{"file" file}:  # This promise is a child of root
-            print("{} updated".format(promise.args["file"]))
+            print(f"{} updated".)
             spawn</code>echo "done" > /tmp/done"`:  # Another child promise (root's grandchild)
                 print("Complete")
                 promise.resolve<em>parent()
