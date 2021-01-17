@@ -11,7 +11,7 @@ else:
         long_description = fh.read()
         home = expanduser("~")
         copyfile("watiba/watiba-c.py", f"{home}/.local/bin/watiba-c")
-        os.chmod(f"{home}/.local/bin/watiba-c")
+        os.chmod(f"{home}/.local/bin/watiba-c", 0o0766)
 
 
 with open("watiba/version.py", "r") as fh:
