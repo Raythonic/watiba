@@ -2,6 +2,7 @@ README.md
 setup.py
 watiba/__init__.py
 watiba/version.py
+watiba/watiba-c-bin.py
 watiba/watiba-c.py
 watiba/watiba.py
 watiba/wtoutput.py
