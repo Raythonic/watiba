@@ -32,6 +32,7 @@ class Compiler:
         self.resolver_count = 1
         self.spawn_call = []
         self.last_stmt = ""
+        self.stmt_count = 0
 
         # Regex expressions for Watiba commands (order matters otherwise backticks would win over spawn)
         self.expressions = {
@@ -72,7 +73,7 @@ class Compiler:
                     print(self.spawn_call.pop())
             else:
                 print("ERROR in flush: Resolver block not properly terminated with return.", file=sys.stderr)
-                print("    Block incorrectly terminated with:", file=sys.stderr)
+                print(f"    Block at line {self.stmt_count} incorrectly terminated with:", file=sys.stderr)
                 print(f"      {self.last_stmt}", file=sys.stderr)
                 sys.exit(1)
 
@@ -191,7 +192,7 @@ class Compiler:
                     print(self.spawn_call.pop())
                 else:
                     print("ERROR: Resolver block not properly terminated with return.", file=sys.stderr)
-                    print("    Block incorrectly terminated with:", file=sys.stderr)
+                    print(f"    Block at line {self.stmt_count} incorrectly terminated with:", file=sys.stderr)
                     print(f"      {self.last_stmt}", file=sys.stderr)
                     sys.exit(1)
 
@@ -237,6 +238,7 @@ if __name__ == "__main__":
             if not c:
                 c = Compiler(statement.rstrip())
             else:
+                c.stmt_count += 1
                 c.compile(statement.rstrip())
                 for o in c.output:
                     print(o)

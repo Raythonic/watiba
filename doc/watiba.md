@@ -284,13 +284,15 @@ p = spawn `ls -lrt`:
     ## resolver block ##
     return True
     
-# Wait for promises, pause for 1/4 second each iteration, and throw an exception after 4 iterations (1 second)
+# Wait for promises, pause for 1/4 second each iteration, and throw an exception after 4 iterations 
+(1 second)
 try:
     p.join({"sleep": .250, "expire": 4})
 except Exception as ex:
     print(ex.args)
 
-# Wait for this promise, pause for 1 second each iteration, and throw an exception after 5 iterations (5 seconds)
+# Wait for this promise, pause for 1 second each iteration, and throw an exception after 5 iterations 
+(5 seconds)
 try:
     p.wait({"sleep": 1, "expire": 5})
 except Exception as ex:

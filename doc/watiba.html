@@ -308,16 +308,18 @@ multiplied by 4.  The default expiration is 15 seconds.</p>
     ## resolver block ##
     return True</p>
 
-<h1>Wait for promises, pause for 1/4 second each iteration, and throw an exception after 4 iterations (1 second)</h1>
+<h1>Wait for promises, pause for 1/4 second each iteration, and throw an exception after 4 iterations</h1>
 
-<p>try:
+<p>(1 second)
+try:
     p.join({"sleep": .250, "expire": 4})
 except Exception as ex:
     print(ex.args)</p>
 
-<h1>Wait for this promise, pause for 1 second each iteration, and throw an exception after 5 iterations (5 seconds)</h1>
+<h1>Wait for this promise, pause for 1 second each iteration, and throw an exception after 5 iterations</h1>
 
-<p>try:
+<p>(5 seconds)
+try:
     p.wait({"sleep": 1, "expire": 5})
 except Exception as ex:
     print(ex.args)</p>
