@@ -672,35 +672,37 @@ serverC and issue ```echo "$line" | grep something``` on serverV.  It is piping 
 
 # Installation
 ## PIP
-If you installed this as a Python package, e.g. pip, then the pre-compiler can be found
-where the package was installed.  For example:
-```
-/home/{user}/.local/lib/python3.8/site-packages/watiba/watiba-c.py
-```
-This file can be copied to any directory in your PATH.  It is stand-alone and can be copied
-anywhere you need.
+If you installed this as a Python package, e.g. pip, then the pre-compiler can be 
+found in your user's home dir at _.local/bin/watiba-c_
 
 ## GITHUB
 If you cloned this from github, you'll still need to install the package with pip, first, for the
 watbia module.  Follow these steps to install Watiba locally.
 ```
-
-## Must install Watiba package
+# Watiba package required
 pip install watiba
-
-# Now run the pre-compiler
-{watiba cloned location}/bin/watiba-c.py your_file.wt > your_file.py
 ```
 
-Optionally, you can copy watiba-c.py to a location in your PATH or add {watiba installation location}/bin/
-to your exported PATH environment variable:
-```
-export PATH=${PATH}:{watiba cloned location}/bin
-```
+The pre-compiler can be found in your user's home dir at _.local/bin/watiba-c_
 
-For example, if you cloned this to /home/user/github/watiba, simply source or add this to your .bashrc file:
+# Pre-compiling
+Test that the pre-compiler functions in your environment:
 ```
-export PATH=${PATH}:/home/user/github/watiba/bin
+watiba-c version
+```
+For example:
+```buildoutcfg
+rwalk@walkubu:~$ watiba-c version
+Watiba 0.3.26
+Python 3.8
+```
+_Note_: watiba-c assumes your python interpreter is in _/usr/bin/python3_.  If it is not, edit the first line of
+ _.local/bin/watiba-c_ to properly load Python.
+
+```
+watiba-c my_file.wt > my_file.py
+chmod +x my_file.py
+./my_file.py
 ```
 
 # Pre-compiling
