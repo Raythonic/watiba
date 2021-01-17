@@ -699,7 +699,7 @@ rwalk@walkubu:~$ watiba-c version
 Watiba 0.3.26
 Python 3.8
 ```
-_Note_: watiba-c attempts to locate your python interpreter and writes it as the first line
+_Note_: The Watiba PIP installation attempts to locate your python interpreter and writes it as the first line
 in _~/.local/bin/watiba-c_.  If it is, however, incorrect, you'll need to edit the first line of
 _~/.local/bin/watiba-c_ to properly load Python.
 
