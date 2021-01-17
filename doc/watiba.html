@@ -744,13 +744,8 @@ serverC and issue <code>echo "$line" | grep something</code> on serverV.  It is 
 
 <h2>PIP</h2>
 
-<p>If you installed this as a Python package, e.g. pip, then the pre-compiler can be found
-where the package was installed.  For example:
-<code>
-/home/{user}/.local/lib/python3.8/site-packages/watiba/watiba-c.py
-</code>
-This file can be copied to any directory in your PATH.  It is stand-alone and can be copied
-anywhere you need.</p>
+<p>If you installed this as a Python package, e.g. pip, then the pre-compiler can be 
+found in your user's home dir at <em>.local/bin/watiba-c</em></p>
 
 <h2>GITHUB</h2>
 
@@ -758,24 +753,32 @@ anywhere you need.</p>
 watbia module.  Follow these steps to install Watiba locally.
 ```</p>
 
-<h2>Must install Watiba package</h2>
+<h1>Watiba package required</h1>
 
-<p>pip install watiba</p>
-
-<h1>Now run the pre-compiler</h1>
-
-<p>{watiba cloned location}/bin/watiba-c.py your<em>file.wt > your</em>file.py
+<p>pip install watiba
 ```</p>
 
-<p>Optionally, you can copy watiba-c.py to a location in your PATH or add {watiba installation location}/bin/
-to your exported PATH environment variable:
-<code>
-export PATH=${PATH}:{watiba cloned location}/bin
-</code></p>
+<p>The pre-compiler can be found in your user's home dir at <em>.local/bin/watiba-c</em></p>
 
-<p>For example, if you cloned this to /home/user/github/watiba, simply source or add this to your .bashrc file:
+<h1>Pre-compiling</h1>
+
+<p>Test that the pre-compiler functions in your environment:
 <code>
-export PATH=${PATH}:/home/user/github/watiba/bin
+watiba-c version
+</code>
+For example:
+<code>buildoutcfg
+rwalk@walkubu:~$ watiba-c version
+Watiba 0.3.26
+Python 3.8
+</code>
+<em>Note</em>: watiba-c assumes your python interpreter is in <em>/usr/bin/python3</em>.  If it is not, edit the first line of
+ <em>.local/bin/watiba-c</em> to properly load Python.</p>
+
+<p><code>
+watiba-c my_file.wt &gt; my_file.py
+chmod +x my_file.py
+./my_file.py
 </code></p>
 
 <h1>Pre-compiling</h1>
