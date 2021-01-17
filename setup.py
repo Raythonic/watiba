@@ -10,7 +10,7 @@ else:
     with open("README.md", "r") as fh:
         long_description = fh.read()
         home = expanduser("~")
-        copyfile("watiba/watiba-c.py", f"{home}/.local/bin/watiba-c")
+        copyfile("watiba/watiba-c-bin.py", f"{home}/.local/bin/watiba-c")
         os.chmod(f"{home}/.local/bin/watiba-c", 0o0766)
 
 
