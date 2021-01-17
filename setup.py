@@ -11,18 +11,17 @@ else:
         home = os.path.expanduser("~")
         py_loc = sys.argv[0]
         py_line = f'#!{py_loc}\n'
-        ver_line = f'versions = ["Watiba {ver}", "Python 3.8"]\n'
         dest_file = f"{home}/.local/bin/watiba-c"
-        ver = ""
         with open("watiba/version.py") as f:
             ver = f.read()
-        with open(dest_file, 'w') as wf:
-            wf.write(py_loc)
-            wf.write(ver_line)
-            with open("watiba/watiba-c.py", 'r') as rf:
-                wf.write(rf.read())
+            ver_line = f'versions = ["Watiba {ver}", "Python 3.8"]\n'
+            with open(dest_file, 'w') as wf:
+                wf.write(py_loc)
+                wf.write(ver_line)
+                with open("watiba/watiba-c.py", 'r') as rf:
+                    wf.write(rf.read())
 
-        os.chmod(dest_file, 0o0766)
+            os.chmod(dest_file, 0o0766)
 
 
 with open("watiba/version.py", "r") as fh:
