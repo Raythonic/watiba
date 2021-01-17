@@ -775,26 +775,14 @@ Python 3.8
 <em>Note</em>: watiba-c assumes your python interpreter is in <em>/usr/bin/python3</em>.  If it is not, edit the first line of
  <em>.local/bin/watiba-c</em> to properly load Python.</p>
 
-<p><code>
+<p>To pre-compile a .wt file:
+<code>
 watiba-c my_file.wt &gt; my_file.py
 chmod +x my_file.py
 ./my_file.py
 </code></p>
 
-<h1>Pre-compiling</h1>
-
-<p>Once you've installed watiba-c.py into your path, you can execute it to pre-compile
-your .wt (Watiba) code.  Output will be written to STDOUT, so you'll need to redirect
-it to your final Python file.  Example follows:
-<code>
-watiba-c.py my_file.wt &gt; my_file.py
-chmod +x my_file.py
-./my_file.py
-</code>
-To show the Watiba version of your pre-compiler, enter:
-<code>
-watiba-c.py version
-</code></p>
+<p>Where <em>my</em>file.wt_ is your Watiba code.</p>
 
 <h3>Examples</h3>
 

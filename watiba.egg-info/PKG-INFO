@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: watiba
-Version: 0.3.29
+Version: 0.3.30
 Summary: Python syntactical sugar for embedded shell commands
 Home-page: https://github.com/Raythonic/watiba
 Author: Ray Walker
@@ -707,25 +707,15 @@ Description: # Watiba
         _Note_: watiba-c assumes your python interpreter is in _/usr/bin/python3_.  If it is not, edit the first line of
          _.local/bin/watiba-c_ to properly load Python.
         
+        To pre-compile a .wt file:
         ```
         watiba-c my_file.wt > my_file.py
         chmod +x my_file.py
         ./my_file.py
         ```
         
-        # Pre-compiling
-        Once you've installed watiba-c.py into your path, you can execute it to pre-compile
-        your .wt (Watiba) code.  Output will be written to STDOUT, so you'll need to redirect
-        it to your final Python file.  Example follows:
-        ```
-        watiba-c.py my_file.wt > my_file.py
-        chmod +x my_file.py
-        ./my_file.py
-        ```
-        To show the Watiba version of your pre-compiler, enter:
-        ```
-        watiba-c.py version
-        ```
+        Where _my_file.wt_ is your Watiba code.
+        
         
         ### Examples
         
