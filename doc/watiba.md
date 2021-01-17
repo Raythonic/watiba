@@ -67,7 +67,7 @@ _An example of building a command from other variables and then executing it wit
 a print() statement_:
 ```
 in_file = "some_file.txt"
-my_cmd = "cat {}".format(in_file)
+my_cmd = f"cat {in_file}"
 print(`$my_cmd`.stdout)
 ```
 
@@ -304,7 +304,7 @@ def watcher(promise, args):
     print("and I still have the spawn expression's args: {}".format(args))
 
 p = spawn `echo "hello" && sleep 5` args:
-    print("Args passed to me: {}".format(args))
+    print(f"Args passed to me: {args}")
     return True
 
 # Attach a watcher to this thread.  It will be called upon experation.
@@ -372,7 +372,7 @@ root_promise = spawn `ls -lr`:
     for file in promise.stdout:
         t = "touch {}".format(file)
         spawn `$t` {"file" file}:  # This promise is a child of root
-            print("{} updated".format(promise.args["file"]))
+            print(f"{} updated".)
             spawn `echo "done" > /tmp/done"`:  # Another child promise (root's grandchild)
                 print("Complete")
                 promise.resolve_parent()
