@@ -58,8 +58,23 @@ rwalk@walkubu:~$ watiba-c version
 Watiba 0.3.26
 Python 3.8
 ```
-_Note_: watiba-c assumes your python interpreter is in _/usr/bin/python3_.  If it is not, edit the first line of
+_Note_: watiba-c attempts to locate your python interpreter and writes it as the first line
+in .local/bin/watiba-c.  If it is, however, incorrect, you'll need to edit the first line of
  _.local/bin/watiba-c_ to properly load Python.
+
+Example of first line of .local/bin/watiba-c:
+```buildoutcfg
+#!/usr/bin/python3
+```
+
+If your system does not have a _.local/bin_, then a warning will be issued by the PIP install
+and you'll have to copy watiba/watiba-c-bin.py from the package installation location to a
+location that's in your PATH.
+
+Example assuming the location of the package, and assuming ~/bin is in your PATH:
+```buildoutcfg
+cp ~/.local/lib/python3.8/site-packages/watiba/watiba-c-bin.py ~/bin/watiba-c
+```
 
 To pre-compile a .wt file:
 ```
