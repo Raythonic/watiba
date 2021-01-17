@@ -745,7 +745,9 @@ serverC and issue <code>echo "$line" | grep something</code> on serverV.  It is 
 <h2>PIP</h2>
 
 <p>If you installed this as a Python package, e.g. pip, then the pre-compiler can be 
-found in your user's home dir at <em>.local/bin/watiba-c</em></p>
+found in your user's home dir at <em>~/.local/bin/watiba-c</em> should that location exists on your system.</p>
+
+<p>If your system doesn't have <em>~/</em>.local/bin_, refer to the "Pre-compiling" section below.</p>
 
 <h2>GITHUB</h2>
 
@@ -758,7 +760,7 @@ watbia module.  Follow these steps to install Watiba locally.
 <p>pip install watiba
 ```</p>
 
-<p>The pre-compiler can be found in your user's home dir at <em>.local/bin/watiba-c</em></p>
+<p>The pre-compiler can be found in your user's home dir at <em>~/.local/bin/watiba-c</em></p>
 
 <h1>Pre-compiling</h1>
 
@@ -772,8 +774,25 @@ rwalk@walkubu:~$ watiba-c version
 Watiba 0.3.26
 Python 3.8
 </code>
-<em>Note</em>: watiba-c assumes your python interpreter is in <em>/usr/bin/python3</em>.  If it is not, edit the first line of
- <em>.local/bin/watiba-c</em> to properly load Python.</p>
+<em>Note</em>: watiba-c attempts to locate your python interpreter and writes it as the first line
+in <em>~/.local/bin/watiba-c</em>.  If it is, however, incorrect, you'll need to edit the first line of
+<em>~/.local/bin/watiba-c</em> to properly load Python.</p>
+
+<p>Example of first line of <em>~/.local/bin/watiba-c</em>watiba-c_:
+```buildoutcfg</p>
+
+<h1>!/usr/bin/python3</h1>
+
+<p>```</p>
+
+<p>If your system does not have a <em>.local/bin</em>, then a warning will be issued by the PIP install
+and you'll have to copy watiba/watiba-c-bin.py from the package installation location to a
+location that's in your PATH.</p>
+
+<p>Example assuming the location of the package, and assuming ~/bin is in your PATH:
+<code>buildoutcfg
+cp ~/.local/lib/python3.8/site-packages/watiba/watiba-c-bin.py ~/bin/watiba-c
+</code></p>
 
 <p>To pre-compile a .wt file:
 <code>
