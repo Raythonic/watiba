@@ -9,7 +9,7 @@ else:
     with open("README.md", "r") as fh:
         long_description = fh.read()
         home = os.path.expanduser("~")
-        if os.path.exists(f'{home}/.local/bin'):
+        if os.path.exists(f'{home}/.xlocal/bin'):
             py_loc = f'#!{sys.executable}\n'
             dest_file = f"{home}/.local/bin/watiba-c"
             with open("watiba/version.py") as f:

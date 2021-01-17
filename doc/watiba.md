@@ -673,7 +673,9 @@ serverC and issue ```echo "$line" | grep something``` on serverV.  It is piping 
 # Installation
 ## PIP
 If you installed this as a Python package, e.g. pip, then the pre-compiler can be 
-found in your user's home dir at _.local/bin/watiba-c_
+found in your user's home dir at _~/.local/bin/watiba-c_ should that location exists on your system.
+
+If your system doesn't have _~/_.local/bin_, refer to the "Pre-compiling" section below.
 
 ## GITHUB
 If you cloned this from github, you'll still need to install the package with pip, first, for the
@@ -683,7 +685,7 @@ watbia module.  Follow these steps to install Watiba locally.
 pip install watiba
 ```
 
-The pre-compiler can be found in your user's home dir at _.local/bin/watiba-c_
+The pre-compiler can be found in your user's home dir at _~/.local/bin/watiba-c_
 
 # Pre-compiling
 Test that the pre-compiler functions in your environment:
@@ -696,8 +698,23 @@ rwalk@walkubu:~$ watiba-c version
 Watiba 0.3.26
 Python 3.8
 ```
-_Note_: watiba-c assumes your python interpreter is in _/usr/bin/python3_.  If it is not, edit the first line of
- _.local/bin/watiba-c_ to properly load Python.
+_Note_: watiba-c attempts to locate your python interpreter and writes it as the first line
+in _~/.local/bin/watiba-c_.  If it is, however, incorrect, you'll need to edit the first line of
+_~/.local/bin/watiba-c_ to properly load Python.
+
+Example of first line of _~/.local/bin/watiba-c_watiba-c_:
+```buildoutcfg
+#!/usr/bin/python3
+```
+
+If your system does not have a _.local/bin_, then a warning will be issued by the PIP install
+and you'll have to copy watiba/watiba-c-bin.py from the package installation location to a
+location that's in your PATH.
+
+Example assuming the location of the package, and assuming ~/bin is in your PATH:
+```buildoutcfg
+cp ~/.local/lib/python3.8/site-packages/watiba/watiba-c-bin.py ~/bin/watiba-c
+```
 
 To pre-compile a .wt file:
 ```
