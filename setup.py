@@ -1,7 +1,6 @@
 import setuptools
 import os
-from shutil import copyfile
-from os.path import expanduser
+import sys
 
 if os.path.exists("doc"):
     with open("doc/watiba.md", "r") as fh:
@@ -9,9 +8,18 @@ if os.path.exists("doc"):
 else:
     with open("README.md", "r") as fh:
         long_description = fh.read()
-        home = expanduser("~")
-        copyfile("watiba/watiba-c-bin.py", f"{home}/.local/bin/watiba-c")
-        os.chmod(f"{home}/.local/bin/watiba-c", 0o0766)
+        home = os.path.expanduser("~")
+        py_loc = sys.argv[0]
+        py_line = f'#!{py_loc}\n'
+        ver_line = f'versions = ["Watiba {ver}", "Python 3.8"]\n'
+        dest_file = f"{home}/.local/bin/watiba-c"
+        with open(dest_file, 'w') as wf:
+            wf.write(py_loc)
+            wf.write(ver_line)
+            with open("watiba/watiba-c.py", 'r') as rf:
+                wf.write(rf.read())
+
+        os.chmod(dest_file, 0o0766)
 
 
 with open("watiba/version.py", "r") as fh:
