@@ -37,7 +37,7 @@ if __name__ == "__main__":
 If you installed this as a Python package, e.g. pip, then the pre-compiler can be 
 found in your user's home dir at _~/.local/bin/watiba-c_ should that location exists on your system.
 
-If your system doesn't have _~/_.local/bin_, refer to the "Pre-compiling" section below.
+If your system doesn't have _~/.local/bin_, refer to the "Pre-compiling" section below.
 
 ## GITHUB
 If you cloned this from github, you'll still need to install the package with pip, first, for the
