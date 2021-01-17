@@ -48,6 +48,7 @@ pip install watiba
 ```
 
 The pre-compiler can be found in your user's home dir at _~/.local/bin/watiba-c_
+If your system doesn't have _~/.local/bin_, refer to the "Pre-compiling" section below.
 
 # Pre-compiling
 Test that the pre-compiler functions in your environment:
@@ -69,8 +70,7 @@ Example of first line of _~/.local/bin/watiba-c_watiba-c_:
 #!/usr/bin/python3
 ```
 
-If your system does not have a _.local/bin_, then a warning will be issued by the PIP install
-and you'll have to copy watiba/watiba-c-bin.py from the package installation location to a
+If your system does not have a _~/.local/bin_, then you'll have to copy watiba/watiba-c-bin.py from the package installation location to a
 location that's in your PATH.
 
 Example assuming the location of the package, and assuming ~/bin is in your PATH:
