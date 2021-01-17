@@ -52,7 +52,6 @@ Test that the pre-compiler functions in your environment:
 ```
 watiba-c version
 ```
-
 For example:
 ```buildoutcfg
 rwalk@walkubu:~$ watiba-c version
@@ -62,8 +61,12 @@ Python 3.8
 _Note_: watiba-c assumes your python interpreter is in _/usr/bin/python3_.  If it is not, edit the first line of
  _.local/bin/watiba-c_ to properly load Python.
 
+To pre-compile a .wt file:
 ```
 watiba-c my_file.wt > my_file.py
 chmod +x my_file.py
 ./my_file.py
 ```
+
+Where _my_file.wt_ is your Watiba code.
+
