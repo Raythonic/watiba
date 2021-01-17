@@ -1,5 +1,6 @@
 import setuptools
 import os.path
+from shutil import copyfile
 
 if os.path.exists("doc"):
     with open("doc/watiba.md", "r") as fh:
@@ -7,6 +8,7 @@ if os.path.exists("doc"):
 else:
     with open("README.md", "r") as fh:
         long_description = fh.read()
+        copyfile("watiba-c.py", "~/.local/bin/.")
 
 with open("watiba/version.py", "r") as fh:
     new_version = fh.read().strip()
