@@ -13,6 +13,7 @@ else:
         py_line = f'#!{py_loc}\n'
         ver_line = f'versions = ["Watiba {ver}", "Python 3.8"]\n'
         dest_file = f"{home}/.local/bin/watiba-c"
+        ver = ""
         with open("watiba/version.py") as f:
             ver = f.read()
         with open(dest_file, 'w') as wf:
