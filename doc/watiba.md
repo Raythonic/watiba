@@ -138,15 +138,15 @@ is found in _promise.output_.  The examples throughout this README and in the _e
 ##### Useful properties in promise structure 
 A promise is either returned in assignment from outermost spawn, or passed to child spawns in argument "promise".
 
-- **output** Dictionary with host names as key and values output objects holding stdout, stderr, exit_code, etc.
-    If no remote commands were issued for the spawn, then output is found in key "localhost".  Use the
-    _get_output(host)_ to access this object.  If host is omitted, it defaults to "localhost".
+- **output** Standard output structure as described in section "Command Results"
   ```
-     promise.get_output().stdout
-     promise.get_output().stderr
-     promise.get_output().exit_code
-     promise.get_output().cwd
+     promise.output.stdout
+     promise.output.stderr
+     promise.output.exit_code
+     promise.output.cwd
   ```
+  
+- **host** Host name on which spawned command ran
 - **children** Array of children promises for this promise node
 - **parent** Reference to parent promise node of this child promise. None if root promise.
 - **command** Shell command issued for this promise
@@ -241,7 +241,7 @@ _Simple spawn example_:
 p = spawn `tar -zcvf /tmp/file.tar.gz /home/user/dir`:
     # Resolver block to which "promise" and "args" are passed
     # Resolver block is called when spawned command has completed
-    for line in promise.get_output().stderr:
+    for line in promise.output.stderr:
         print(line)
     
     # This marks the promise resolved
@@ -386,7 +386,7 @@ root_promise.join()  # Wait on the root promise and all its children.  Thus, wai
 
 ``` 
 root_promise = spawn `ls -lr`:
-    for file in promise.get_output().stdout:
+    for file in promise.output.stdout:
         t = f"touch {file}"
         spawn `$t` {"file" file}:  # This promise is a child of root
             print(f"{promise.args['file'])} updated")
@@ -409,7 +409,7 @@ Note: "args" is optional and can be omitted
 _Example of joining parent and children promises_:
 ```
 p = spawn `ls *.txt`:
-    for f in promise.get_output().stdout:
+    for f in promise.output.stdout:
         cmd = f"tar -zcvf {f}.tar.gz {f}"
         spawn `$cmd` {"file":f}:
             print(f"{f} completed")
@@ -438,7 +438,7 @@ Note: "args" is optional and can be omitted
 _Example of waiting on just the parent promise_:
 ```
 p = spawn `ls *.txt`:
-    for f in promise.get_output().stdout:
+    for f in promise.output.stdout:
         cmd = f"tar -zcvf {f}.tar.gz {}"
         spawn `$cmd` {"file":f}:
             print(f"{f} completed")
@@ -456,7 +456,7 @@ except Exception as ex:
 _Resolving a parent promise_:
 ```
 p = spawn `ls -lrt`:
-    for f in promise.get_output().stdout:
+    for f in promise.output.stdout:
         cmd = f"touch {f}"
         # Spawn command from this resolver and pass our promise
         spawn `$cmd`:
@@ -491,14 +491,14 @@ if __name__ == "__main__":
 ```
 
 ### Results from Spawned Commands
-Spawned commands return their results in the _promise.get_output()_ property of the _promise_ object passed to
+Spawned commands return their results in the _promise.output_ property of the _promise_ object passed to
 the resolver block, and in the spawn expression if there is an assignment in that spawn expression.  
 The result properties can then be accessed as followed:
  
-- **promise.get_output().stdout** - array of output lines from the command normalized for display
-- **promise.get_output().stderr** - array of standard error output lines from the command normalized for display
-- **promise.get_output().exit_code** - integer exit code value from command
-- **promise.get_output().cwd** - current working directory after command was executed
+- **promise.output.stdout** - array of output lines from the command normalized for display
+- **promise.output.stderr** - array of standard error output lines from the command normalized for display
+- **promise.output.exit_code** - integer exit code value from command
+- **promise.output.cwd** - current working directory after command was executed
 
 _Notes:_
 1. Watiba backticked commands can exist within the resolver 
@@ -516,7 +516,7 @@ _Simple example with the shell command as a Python variable_:
 # run "date" command asynchronously 
 d = 'date "+%Y/%m/%d"'
 spawn `$d`:
-    print(promise.get_output().stdout[0])
+    print(promise.output.stdout[0])
     return True
 
 ```
@@ -530,12 +530,12 @@ print("Running Watiba spawn with wait")
 
 # run "ls -lrt" command asynchronously 
 p = spawn `ls -lrt`:
-    print(f"Exit code: {promise.get_output().exit_code}")
-    print(f"CWD: {promise.get_output().cwd}")
-    print(f"STDERR: {promise.get_output().stderr}")
+    print(f"Exit code: {promise.output.exit_code}")
+    print(f"CWD: {promise.output.cwd}")
+    print(f"STDERR: {promise.output.stderr}")
 
     # Loop through STDOUT from command
-    for l in promise.get_output().stdout:
+    for l in promise.output.stdout:
         print(l)
     `echo "Done" > /tmp/done`
 
@@ -575,7 +575,7 @@ watiba-ctl {"ssh-port": 2233}
 Examples:
 ```buildoutcfg
 p = spawn `ls -lrt`@remoteserver {parms}:
-    for line in promise.get_output(remoteserver).stdout:
+    for line in promise.output.stdout:
         print(line)
     return True
      
@@ -583,7 +583,7 @@ p = spawn `ls -lrt`@remoteserver {parms}:
 ```buildoutcfg
 remotename = "serverB"
 p = spawn `ls -lrt`@$remotename {parms}:
-    for line in p.get_output(remotename).stdout:
+    for line in p.output.stdout:
         print(line)
     return True
 ```
@@ -787,7 +787,7 @@ print(f"Return code: {xc}")
 
 # Example of running a command asynchronously and resolving promise
 spawn `cd /tmp && tar -zxvf tarball.tar.gz`:
-    for l in promise.get_output().stderr:
+    for l in promise.output.stderr:
         print(l)
     return True  # Mark promise resolved
 

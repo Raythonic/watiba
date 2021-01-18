@@ -157,15 +157,14 @@ is found in <em>promise.output</em>.  The examples throughout this README and in
 <p>A promise is either returned in assignment from outermost spawn, or passed to child spawns in argument "promise".</p>
 
 <ul>
-<li><strong>output</strong> Dictionary with host names as key and values output objects holding stdout, stderr, exit<em>code, etc.
-If no remote commands were issued for the spawn, then output is found in key "localhost".  Use the
-_get</em>output(host)_ to access this object.  If host is omitted, it defaults to "localhost".
+<li><p><strong>output</strong> Standard output structure as described in section "Command Results"
 <code>
- promise.get_output().stdout
- promise.get_output().stderr
- promise.get_output().exit_code
- promise.get_output().cwd
-</code></li>
+ promise.output.stdout
+ promise.output.stderr
+ promise.output.exit_code
+ promise.output.cwd
+</code></p></li>
+<li><p><strong>host</strong> Host name on which spawned command ran</p></li>
 <li><strong>children</strong> Array of children promises for this promise node</li>
 <li><strong>parent</strong> Reference to parent promise node of this child promise. None if root promise.</li>
 <li><strong>command</strong> Shell command issued for this promise</li>
@@ -261,7 +260,7 @@ my_promise = spawn `cmd`:
 p = spawn</code>tar -zcvf /tmp/file.tar.gz /home/user/dir`:
     # Resolver block to which "promise" and "args" are passed
     # Resolver block is called when spawned command has completed
-    for line in promise.get_output().stderr:
+    for line in promise.output.stderr:
         print(line)</p>
 
 <pre><code># This marks the promise resolved
@@ -424,7 +423,7 @@ root_promise = spawn</code>ls -lr<code>:
 
 <p><code>
 root_promise = spawn `ls -lr`:
-    for file in promise.get_output().stdout:
+    for file in promise.output.stdout:
         t = f"touch {file}"
         spawn `$t` {"file" file}:  # This promise is a child of root
             print(f"{promise.args['file'])} updated")
@@ -447,7 +446,7 @@ Note: "args" is optional and can be omitted
 <p><em>Example of joining parent and children promises</em>:
 <code>``
 p = spawn</code>ls *.txt<code>:
-    for f in promise.get_output().stdout:
+    for f in promise.output.stdout:
         cmd = f"tar -zcvf {f}.tar.gz {f}"
         spawn</code>$cmd` {"file":f}:
             print(f"{f} completed")
@@ -477,7 +476,7 @@ Note: "args" is optional and can be omitted
 <p><em>Example of waiting on just the parent promise</em>:
 <code>``
 p = spawn</code>ls *.txt<code>:
-    for f in promise.get_output().stdout:
+    for f in promise.output.stdout:
         cmd = f"tar -zcvf {f}.tar.gz {}"
         spawn</code>$cmd` {"file":f}:
             print(f"{f} completed")
@@ -496,7 +495,7 @@ except Exception as ex:
 <p><em>Resolving a parent promise</em>:
 <code>
 p = spawn `ls -lrt`:
-    for f in promise.get_output().stdout:
+    for f in promise.output.stdout:
         cmd = f"touch {f}"
         # Spawn command from this resolver and pass our promise
         spawn `$cmd`:
@@ -537,15 +536,15 @@ spawn-ctl parms
 
 <h3>Results from Spawned Commands</h3>
 
-<p>Spawned commands return their results in the <em>promise.get</em>output()_ property of the <em>promise</em> object passed to
+<p>Spawned commands return their results in the <em>promise.output</em> property of the <em>promise</em> object passed to
 the resolver block, and in the spawn expression if there is an assignment in that spawn expression. <br />
 The result properties can then be accessed as followed:</p>
 
 <ul>
-<li><strong>promise.get_output().stdout</strong> - array of output lines from the command normalized for display</li>
-<li><strong>promise.get_output().stderr</strong> - array of standard error output lines from the command normalized for display</li>
-<li><strong>promise.get<em>output().exit</em>code</strong> - integer exit code value from command</li>
-<li><strong>promise.get_output().cwd</strong> - current working directory after command was executed</li>
+<li><strong>promise.output.stdout</strong> - array of output lines from the command normalized for display</li>
+<li><strong>promise.output.stderr</strong> - array of standard error output lines from the command normalized for display</li>
+<li><strong>promise.output.exit_code</strong> - integer exit code value from command</li>
+<li><strong>promise.output.cwd</strong> - current working directory after command was executed</li>
 </ul>
 
 <p><em>Notes:</em>
@@ -566,7 +565,7 @@ The result properties can then be accessed as followed:</p>
 
 <p>d = 'date "+%Y/%m/%d"'
 spawn <code>$d</code>:
-    print(promise.get_output().stdout[0])
+    print(promise.output.stdout[0])
     return True</p>
 
 <p>```</p>
@@ -582,12 +581,12 @@ spawn <code>$d</code>:
 <h1>run "ls -lrt" command asynchronously</h1>
 
 <p>p = spawn <code>ls -lrt</code>:
-    print(f"Exit code: {promise.get<em>output().exit</em>code}")
-    print(f"CWD: {promise.get<em>output().cwd}")
-    print(f"STDERR: {promise.get</em>output().stderr}")</p>
+    print(f"Exit code: {promise.output.exit_code}")
+    print(f"CWD: {promise.output.cwd}")
+    print(f"STDERR: {promise.output.stderr}")</p>
 
 <pre><code># Loop through STDOUT from command
-for l in promise.get_output().stdout:
+for l in promise.output.stdout:
     print(l)
 `echo "Done" &gt; /tmp/done`
 
@@ -634,7 +633,7 @@ watiba-ctl {"ssh-port": 2233}
 Examples:
 <code>``buildoutcfg
 p = spawn</code>ls -lrt`@remoteserver {parms}:
-    for line in promise.get_output(remoteserver).stdout:
+    for line in promise.output.stdout:
         print(line)
     return True</p>
 
@@ -642,7 +641,7 @@ p = spawn</code>ls -lrt`@remoteserver {parms}:
 </code>buildoutcfg
 remotename = "serverB"
 p = spawn <code>ls -lrt</code>@$remotename {parms}:
-    for line in p.get_output(remotename).stdout:
+    for line in p.output.stdout:
         print(line)
     return True
 <code>
@@ -880,7 +879,7 @@ print(f"Return code: {xc}")</p>
 <h1>Example of running a command asynchronously and resolving promise</h1>
 
 <p>spawn <code>cd /tmp &amp;&amp; tar -zxvf tarball.tar.gz</code>:
-    for l in promise.get_output().stderr:
+    for l in promise.output.stderr:
         print(l)
     return True  # Mark promise resolved</p>
 
