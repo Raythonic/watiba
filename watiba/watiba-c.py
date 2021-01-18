@@ -24,10 +24,9 @@ watiba_ref = "_watiba_"
 
 # Singleton object.
 class Compiler:
-    def __init__(self, first_stmt):
-        self.current_statement = first_stmt
-        self.output = [first_stmt,
-                       "import watiba",
+    def __init__(self):
+        self.current_statement = None
+        self.output = ["import watiba",
                        f"{watiba_ref} = watiba.Watiba()"
                        ]
         self.resolver_count = 1
@@ -183,6 +182,11 @@ class Compiler:
 
     # Compile the passed statement
     def compile(self, stmt):
+        # If this is the first statement to compile, keep it to generate the #! version header stuff...
+        if not self.current_statement:
+            self.output.insert(0, stmt)
+
+        # Track our current statement
         self.current_statement = stmt
 
         # Copy the statement to a local variable
@@ -243,15 +247,12 @@ if __name__ == "__main__":
         print(f"ERROR: Input file must be type .wt.  Found {in_file}")
         sys.exit(1)
 
-    c = None
+    # Instantiate a compiler
+    c = Compiler()
 
+    # Read through input file and compile each statement
     with open(in_file, 'r') as f:
         for statement in f:
-            if not c:
-                # Instantiation of compiler loads up some initial lines of output at the top
-                c = Compiler(statement.rstrip())
-                continue
-
             # Compile this line of input
             c.compile(statement.rstrip())
 
