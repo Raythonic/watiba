@@ -708,7 +708,7 @@ supercede it.</em></p>
     for host, output in out.items():
         print(f'{host} exit code: {output.exit_code}')
 except WTChainException as ex:
-    print(f'ERROR: {ex.msg}, {ex.host}, {ex.command}, {ex.output.stderr})
+    print(f'ERROR: {ex.msg}, {ex.host}, {ex.command}, {ex.output.stderr}')
 <code>
 </code></p>
 
@@ -727,7 +727,7 @@ except WTChainException as ex:
     for host, output in out.items():
         print(f'{host} exit code: {output.exit_code}')
 except WTChainException as ex:
-    print(f'ERROR: {ex.msg}, {ex.host}, {ex.command}, {ex.output.stderr})
+    print(f'ERROR: {ex.msg}, {ex.host}, {ex.command}, {ex.output.stderr}')
 ```</p>
 
 <h4>How does this work?</h4>
