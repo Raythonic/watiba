@@ -300,8 +300,8 @@ except Exception as ex:
  
 # My watcher function (called if spawned command never resolves by its experation period)
 def watcher(promise, args):
-    print("This promise is likely hung: {}".format(promise.command))
-    print("and I still have the spawn expression's args: {}".format(args))
+    print(f"This promise is likely hung: {promise.command}")
+    print(f"and I still have the spawn expression's args: {args}")
 
 p = spawn `echo "hello" && sleep 5` args:
     print(f"Args passed to me: {args}")
@@ -370,9 +370,9 @@ _Parent and child joins shown in these two examples_:
 ``` 
 root_promise = spawn `ls -lr`:
     for file in promise.stdout:
-        t = "touch {}".format(file)
+        t = f"touch {file}"
         spawn `$t` {"file" file}:  # This promise is a child of root
-            print(f"{} updated".)
+            print(f"{file} updated".)
             spawn `echo "done" > /tmp/done"`:  # Another child promise (root's grandchild)
                 print("Complete")
                 promise.resolve_parent()
@@ -387,9 +387,9 @@ root_promise.join()  # Wait on the root promise and all its children.  Thus, wai
 ``` 
 root_promise = spawn `ls -lr`:
     for file in promise.get_output().stdout:
-        t = "touch {}".format(file)
+        t = f"touch {file}"
         spawn `$t` {"file" file}:  # This promise is a child of root
-            print("{} updated".format(promise.args["file"]))
+            print(f"{promise.args['file'])} updated")
             promise.join() # Wait for this promise and its children but not its parent (root)
             spawn `echo "done" > /tmp/done"`:
                 print("Complete")
@@ -410,9 +410,9 @@ _Example of joining parent and children promises_:
 ```
 p = spawn `ls *.txt`:
     for f in promise.get_output().stdout:
-        cmd = "tar -zcvf {}.tar.gz {}".format(f)
+        cmd = f"tar -zcvf {f}.tar.gz {f}"
         spawn `$cmd` {"file":f}:
-            print("{} completed".format(f)
+            print(f"{f} completed")
             promise.resolve_parent()
             return True
     return False
@@ -439,9 +439,9 @@ _Example of waiting on just the parent promise_:
 ```
 p = spawn `ls *.txt`:
     for f in promise.get_output().stdout:
-        cmd = "tar -zcvf {}.tar.gz {}".format(f)
+        cmd = f"tar -zcvf {f}.tar.gz {}"
         spawn `$cmd` {"file":f}:
-            print("{} completed".format(f)
+            print(f"{f} completed")
             promise.resolve_parent() # Wait completes here
             return True
     return False
@@ -457,7 +457,7 @@ _Resolving a parent promise_:
 ```
 p = spawn `ls -lrt`:
     for f in promise.get_output().stdout:
-        cmd = "touch {}".format(f)
+        cmd = f"touch {f}"
         # Spawn command from this resolver and pass our promise
         spawn `$cmd`:
             print("Resolving all promises")
@@ -472,7 +472,7 @@ _Example of file that overrides spawn controller parameters_:
 #!/usr/bin/python3
 def spawn_expired(promise, count):
     print("I do nothing just to demonstrate the error callback.")
-    print("This command failed {} at this threshold {}".format(promise.command, count)
+    print(f"This command failed {promise.command} at this threshold {count}")
     
     raise Exception("Too many threads.")
     
@@ -530,9 +530,9 @@ print("Running Watiba spawn with wait")
 
 # run "ls -lrt" command asynchronously 
 p = spawn `ls -lrt`:
-    print("Exit code: {}".format(promise.get_output().exit_code))
-    print("CWD: {}".format(promise.get_output().cwd))
-    print("STDERR: {}".format(promise.get_output().stderr))
+    print(f"Exit code: {promise.get_output().exit_code}")
+    print(f"CWD: {promise.get_output().cwd}")
+    print(f"STDERR: {promise.get_output().stderr}")
 
     # Loop through STDOUT from command
     for l in promise.get_output().stdout:
@@ -749,12 +749,12 @@ print(`cd /tmp`.cwd)
 -`cd /home/user/blah && touch file.txt`
 
 # This will print "/tmp" _not_ /home because of the leading dash on the command
-print("CWD is not /home: {}".format(-`cd /home`.cwd))
+print(f"CWD is not /home: {-`cd /home`.cwd)}"
 
 # This will find text files in /tmp/, not /home/user/blah  (CWD context!)
 w=`find . -name '*.txt'`
 for l in w.stdout:
-    print("File: {}".format(l))
+    print(f"File: {l}")
 
 
 # Embedding commands in print expressions that will print the stderr output, which tar writes to
@@ -783,7 +783,7 @@ for l in `cat blah.txt`.stdout:
 
 # Example of a failed command to see its exit code
 xc = `lsvv -lrt`.exit_code
-print("Return code: {}".format(xc))
+print(f"Return code: {xc}")
 
 # Example of running a command asynchronously and resolving promise
 spawn `cd /tmp && tar -zxvf tarball.tar.gz`:
@@ -798,8 +798,8 @@ spawn `cd /tmp && tar -zxvf tarball.tar.gz`:
 for dir in `ls -d *`.stdout:
     tar = "tar -zcvf {}.tar.gz {}"
     prom = spawn `$tar` {"dir": dir}:
-        print("{} tar complete".format(args["dir"]))
-        mv = "mv -r {}/* /tmp/.".format(args["dir"])
+        print(f"{}args['dir'] tar complete")
+        mv = f"mv -r {args['dir']}/* /tmp/."
         spawn `$mv`:
             print("Move done")
             # Resolve outer promise
