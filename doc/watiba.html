@@ -327,8 +327,8 @@ except Exception as ex:
 <h1>My watcher function (called if spawned command never resolves by its experation period)</h1>
 
 <p>def watcher(promise, args):
-    print("This promise is likely hung: {}".format(promise.command))
-    print("and I still have the spawn expression's args: {}".format(args))</p>
+    print(f"This promise is likely hung: {promise.command}")
+    print(f"and I still have the spawn expression's args: {args}")</p>
 
 <p>p = spawn <code>echo "hello" &amp;&amp; sleep 5</code> args:
     print(f"Args passed to me: {args}")
@@ -408,9 +408,9 @@ p.tree_dump(p.children[0].children[0]) # Dump subtree from the grandchild </p>
 <p><code>`` 
 root_promise = spawn</code>ls -lr<code>:
     for file in promise.stdout:
-        t = "touch {}".format(file)
+        t = f"touch {file}"
         spawn</code>$t<code>{"file" file}:  # This promise is a child of root
-            print(f"{} updated".)
+            print(f"{file} updated".)
             spawn</code>echo "done" > /tmp/done"`:  # Another child promise (root's grandchild)
                 print("Complete")
                 promise.resolve<em>parent()
@@ -425,9 +425,9 @@ root_promise = spawn</code>ls -lr<code>:
 <p><code>
 root_promise = spawn `ls -lr`:
     for file in promise.get_output().stdout:
-        t = "touch {}".format(file)
+        t = f"touch {file}"
         spawn `$t` {"file" file}:  # This promise is a child of root
-            print("{} updated".format(promise.args["file"]))
+            print(f"{promise.args['file'])} updated")
             promise.join() # Wait for this promise and its children but not its parent (root)
             spawn `echo "done" &gt; /tmp/done"`:
                 print("Complete")
@@ -448,9 +448,9 @@ Note: "args" is optional and can be omitted
 <code>``
 p = spawn</code>ls *.txt<code>:
     for f in promise.get_output().stdout:
-        cmd = "tar -zcvf {}.tar.gz {}".format(f)
+        cmd = f"tar -zcvf {f}.tar.gz {f}"
         spawn</code>$cmd` {"file":f}:
-            print("{} completed".format(f)
+            print(f"{f} completed")
             promise.resolve_parent()
             return True
     return False</p>
@@ -478,9 +478,9 @@ Note: "args" is optional and can be omitted
 <code>``
 p = spawn</code>ls *.txt<code>:
     for f in promise.get_output().stdout:
-        cmd = "tar -zcvf {}.tar.gz {}".format(f)
+        cmd = f"tar -zcvf {f}.tar.gz {}"
         spawn</code>$cmd` {"file":f}:
-            print("{} completed".format(f)
+            print(f"{f} completed")
             promise.resolve_parent() # Wait completes here
             return True
     return False</p>
@@ -497,7 +497,7 @@ except Exception as ex:
 <code>
 p = spawn `ls -lrt`:
     for f in promise.get_output().stdout:
-        cmd = "touch {}".format(f)
+        cmd = f"touch {f}"
         # Spawn command from this resolver and pass our promise
         spawn `$cmd`:
             print("Resolving all promises")
@@ -514,7 +514,7 @@ p.join()  # Wait for ALL promises to be resolved
 
 <p>def spawn_expired(promise, count):
     print("I do nothing just to demonstrate the error callback.")
-    print("This command failed {} at this threshold {}".format(promise.command, count)</p>
+    print(f"This command failed {promise.command} at this threshold {count}")</p>
 
 <pre><code>raise Exception("Too many threads.")
 </code></pre>
@@ -582,9 +582,9 @@ spawn <code>$d</code>:
 <h1>run "ls -lrt" command asynchronously</h1>
 
 <p>p = spawn <code>ls -lrt</code>:
-    print("Exit code: {}".format(promise.get<em>output().exit</em>code))
-    print("CWD: {}".format(promise.get<em>output().cwd))
-    print("STDERR: {}".format(promise.get</em>output().stderr))</p>
+    print(f"Exit code: {promise.get<em>output().exit</em>code}")
+    print(f"CWD: {promise.get<em>output().cwd}")
+    print(f"STDERR: {promise.get</em>output().stderr}")</p>
 
 <pre><code># Loop through STDOUT from command
 for l in promise.get_output().stdout:
@@ -834,13 +834,13 @@ chmod +x my_file.py
 
 <h1>This will print "/tmp" <em>not</em> /home because of the leading dash on the command</h1>
 
-<p>print("CWD is not /home: {}".format(-<code>cd /home</code>.cwd))</p>
+<p>print(f"CWD is not /home: {-<code>cd /home</code>.cwd)}"</p>
 
 <h1>This will find text files in /tmp/, not /home/user/blah  (CWD context!)</h1>
 
 <p>w=<code>find . -name '*.txt'</code>
 for l in w.stdout:
-    print("File: {}".format(l))</p>
+    print(f"File: {l}")</p>
 
 <h1>Embedding commands in print expressions that will print the stderr output, which tar writes to</h1>
 
@@ -875,7 +875,7 @@ if cmd<em>results.exit</em>code == 0:
 <h1>Example of a failed command to see its exit code</h1>
 
 <p>xc = <code>lsvv -lrt</code>.exit_code
-print("Return code: {}".format(xc))</p>
+print(f"Return code: {xc}")</p>
 
 <h1>Example of running a command asynchronously and resolving promise</h1>
 
@@ -893,8 +893,8 @@ print("Return code: {}".format(xc))</p>
 <p>for dir in <code>ls -d *</code>.stdout:
     tar = "tar -zcvf {}.tar.gz {}"
     prom = spawn <code>$tar</code> {"dir": dir}:
-        print("{} tar complete".format(args["dir"]))
-        mv = "mv -r {}/* /tmp/.".format(args["dir"])
+        print(f"{}args['dir'] tar complete")
+        mv = f"mv -r {args['dir']}/* /tmp/."
         spawn <code>$mv</code>:
             print("Move done")
             # Resolve outer promise
