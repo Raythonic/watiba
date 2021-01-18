@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 import os
 
 # This will change the CWD for all subsequent commands
@@ -11,12 +11,12 @@ import os
 
 # This demonstrates a CWD change that is only contained within the backticks
 # This will print "/tmp" as the CWD not "/home"
-print("CWD is not /home: {}".format(-`cd /home`.cwd))
+print(f"CWD is not /home: {-`cd /home`.cwd}")
 
 # This will find text file in /tmp/, not /home
 w = `find . -name '*.txt'`
 for l in w.stdout:
-    print("File: {}".format(l))
+    print(f"File: {l}")
 
 
 # This will print the output from the tar commands
@@ -44,11 +44,11 @@ for l in `ls -lrt`.stdout:
     print(l)
 
 # Example of printing the exit code of a failed commands
-print("Return code: {}".format(`badcmd`.exit_code))
+print(f"Return code: {`badcmd`.exit_code}")
 
 
 # Demonstrate context.  CWD is still /tmp
-print("Should be /tmp: {}".format(`pwd`.stdout[0]))
+print(f"Should be /tmp: {`pwd`.stdout[0]}")
 
 # Running a command asynchronously with the outer code
 # looking for the creation of a file to signal its completion
@@ -58,7 +58,7 @@ print("running spawn test")
 spawn `ls -lrt`:
     # This is the resolver callback block
     print("1 Spawned command done!")
-    #print("results {}".format(promise.output.stdout))
+
     `touch /tmp/done`
     return True
 
@@ -72,12 +72,12 @@ while not os.path.exists("/tmp/done"):
 `touch watiba1/blah.txt`
 `touch watiba2/bleck.txt`
 for dir in `ls -d watiba*`.stdout:
-    tar = "tar -zcvf {}.tar.gz {}".format(dir, dir)
+    tar = f"tar -zcvf {dir}.tar.gz {dir}"
     prom = spawn `$tar` {"dir": dir}: # tar this dir
-        print("{} tar complete".format(args["dir"]))
-        done = "echo 'done' > /tmp/{}/done".format(args["dir"])
+        print(f"{args['dir']} tar complete")
+        done = f"echo 'done' > /tmp/{args['dir']}/done"
         spawn `$done` {"dir":dir}:  # mark this dir done
-            print("Done with {}".format(args["dir"]))
+            print(f"Done with {args['dir']}")
             promise.resolve_parent()
             spawn `date`:
                 promise.resolve_parent()
@@ -96,12 +96,11 @@ for dir in `ls -d watiba*`.stdout:
 my_promise = spawn `ls -lrt`:
     # This is the resolver callback block
     print("2 Spawned command done!")
-    #print("results {}".format(promise.output.stdout))
     `touch /tmp/done`  # Signal we're done
     return True
 
 while not my_promise.resolved():
-    print("2 Promise not resolved: {}".format(my_promise.resolved()))
+    print(f"2 Promise not resolved: {my_promise.resolved()}")
     `sleep 3`
 
 ########################################################
@@ -112,7 +111,7 @@ args = {"count": global_counter + 1,
         "log": "/var/log/blah.log"}
 
 p = spawn `echo "hello" && sleep 5` args:
-    print("Args passed to me: {}".format(args))
+    print(f"Args passed to me: {args}")
     # Print output
     print(promise.output.stdout)
     return True
@@ -150,11 +149,11 @@ args = {"count": global_counter + 1,
         "log": "/var/log/blah.log"}
 
 def watcher(promise, args):
-    print("This promise is likely hung: {}".format(promise.command))
-    print("and I still have the spawn expression's args: {}".format(args))
+    print(f"This promise is likely hung: {promise.command}")
+    print(f"and I still have the spawn expression's args: {args}")
 
 p = spawn `echo "hello" && sleep 5` args:
-    print("Args passed to me: {}".format(args))
+    print(f"Args passed to me: {args}")
     return True
 
 p.watch(watcher)
