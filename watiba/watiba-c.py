@@ -25,6 +25,7 @@ watiba_ref = "_watiba_"
 # Singleton object.
 class Compiler:
     def __init__(self, first_stmt):
+        self.current_statement = first_stmt
         self.output = [first_stmt,
                        "import watiba",
                        f"{watiba_ref} = watiba.Watiba()"
@@ -32,7 +33,7 @@ class Compiler:
         self.resolver_count = 1
         self.spawn_call = []
         self.last_stmt = ""
-        self.stmt_count = 0
+        self.stmt_count = 1
 
         # Regex expressions for Watiba commands (order matters otherwise backticks would win over spawn)
         self.expressions = {
@@ -64,9 +65,12 @@ class Compiler:
             ".*?([\-])?`(\S.*?)`.*?": self.backticks_generator
         }
 
-    # Flush out any queue spawn calls that are located after the resolver block
-    def flush(self):
-        if len(self.spawn_call) > 0:
+    # Flush output and any queue spawn calls that are located after the resolver block
+    def flush(self, final=False):
+        # Statements to ignore when looking for block terminations
+        nothingness = ["#"]
+
+        if final and len(self.spawn_call) > 0:
             if re.search("^return ", self.last_stmt.strip()):
                 # Spit out spawn calls if they're queued up
                 while len(self.spawn_call) > 0:
@@ -77,11 +81,20 @@ class Compiler:
                 print(f"      {self.last_stmt}", file=sys.stderr)
                 sys.exit(1)
 
+        # Print our generated output
+        while len(self.output) > 0:
+            print(self.output.pop())
+
+        if len(self.current_statement.strip()) > 0:
+            self.last_stmt = self.current_statement if self.current_statement.lstrip()[
+                                                           0] not in nothingness else self.last_stmt
+
     # Generate chain command
     def chain_generator(self, parms):
         assignment = parms["match"].group(1) if parms["match"].group(1) else ""
         quote_type = "'" if "'" not in parms["match"].group(2) else '"'
-        cmd = f'{quote_type}{parms["match"].group(2)}{quote_type}' if parms["match"].group(2)[0] != "$" else parms["match"].group(2).replace("$", "")
+        cmd = f'{quote_type}{parms["match"].group(2)}{quote_type}' if parms["match"].group(2)[0] != "$" else parms[
+            "match"].group(2).replace("$", "")
         args = parms["match"].group(3)
 
         self.output.append(f'{assignment}{watiba_ref}.chain({cmd}, {args})')
@@ -170,9 +183,11 @@ class Compiler:
 
     # Compile the passed statement
     def compile(self, stmt):
+        self.current_statement = stmt
 
         # Copy the statement to a local variable
         s = str(stmt)
+        self.stmt_count += 1
 
         # Spit out spawn call if it's queued up (on block breaks)
 
@@ -188,13 +203,13 @@ class Compiler:
 
         # If done with the resolver block, did it terminate with a resolve value?
         if resolver_level_completed:
-                if re.search("^return ", self.last_stmt.strip()):
-                    print(self.spawn_call.pop())
-                else:
-                    print("ERROR: Resolver block not properly terminated with return.", file=sys.stderr)
-                    print(f"    Block at line {self.stmt_count} incorrectly terminated with:", file=sys.stderr)
-                    print(f"      {self.last_stmt}", file=sys.stderr)
-                    sys.exit(1)
+            if re.search("^return ", self.last_stmt.strip()):
+                print(self.spawn_call.pop())
+            else:
+                print("ERROR: Resolver block not properly terminated with return.", file=sys.stderr)
+                print(f"    Block at line {self.stmt_count} incorrectly terminated with:", file=sys.stderr)
+                print(f"      {self.last_stmt}", file=sys.stderr)
+                sys.exit(1)
 
         # Check the statement for a Watiba expresion
         for ex in self.expressions:
@@ -230,23 +245,18 @@ if __name__ == "__main__":
 
     c = None
 
-    # Statements to ignore when looking for block terminations
-    nothingness = ["#"]
-
     with open(in_file, 'r') as f:
         for statement in f:
             if not c:
+                # Instantiation of compiler loads up some initial lines of output at the top
                 c = Compiler(statement.rstrip())
-            else:
-                c.stmt_count += 1
-                c.compile(statement.rstrip())
-                for o in c.output:
-                    print(o)
-                c.output = []
+                continue
 
-                if len(statement.strip()) > 0:
-                    c.last_stmt = statement if statement.lstrip()[0] not in nothingness else c.last_stmt
+            # Compile this line of input
+            c.compile(statement.rstrip())
 
+            # Spit out the output of the compiler
+            c.flush()
 
     # Flush out any queued spawn statement calls
-    c.flush()
+    c.flush(final=True)
