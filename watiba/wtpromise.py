@@ -25,8 +25,9 @@ class WTKillException(Exception):
 
 # The object returned for Watbia thread spawns
 class WTPromise(Exception):
-    def __init__(self, command):
-        self.output = {}
+    def __init__(self, command, host="localhost"):
+        self.output = None
+        self.host = host
         self.resolution = False
         self.start_time = time.time()
         self.end_time = None
@@ -93,10 +94,6 @@ class WTPromise(Exception):
     # Determine if promise is complete (not resolved!)
     def complete(self):
         return True if len(self.threads) < 1 else False
-
-    # Getter for WTOutput object
-    def get_output(self, host="localhost"):
-        return self.output[host]
 
     # Resolve the parent promise if one exists
     def resolve_parent(self):

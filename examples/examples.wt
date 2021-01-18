@@ -114,7 +114,7 @@ args = {"count": global_counter + 1,
 p = spawn `echo "hello" && sleep 5` args:
     print("Args passed to me: {}".format(args))
     # Print output
-    print(promise.get_output().stdout)
+    print(promise.output.stdout)
     return True
 
 # Wait for promise to resolve
@@ -129,16 +129,16 @@ except Exception as ex:
 
 # Spawn command on remote host "walkubu2"
 p = spawn `pwd`@walkubu2:
-    for linex in promise.get_output("walkubu2").stdout:
-        print(linex)
+    for line in promise.output.stdout:
+        print(f"From {promise.host}: {line}")
     return True
 p.join()
 
 # Spawn command on remote host "walkubu" with variable
 remote = "walkubu"
 p = spawn `pwd && hostname`@$remote:
-    for liney in promise.get_output(remote).stdout:
-        print(liney)
+    for line in promise.output.stdout:
+        print(f"From {remote}: {line}")
     return True
 
 

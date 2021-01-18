@@ -91,7 +91,7 @@ class Watiba(Exception):
 
     def spawn(self, command, resolver, spawn_args, parent_locals, host=None):
         # Create a new promise object
-        l_promise = WTPromise(command)
+        l_promise = WTPromise(command, host if host else "localhost")
 
         # Chain our promise in if we're a child
         if 'promise' in parent_locals \
@@ -108,7 +108,7 @@ class Watiba(Exception):
             promise.reattach(temp_id, threading.get_ident())
 
             # Execute the command in a new thread (this is synchronously run)
-            promise.output[thread_args["host"]] = self.execute(thread_args["command"], thread_args["host"])
+            promise.output = self.execute(thread_args["command"], thread_args["host"])
 
             # This thread complete.  Detach it from the promise
             promise.detach(threading.get_ident())
