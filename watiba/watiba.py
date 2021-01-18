@@ -91,7 +91,7 @@ class Watiba(Exception):
 
     def spawn(self, command, resolver, spawn_args, parent_locals, host=None):
         # Create a new promise object
-        l_promise = WTPromise(command, host if host else "localhost")
+        l_promise = WTPromise(command, host) if host else WTPromise(command)
 
         # Chain our promise in if we're a child
         if 'promise' in parent_locals \
