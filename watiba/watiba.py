@@ -1,4 +1,3 @@
-#!/usr/bin/python3.8
 '''
 Watiba class wraps the Python subprocess and captures all its outputs in a single object
 
