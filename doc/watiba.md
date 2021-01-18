@@ -643,7 +643,7 @@ try:
     for host, output in out.items():
         print(f'{host} exit code: {output.exit_code}')
 except WTChainException as ex:
-    print(f'ERROR: {ex.msg}, {ex.host}, {ex.command}, {ex.output.stderr})
+    print(f'ERROR: {ex.msg}, {ex.host}, {ex.command}, {ex.output.stderr}')
 ```
 ```
 # This is a more complex chain that runs the "ls -lrt" command on each server listed in "hosts"
@@ -658,7 +658,7 @@ try:
     for host, output in out.items():
         print(f'{host} exit code: {output.exit_code}')
 except WTChainException as ex:
-    print(f'ERROR: {ex.msg}, {ex.host}, {ex.command}, {ex.output.stderr})
+    print(f'ERROR: {ex.msg}, {ex.host}, {ex.command}, {ex.output.stderr}')
 ```
 
 ####How does this work?
