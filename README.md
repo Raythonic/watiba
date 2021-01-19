@@ -752,7 +752,7 @@ Summary: Python syntactical sugar for embedded shell commands
 Home-page: https://github.com/Raythonic/watiba
 Author: Ray Walker
 Author-email: raythonic@gmail.com
-License: UNKNOWN
+License: MIT
 Location: /home/rwalk/.local/lib/python3.8/site-packages
 Requires: 
 Required-by: 
