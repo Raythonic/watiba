@@ -165,7 +165,7 @@ class WTPromise(Exception):
                                              p.command,
                                              "Resolved" if p.resolved() else "Unresolved",
                                              f"Execution time: {execution_time} seconds",
-                                             f"Thread id: {len(p.thread_id)}"
+                                             f"Thread id: {p.thread_id}"
                                              ), file=sys.stderr)
 
         for child in p.children:
