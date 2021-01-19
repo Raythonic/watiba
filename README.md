@@ -748,7 +748,7 @@ cp ~/.local/lib/python3.8/site-packages/watiba/watiba-c-bin.py ~/bin/watiba-c
 
 Changing the Python interpreter location:
 ```buildoutcfg
-edit bin/watiba-c
+edit ~/bin/watiba-c
 Change: 
     #!/usr/bin/python3 
 to your python interpreter
