@@ -599,7 +599,7 @@ following requirements:
 - Make sure that SSH'ing to the target host does not cause any prompts.  Test first by manually entering 
   ```ssh {user}@{host} "ls -lrt"```.  For example, ```ssh rwalk@walkubu "ls -lrt"```
 
-To execute a command remotely, an _@host_ parameter is suffixed to the backticked command.  The host name can be a
+To execute a command remotely, a _@host_ parameter is suffixed to the backticked command.  The host name can be a
 literal or a variable.  To employ a variable, prepend a _$_ to the name following _@_.  
 
 To change the default SSH port 22 to a custom value, add to your Watiba code:  ```watiba-ctl {"ssh-port": custom port}```
