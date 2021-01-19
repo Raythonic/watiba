@@ -773,7 +773,7 @@ watbia module.  Follow these steps to install Watiba locally.
 pip install watiba
 ```
 
-The pre-compiler can be found in your user's home dir at _~/.local/bin/watiba-c_
+The pre-compiler can be found in your user's home dir at _~/.local/bin/watiba-c_.  
 If your system doesn't have _~/.local/bin_, you can copy _bin/watiba-c_ from the dir where you
 cloned watiba to a location in your PATH.
 
