@@ -581,7 +581,7 @@ print("complete")
 <div id="threads"/>
 
 ### Threads
-Each promise produced from a _spawn_ expression results in one OS thread.  To access to the 
+Each promise produced from a _spawn_ expression results in one OS thread.  To access the 
 number of threads your code has spawned collectively in the promise tree:
 ``` 
 num_of_spawns = promise.spawn_count()  # Returns number of nodes in the promise tree

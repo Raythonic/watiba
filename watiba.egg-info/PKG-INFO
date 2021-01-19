@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: watiba
-Version: 0.4.8
+Version: 0.4.9
 Summary: Python syntactical sugar for embedded shell commands
 Home-page: https://github.com/Raythonic/watiba
 Author: Ray Walker
@@ -16,6 +16,7 @@ Description: # Watiba
         
         Features:
         - Shell command integration with Python code
+        - In-line access to shell command results
         - Current directory context maintained across commands throughout your Python code
         - Async/promise support for integrated shell commands
         - Remote shell command execution
@@ -48,13 +49,20 @@ Description: # Watiba
         They can be placed in any Python statement or expression.  Watiba keeps track of the current working directory 
         after the execution of any shell command so that all subsequent shell commands keep context.  For example:
         
+        Basic example of embedded commands:
         ```
         #!/usr/bin/python3
         
+        # Typical Python program
+        
         if __name__ == "__main__":
+        
+            # Change directory context
             `cd /tmp`
-            for l in `ls -lrt`.stdout:
-                print(l)
+            
+            # Directory context maintained
+            for file in `ls -lrt`.stdout:  # In-line access to command results
+                print(f"File in /tmp: {file}")
         ```
         
         This loop will display the file list from /tmp. The `ls -lrt` is run in the 
@@ -70,10 +78,15 @@ Description: # Watiba
         _A command variable is denoted by prepending a dollar sign on the variable name within backticks_:
         ```
         # Set the Python variable to the command
-        touch_cmd = "touch /tmp/blah.txt"
+        cmdA = 'echo "This is a line of output" > /tmp/blah.txt'
+        cmdB = 'cat /tmp/blah.txt'
         
-        # Execute it
-        `$touch_cmd`  # Execute the command within Python variable touch_cmd
+        # Execute first command
+        `$cmdA`  # Execute the command within Python variable cmdA
+        
+        # Execute second command
+        for line in `$cmdB`.stdout:
+            print(line)
         ```
         
         _This example demonstrates keeping dir context and executing a command by variable_:
@@ -85,21 +98,13 @@ Description: # Watiba
             `cd /tmp`
             
             # Set a command string
-            my_cmd = "tar -zxvf blah.tar.gz"
+            my_cmd = "tar -zxvf tmp.tar.gz"
             
-            # Execute that command and save the result object in variable "w"
+            # Execute that command and save the command results in variable "w"
             w = `$my_cmd`
             if w.exit_code == 0:
                 for l in w.stderr:
                     print(l)
-        ```
-        
-        _An example of building a command from other variables and then executing it within 
-        a print() statement_:
-        ```
-        in_file = "some_file.txt"
-        my_cmd = f"cat {in_file}"
-        print(`$my_cmd`.stdout)
         ```
         
         _These constructs are **not** supported_:
@@ -152,12 +157,12 @@ Description: # Watiba
         The results of the command issued in backticks are available in the properties
         of the object returned by Watiba.  Following are those properties:
         
-        - stdout - **array** of output lines from the command normalized for display
-        - stderr - **array** of standard error output lines from the command normalized for display
-        - exit_code - **integer** exit code value from command
-        - cwd - **string** current working directory after command was executed
+        - **stdout** - _List_ Output lines from the command normalized for display
+        - **stderr** - _List_ Standard error output lines from the command normalized for display
+        - **exit_code** - _Integer_ Exit code value from command
+        - **cwd** - _String_ Current working directory after command was executed
         
-        Technically, the returned object for any shell command is WTOutput.
+        Technically, the returned object for any shell command is defined in the WTOutput class.
         
         <div id="async-spawing-and-promises"/>
         
@@ -176,7 +181,7 @@ Description: # Watiba
         ##### Useful properties in promise structure 
         A promise is either returned in assignment from outermost spawn, or passed to child spawns in argument "promise".
         
-        - **output** Standard output structure as described in section "Command Results"
+        - **output** Standard output structure as described in section [Command Results](#command-results)
           ```
              promise.output.stdout
              promise.output.stderr
@@ -184,13 +189,13 @@ Description: # Watiba
              promise.output.cwd
           ```
           
-        - **host** Host name on which spawned command ran
-        - **children** Array of children promises for this promise node
+        - **host** _String_ Host name on which spawned command ran
+        - **children** _List_ Children promises for this promise node
         - **parent** Reference to parent promise node of this child promise. None if root promise.
-        - **command** Shell command issued for this promise
+        - **command** _String_ Shell command issued for this promise
         - **resolved()** Method to determine if this promise was marked resolved
-        - **start_time** Time value of when spawned command started
-        - **end_time** Time value of when spawned command was marked resolved. None if command is still 
+        - **start_time** _Time_ value of when spawned command started
+        - **end_time** _Time_ value of when spawned command was marked resolved. None if command is still 
           executing
         
         <div id="spawn-controller"/>
@@ -204,31 +209,28 @@ Description: # Watiba
         hung threads.
         
         Spawn control parameters:
-        - _max_ - **Integer** The maximum number of spawned commands allowed before the controller enters slowdown mode
-          
-           **Default: 10**
-        - _sleep-floor_ - **Seconds** The starting sleep value when the controller enters slowdown mode
-          
-           **Default: .125**
-        - _sleep-increment_ - **Seconds** The amount of seconds sleep will increase every third cycle when in slowdown mode
-          
-           **Default: .125**
-        - _sleep-ceiling_ - **Seconds** The highest length sleep value allowed when in slowdown mode.  (As slow as it will get.)
-          
-           **Default: 3**
-        - _expire_ - **Integer** Total number of slowdown cycles allowed before the error method is called
-          
-           **Default: No expiration**
-        - _error_ - **Method** Callback method invoked when slowdown mode expires.  By default, this will throw an exception.
+        - **max** - _Integer_ The maximum number of spawned commands allowed before the controller enters slowdown mode.
+            **Default: 10**
+        - **sleep-floor** - _Integer_ Seconds the starting sleep value when the controller enters slowdown mode.
+            **Default: .125**
+        - **sleep-increment** - _Integer_ Seconds the amount of seconds sleep will increase every third cycle when in slowdown 
+          mode.  
+             **Default: .125**
+        - **sleep-ceiling** - _Integer_ Seconds the highest length sleep value allowed when in slowdown mode.  
+          (As slow as it will get.)
+             **Default: 3**
+        - **expire** - _Integer_ Total number of slowdown cycles allowed before the error method is called.
+             **Default: No expiration**
+        - **error** - _Method_ Callback method invoked when slowdown mode expires. Use this to catch hung commands.
                 This method is passed 2 arguments:
-          - _promise_ - The promise attempting execution at the time of expiration
-          - _count_ - The thread count (unresolved promises) at the time of expiration
+          - **promise** - The promise attempting execution at the time of expiration
+          - **count** - The thread count (unresolved promises) at the time of expiration
             
-          **Default: Generic error handler**
+           **Default:** Generic Watiba error handler method.  This handler will raise a _WTSpawnException_ exception.
             
         _spawn-ctl_ only overrides the values it sets and does not affect values not specified.  _spawn-ctl_ statements can
         set whichever values it wants, can be dispersed throughout your code (i.e. multiple _spawn-ctl_ statements) and 
-        only affects spawns subsequent to its setting at execution time.
+        only affects subsequent spawn expressions.
         
         _Notes:_
         1. Arguments can be passed to the resolver by specifying a trailing variable after the command.  If the arguments

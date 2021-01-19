@@ -9,6 +9,7 @@ BASH shell commands with Python.</p>
 
 <p>Features:
 - Shell command integration with Python code
+- In-line access to shell command results
 - Current directory context maintained across commands throughout your Python code
 - Async/promise support for integrated shell commands
 - Remote shell command execution
@@ -49,15 +50,24 @@ Shell commands are expressed within backtick characters emulating BASH's origina
 They can be placed in any Python statement or expression.  Watiba keeps track of the current working directory 
 after the execution of any shell command so that all subsequent shell commands keep context.  For example:</p>
 
-<p>```</p>
+<p>Basic example of embedded commands:
+```</p>
 
 <h1>!/usr/bin/python3</h1>
 
-<p>if <strong>name</strong> == "<strong>main</strong>":
-    <code>cd /tmp</code>
-    for l in <code>ls -lrt</code>.stdout:
-        print(l)
-```</p>
+<h1>Typical Python program</h1>
+
+<p>if <strong>name</strong> == "<strong>main</strong>":</p>
+
+<pre><code># Change directory context
+`cd /tmp`
+
+# Directory context maintained
+for file in `ls -lrt`.stdout:  # In-line access to command results
+    print(f"File in /tmp: {file}")
+</code></pre>
+
+<p>```</p>
 
 <p>This loop will display the file list from /tmp. The <code>ls -lrt</code> is run in the 
 context of previous <code>cd /tmp</code>.  </p>
@@ -75,11 +85,17 @@ shell command.  To execute commands in a Python variable, prefix the variable na
 
 <h1>Set the Python variable to the command</h1>
 
-<p>touch_cmd = "touch /tmp/blah.txt"</p>
+<p>cmdA = 'echo "This is a line of output" > /tmp/blah.txt'
+cmdB = 'cat /tmp/blah.txt'</p>
 
-<h1>Execute it</h1>
+<h1>Execute first command</h1>
 
-<p><code>$touch_cmd</code>  # Execute the command within Python variable touch_cmd
+<p><code>$cmdA</code>  # Execute the command within Python variable cmdA</p>
+
+<h1>Execute second command</h1>
+
+<p>for line in <code>$cmdB</code>.stdout:
+    print(line)
 ```</p>
 
 <p><em>This example demonstrates keeping dir context and executing a command by variable</em>:
@@ -92,9 +108,9 @@ shell command.  To execute commands in a Python variable, prefix the variable na
     <code>cd /tmp</code></p>
 
 <pre><code># Set a command string
-my_cmd = "tar -zxvf blah.tar.gz"
+my_cmd = "tar -zxvf tmp.tar.gz"
 
-# Execute that command and save the result object in variable "w"
+# Execute that command and save the command results in variable "w"
 w = `$my_cmd`
 if w.exit_code == 0:
     for l in w.stderr:
@@ -102,14 +118,6 @@ if w.exit_code == 0:
 </code></pre>
 
 <p>```</p>
-
-<p><em>An example of building a command from other variables and then executing it within 
-a print() statement</em>:
-<code>
-in_file = "some_file.txt"
-my_cmd = f"cat {in_file}"
-print(`$my_cmd`.stdout)
-</code></p>
 
 <p><em>These constructs are <strong>not</strong> supported</em>:
  ```
@@ -168,13 +176,13 @@ cause a CWD change either explicitly or implicitly.</p>
 of the object returned by Watiba.  Following are those properties:</p>
 
 <ul>
-<li>stdout - <strong>array</strong> of output lines from the command normalized for display</li>
-<li>stderr - <strong>array</strong> of standard error output lines from the command normalized for display</li>
-<li>exit_code - <strong>integer</strong> exit code value from command</li>
-<li>cwd - <strong>string</strong> current working directory after command was executed</li>
+<li><strong>stdout</strong> - <em>List</em> Output lines from the command normalized for display</li>
+<li><strong>stderr</strong> - <em>List</em> Standard error output lines from the command normalized for display</li>
+<li><strong>exit<em>code</strong> - _Integer</em> Exit code value from command</li>
+<li><strong>cwd</strong> - <em>String</em> Current working directory after command was executed</li>
 </ul>
 
-<p>Technically, the returned object for any shell command is WTOutput.</p>
+<p>Technically, the returned object for any shell command is defined in the WTOutput class.</p>
 
 <p><div id="async-spawing-and-promises"/></p>
 
@@ -196,20 +204,20 @@ is found in <em>promise.output</em>.  The examples throughout this README and in
 <p>A promise is either returned in assignment from outermost spawn, or passed to child spawns in argument "promise".</p>
 
 <ul>
-<li><p><strong>output</strong> Standard output structure as described in section "Command Results"
+<li><p><strong>output</strong> Standard output structure as described in section <a href="#command-results">Command Results</a>
 <code>
  promise.output.stdout
  promise.output.stderr
  promise.output.exit_code
  promise.output.cwd
 </code></p></li>
-<li><p><strong>host</strong> Host name on which spawned command ran</p></li>
-<li><strong>children</strong> Array of children promises for this promise node</li>
+<li><p><strong>host</strong> <em>String</em> Host name on which spawned command ran</p></li>
+<li><strong>children</strong> <em>List</em> Children promises for this promise node</li>
 <li><strong>parent</strong> Reference to parent promise node of this child promise. None if root promise.</li>
-<li><strong>command</strong> Shell command issued for this promise</li>
+<li><strong>command</strong> <em>String</em> Shell command issued for this promise</li>
 <li><strong>resolved()</strong> Method to determine if this promise was marked resolved</li>
-<li><strong>start_time</strong> Time value of when spawned command started</li>
-<li><strong>end_time</strong> Time value of when spawned command was marked resolved. None if command is still 
+<li><strong>start<em>time</strong> _Time</em> value of when spawned command started</li>
+<li><strong>end<em>time</strong> _Time</em> value of when spawned command was marked resolved. None if command is still 
 executing</li>
 </ul>
 
@@ -225,31 +233,28 @@ can be overridden.  The controller's purpose is to not allow run away threads an
 hung threads.</p>
 
 <p>Spawn control parameters:
-- <em>max</em> - <strong>Integer</strong> The maximum number of spawned commands allowed before the controller enters slowdown mode</p>
-
-<p><strong>Default: 10</strong>
-- <em>sleep-floor</em> - <strong>Seconds</strong> The starting sleep value when the controller enters slowdown mode</p>
-
-<p><strong>Default: .125</strong>
-- <em>sleep-increment</em> - <strong>Seconds</strong> The amount of seconds sleep will increase every third cycle when in slowdown mode</p>
-
-<p><strong>Default: .125</strong>
-- <em>sleep-ceiling</em> - <strong>Seconds</strong> The highest length sleep value allowed when in slowdown mode.  (As slow as it will get.)</p>
-
-<p><strong>Default: 3</strong>
-- <em>expire</em> - <strong>Integer</strong> Total number of slowdown cycles allowed before the error method is called</p>
-
-<p><strong>Default: No expiration</strong>
-- <em>error</em> - <strong>Method</strong> Callback method invoked when slowdown mode expires.  By default, this will throw an exception.
+- <strong>max</strong> - <em>Integer</em> The maximum number of spawned commands allowed before the controller enters slowdown mode.
+    <strong>Default: 10</strong>
+- <strong>sleep-floor</strong> - <em>Integer</em> Seconds the starting sleep value when the controller enters slowdown mode.
+    <strong>Default: .125</strong>
+- <strong>sleep-increment</strong> - <em>Integer</em> Seconds the amount of seconds sleep will increase every third cycle when in slowdown 
+  mode. <br />
+     <strong>Default: .125</strong>
+- <strong>sleep-ceiling</strong> - <em>Integer</em> Seconds the highest length sleep value allowed when in slowdown mode. <br />
+  (As slow as it will get.)
+     <strong>Default: 3</strong>
+- <strong>expire</strong> - <em>Integer</em> Total number of slowdown cycles allowed before the error method is called.
+     <strong>Default: No expiration</strong>
+- <strong>error</strong> - <em>Method</em> Callback method invoked when slowdown mode expires. Use this to catch hung commands.
         This method is passed 2 arguments:
-  - <em>promise</em> - The promise attempting execution at the time of expiration
-  - <em>count</em> - The thread count (unresolved promises) at the time of expiration</p>
+  - <strong>promise</strong> - The promise attempting execution at the time of expiration
+  - <strong>count</strong> - The thread count (unresolved promises) at the time of expiration</p>
 
-<p><strong>Default: Generic error handler</strong></p>
+<p><strong>Default:</strong> Generic Watiba error handler method.  This handler will raise a <em>WTSpawnException</em> exception.</p>
 
 <p><em>spawn-ctl</em> only overrides the values it sets and does not affect values not specified.  <em>spawn-ctl</em> statements can
 set whichever values it wants, can be dispersed throughout your code (i.e. multiple <em>spawn-ctl</em> statements) and 
-only affects spawns subsequent to its setting at execution time.</p>
+only affects subsequent spawn expressions.</p>
 
 <p><em>Notes:</em>
 1. Arguments can be passed to the resolver by specifying a trailing variable after the command.  If the arguments
