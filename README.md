@@ -8,6 +8,7 @@ As you browse this document, you'll find Watiba is rich with features for shell 
 
 Features:
 - Shell command integration with Python code
+- In-line access to shell command results
 - Current directory context maintained across commands throughout your Python code
 - Async/promise support for integrated shell commands
 - Remote shell command execution
@@ -40,13 +41,20 @@ Shell commands are expressed within backtick characters emulating BASH's origina
 They can be placed in any Python statement or expression.  Watiba keeps track of the current working directory 
 after the execution of any shell command so that all subsequent shell commands keep context.  For example:
 
+Basic example of embedded commands:
 ```
 #!/usr/bin/python3
 
+# Typical Python program
+
 if __name__ == "__main__":
+
+    # Change directory context
     `cd /tmp`
-    for l in `ls -lrt`.stdout:
-        print(l)
+    
+    # Directory context maintained
+    for file in `ls -lrt`.stdout:  # In-line access to command results
+        print(f"File in /tmp: {file}")
 ```
 
 This loop will display the file list from /tmp. The `ls -lrt` is run in the 
@@ -62,10 +70,15 @@ shell command.  To execute commands in a Python variable, prefix the variable na
 _A command variable is denoted by prepending a dollar sign on the variable name within backticks_:
 ```
 # Set the Python variable to the command
-touch_cmd = "touch /tmp/blah.txt"
+cmdA = 'echo "This is a line of output" > /tmp/blah.txt'
+cmdB = 'cat /tmp/blah.txt'
 
-# Execute it
-`$touch_cmd`  # Execute the command within Python variable touch_cmd
+# Execute first command
+`$cmdA`  # Execute the command within Python variable cmdA
+
+# Execute second command
+for line in `$cmdB`.stdout:
+    print(line)
 ```
 
 _This example demonstrates keeping dir context and executing a command by variable_:
@@ -77,21 +90,13 @@ if __name__ == "__main__":
     `cd /tmp`
     
     # Set a command string
-    my_cmd = "tar -zxvf blah.tar.gz"
+    my_cmd = "tar -zxvf tmp.tar.gz"
     
-    # Execute that command and save the result object in variable "w"
+    # Execute that command and save the command results in variable "w"
     w = `$my_cmd`
     if w.exit_code == 0:
         for l in w.stderr:
             print(l)
-```
-
-_An example of building a command from other variables and then executing it within 
-a print() statement_:
-```
-in_file = "some_file.txt"
-my_cmd = f"cat {in_file}"
-print(`$my_cmd`.stdout)
 ```
 
 _These constructs are **not** supported_:
