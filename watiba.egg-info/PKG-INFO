@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: watiba
-Version: 0.3.101
+Version: 0.4.1
 Summary: Python syntactical sugar for embedded shell commands
 Home-page: https://github.com/Raythonic/watiba
 Author: Ray Walker
@@ -748,6 +748,8 @@ Description: # Watiba
         If your system does **not** have a _~/.local/bin_, then you can copy watiba/watiba-c-bin.py from the package installation location to a
         location that's in your PATH.  Note that you may have to change the first line in watiba-c-bin.py identifying the
         Python interpreter to the correct location in your environment.
+        
+        This will require you to know where your PIP packages are installed.
         
         Example assuming the location of the package, and assuming ~/bin is in your PATH:
         ```buildoutcfg
