@@ -761,7 +761,7 @@ serverC and issue ```echo "$line" | grep something``` on serverV.  It is piping 
 ## Installation
 ### PIP
 If you installed this as a Python package, e.g. pip, then the pre-compiler can be 
-found in your user's home dir at _~/.local/bin/watiba-c_ should that location exists on your system.
+found in your user's home dir at _~/.local/bin/watiba-c_ should that location exist on your system.
 
 If your system doesn't have _~/.local/bin_, refer to the "Pre-compiling" section below.
 
