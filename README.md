@@ -26,6 +26,7 @@ Features:
     4. [The Promise Tree](#promise-tree)
     5. [Threads](#threads)
 6. [Remote Execution](#remote-execution)
+    1. [Change SSH port for remote execution](#change-ssh-port)
 7. [Command Chaining](#command-chaining)
 8. [Command Chain Piping (Experimental)](#piping-output)
 9. [Installation](#installation)
@@ -596,12 +597,24 @@ following requirements:
 - The local SSH key is in the remote's _authorized_keys_ file.  _The details of this
   process is beyond the scope of this README.  For those instructions, consult www.ssh.com_
   
-- Make sure that SSH'ing to the target host does not cause any prompts.  Test first by manually entering 
-  ```ssh {user}@{host} "ls -lrt"```.  For example, ```ssh rwalk@walkubu "ls -lrt"```
+- Make sure that SSH'ing to the target host does not cause any prompts.  
+  
+Test that your SSH environment is setup first by manually entering: 
+```
+ssh {user}@{host} "ls -lrt"
+
+# For example
+ssh rwalk@walkubu "ls -lrt"
+
+# If SSH prompts you, then Watiba remote execution cannot function. 
+```
 
 To execute a command remotely, a _@host_ parameter is suffixed to the backticked command.  The host name can be a
-literal or a variable.  To employ a variable, prepend a _$_ to the name following _@_.  
+literal or a variable.  To employ a variable, prepend a _$_ to the name following _@_ such as _@$var_.
 
+<div id="change-ssh-port"/>
+
+#### Change SSH port for remote execution
 To change the default SSH port 22 to a custom value, add to your Watiba code:  ```watiba-ctl {"ssh-port": custom port}```
 Example:
 ```buildoutcfg
