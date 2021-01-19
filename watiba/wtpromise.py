@@ -159,7 +159,11 @@ class WTPromise(Exception):
 
         # Set out starting position
         p = n
+
+        # Calculate the execution time of the command related to this promise
         execution_time = round(p.end_time - p.start_time, 4) if p.end_time else round(time.time() - p.start_time, 4)
+
+        # Print dump output
         print("{}+ {}: `{}` ({}, {}, {})".format(dashes,
                                              "root" if p.depth < 1 else p.depth,
                                              p.command,
