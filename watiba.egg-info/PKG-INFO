@@ -1,11 +1,11 @@
 Metadata-Version: 2.1
 Name: watiba
-Version: 0.4.1
+Version: 0.4.3
 Summary: Python syntactical sugar for embedded shell commands
 Home-page: https://github.com/Raythonic/watiba
 Author: Ray Walker
 Author-email: raythonic@gmail.com
-License: UNKNOWN
+License: MIT
 Description: # Watiba
         Watiba, pronounced wah-TEE-bah, is a lightweight Python pre-compiler for embedding Linux shell 
         commands within Python applications.  It is similar to other languages' syntactical enhancements where
@@ -749,7 +749,23 @@ Description: # Watiba
         location that's in your PATH.  Note that you may have to change the first line in watiba-c-bin.py identifying the
         Python interpreter to the correct location in your environment.
         
-        This will require you to know where your PIP packages are installed.
+        This will require you to know where your PIP packages are installed.  To locate it, enter and note the
+        _location_ line:
+        ```buildoutcfg
+        pip show watiba
+        
+        Name: watiba
+        Version: 0.4.1
+        Summary: Python syntactical sugar for embedded shell commands
+        Home-page: https://github.com/Raythonic/watiba
+        Author: Ray Walker
+        Author-email: raythonic@gmail.com
+        License: UNKNOWN
+        Location: /home/rwalk/.local/lib/python3.8/site-packages
+        Requires: 
+        Required-by: 
+        
+        ```
         
         Example assuming the location of the package, and assuming ~/bin is in your PATH:
         ```buildoutcfg

@@ -47,6 +47,7 @@ setuptools.setup(
     version=new_version,
     author="Ray Walker",
     author_email="raythonic@gmail.com",
+    license="MIT",
     description="Python syntactical sugar for embedded shell commands",
     long_description=long_description,
     long_description_content_type="text/markdown",
