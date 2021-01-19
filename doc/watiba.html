@@ -691,13 +691,17 @@ This is an optional entry.</p></li>
 <p>Just like a <em>chain</em> expression that does not pipe output, the return object is a dictionary of WTOutput object keyed
 by the host name from the <em>hosts</em> list and <em>not</em> from the commands recieving the piped output.</p>
 
-<p>If any command fails, a WTChainException is raised.</p>
+<p>If any command fails, a WTChainException is raised.  Import this exception to catch it:
+<code>buildoutcfg
+from watiba import WTChainException
+</code></p>
 
 <p><em>Note</em>: <em>The piping feature is experimental as of this release, and a better design will eventually
 supercede it.</em></p>
 
 <p>Examples: <br />
-```</p>
+```
+from watiba import WTChainException</p>
 
 <h1>This is a simple chain with no piping</h1>
 

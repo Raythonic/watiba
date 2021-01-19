@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python3.8
 import os
 
 # This will change the CWD for all subsequent commands
@@ -163,23 +163,25 @@ print("watch() does not pause like join or wait")
 watiba-ctl {"ssh-port":32}
 
 # Example of chaining commands.  Server names are those of developer and won't apply to your environment.
-out = chain `ls -lrt` {"hosts": ["walkubu", "walkubu2"]}
-for host,output in out.items():
-    print(f'{host} exit code: {output.exit_code}')
-    for linez in output.stderr:
-        print(linez)
+try:
+    out = chain `ls -lrt` {"hosts": ["walkubu", "walkubu2"]}
+    for host,output in out.items():
+        print(f'{host} exit code: {output.exit_code}')
+        for linez in output.stderr:
+            print(linez)
+except watiba.WTChainException as ex:
+    print(f"ERROR in chain: {ex.message}")
 
 cmd = "ls -laF"
-out = chain `$cmd` {"hosts": ["walkubu", "walkubu2"]}
-for host,output in out.items():
-    print(f'{host} exit code: {output.exit_code}')
-    for linea in output.stderr:
-        print(linea)
+try:
+    out = chain `$cmd` {"hosts": ["walkubu", "walkubu2"]}
+    for host,output in out.items():
+        print(f'{host} exit code: {output.exit_code}')
+        for linea in output.stderr:
+            print(linea)
+except watiba.WTChainException as ex:
+    print(f"ERROR in chain: {ex.message}")
 
-
-chain `$cmd` {"hosts": ["walkubu", "walkubu2"]}
-
-chain `ls -lrt` {"hosts": ["walkubu", "walkubu2"]}
 
 print("test complete.")
 

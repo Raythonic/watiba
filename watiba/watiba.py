@@ -17,9 +17,9 @@ from watiba.wtoutput import WTOutput
 
 
 class WTChainException(Exception):
-    def __init__(self, msg, host, command, output):
+    def __init__(self, message, host, command, output):
         self.host = host
-        self.msg = msg
+        self.message = message
         self.command = command
         self.output = output
 

@@ -1,5 +1,5 @@
-#!/usr/bin/python
-versions = ["Watiba 0.3.73", "Python 3.8"]
+#!/usr/bin/python3
+versions = ["Watiba 0.3.87", "Python 3.8"]
 '''
 Watiba pre-complier.  Watiba commands are BASH embedded commands between backtick characters (i.e. `), like traditional Bash captures.
 
@@ -27,7 +27,8 @@ watiba_ref = "_watiba_"
 # Singleton object.
 class Compiler:
     def __init__(self):
-        self.current_statement = None
+        self.first_time = True
+        self.current_statement = ""
         self.output = ["import watiba",
                        f"{watiba_ref} = watiba.Watiba()"
                        ]
@@ -83,12 +84,13 @@ class Compiler:
                 sys.exit(1)
 
         # Print our generated output
-        while len(self.output) > 0:
-            print(self.output.pop())
+        if not self.first_time:
+            while len(self.output) > 0:
+                print(self.output.pop(0))
 
-        if len(self.current_statement.strip()) > 0:
-            self.last_stmt = self.current_statement if self.current_statement.lstrip()[
-                                                           0] not in nothingness else self.last_stmt
+            if len(self.current_statement.strip()) > 0:
+                self.last_stmt = self.current_statement if self.current_statement.lstrip()[
+                                                               0] not in nothingness else self.last_stmt
 
     # Generate chain command
     def chain_generator(self, parms):
@@ -98,15 +100,15 @@ class Compiler:
             "match"].group(2).replace("$", "")
         args = parms["match"].group(3)
 
-        self.output.append(f'{assignment}{watiba_ref}.chain({cmd}, {args})')
+        self.output.append(f'{parms["indentation"]}{assignment}{watiba_ref}.chain({cmd}, {args})')
 
     # Set spawn controller args
     def spawn_ctl_args(self, parms):
-        self.output.append(f'{watiba_ref}.spawn_ctlr.set_parms({parms["match"].group(1)})')
+        self.output.append(f'{parms["indentation"]}{watiba_ref}.spawn_ctlr.set_parms({parms["match"].group(1)})')
 
     # Set watiba control args
     def watiba_ctl_args(self, parms):
-        self.output.append(f'{watiba_ref}.set_parms({parms["match"].group(1)})')
+        self.output.append(f'{parms["indentation"]}{watiba_ref}.set_parms({parms["match"].group(1)})')
 
     # Handle spawn code blocks (with host specified)
     def spawn_generator_with_host(self, parms):
@@ -185,8 +187,10 @@ class Compiler:
     # Compile the passed statement
     def compile(self, stmt):
         # If this is the first statement to compile, keep it to generate the #! version header stuff...
-        if not self.current_statement:
+        if self.first_time:
             self.output.insert(0, stmt)
+            self.first_time = False
+            return
 
         # Track our current statement
         self.current_statement = stmt

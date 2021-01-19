@@ -629,13 +629,18 @@ contents function as follows:
 Just like a _chain_ expression that does not pipe output, the return object is a dictionary of WTOutput object keyed
 by the host name from the _hosts_ list and *not* from the commands recieving the piped output.
 
-If any command fails, a WTChainException is raised.
+If any command fails, a WTChainException is raised.  Import this exception to catch it:
+```buildoutcfg
+from watiba import WTChainException
+```
 
 _Note_: _The piping feature is experimental as of this release, and a better design will eventually
 supercede it._
 
 Examples:  
 ```
+from watiba import WTChainException
+
 # This is a simple chain with no piping
 try:
     args = {"hosts": ["serverA", "serverB", "serverC"]}
