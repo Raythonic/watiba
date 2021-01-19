@@ -582,7 +582,7 @@ print("complete")
 
 ### Threads
 Each promise produced from a _spawn_ expression results in one OS thread.  To access the 
-number of threads your code has spawned collectively in the promise tree:
+number of threads your code has spawned collectively, you can do the following:
 ``` 
 num_of_spawns = promise.spawn_count()  # Returns number of nodes in the promise tree
 num_of_resolved_promises = promise.resolved_count() # Returns the number of promises resolved in tree
