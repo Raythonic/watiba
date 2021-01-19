@@ -817,7 +817,23 @@ in <em>~/.local/bin/watiba-c</em>.  If it is, however, incorrect, you'll need to
 location that's in your PATH.  Note that you may have to change the first line in watiba-c-bin.py identifying the
 Python interpreter to the correct location in your environment.</p>
 
-<p>This will require you to know where your PIP packages are installed.</p>
+<p>This will require you to know where your PIP packages are installed.  To locate it, enter and note the
+<em>location</em> line:
+```buildoutcfg
+pip show watiba</p>
+
+<p>Name: watiba
+Version: 0.4.1
+Summary: Python syntactical sugar for embedded shell commands
+Home-page: https://github.com/Raythonic/watiba
+Author: Ray Walker
+Author-email: raythonic@gmail.com
+License: UNKNOWN
+Location: /home/rwalk/.local/lib/python3.8/site-packages
+Requires: 
+Required-by: </p>
+
+<p>```</p>
 
 <p>Example assuming the location of the package, and assuming ~/bin is in your PATH:
 <code>buildoutcfg
