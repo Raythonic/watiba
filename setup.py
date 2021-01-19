@@ -25,21 +25,22 @@ if not os.path.exists("test"):
         # Set the executable destination
         dest_file = f"{home}/.local/bin/watiba-c"
 
-        # Get the current version number
-        with open("watiba/version.py") as f:
-            ver = f.read()
+        # Create the executable in ~/.local/bin/watiba-c
+        with open(dest_file, 'w') as wf:
+            # Python interpreter from user's environment
+            wf.write(py_loc)
 
-            # Build a line of code for the executable
-            ver_line = f'versions = ["Watiba {ver}", "Python 3.8"]\n'
-
-            # Create the executable in ~/.local/bin/watiba-c
-            with open(dest_file, 'w') as wf:
-                wf.write(py_loc)
-                wf.write(ver_line)
-                with open("watiba/watiba-c.py", 'r') as rf:
-                    wf.write(rf.read())
-            # Make it executable
-            os.chmod(dest_file, 0o0766)
+            # Create new executable for user's environment
+            with open("watiba/watiba-c-bin.py", 'r') as rf:
+                # Used to skip first line in executable
+                write = False
+                # Skip first line
+                for line in rf.readlines():
+                    if write:
+                        wf.write(line)
+                    write = True
+        # Make it executable
+        os.chmod(dest_file, 0o0766)
 
 
 setuptools.setup(
