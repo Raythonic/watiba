@@ -663,7 +663,7 @@ _WTChainException_:
 - **command**  The failing Shell command
 - **host** The host reporting the failure
 - **message** Error message
-- **output** Reference to command output object (Refer to the "Command Results" section):
+- **output** Reference to command output object (Refer to the ["Command Results"](#command-results) section):
     
     - **output.stdout**
     - **output.stderr**
