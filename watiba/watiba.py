@@ -42,7 +42,7 @@ class Watiba(Exception):
     # Called by spawned thread
     # Dir context is not kept by the spawn expression
     # Returns WTOutput object
-    def execute(self, cmd, host):
+    def execute(self, cmd, host="localhost"):
         context = False
         if host == "localhost":
             return self.bash(cmd, context)
@@ -89,7 +89,7 @@ class Watiba(Exception):
         out.cwd = os.getcwd()
         return out
 
-    def spawn(self, command, resolver, spawn_args, parent_locals, host=None):
+    def spawn(self, command, resolver, spawn_args, parent_locals, host="localhost"):
         # Create a new promise object
         l_promise = WTPromise(command, host) if host else WTPromise(command)
 
@@ -102,27 +102,21 @@ class Watiba(Exception):
             # Link this child promise to its parent
             l_promise.relate(parent_locals['promise'])
 
-        def run_command(promise, temp_id, thread_args):
-            # Since we cannot know our thread id until running in the thread, this pattern was adopted
-            #  Replace our temporary location in the thread dictionary with the one we want: by thread id
-            promise.reattach(temp_id, threading.get_ident())
+        def run_command(promise, thread_args):
+            # Get our thread id
+            promise.thread_id = threading.get_ident()
 
             # Execute the command in a new thread (this is synchronously run)
             promise.output = self.execute(thread_args["command"], thread_args["host"])
 
-            # This thread complete.  Detach it from the promise
-            promise.detach(threading.get_ident())
-
-            # Are we the last thread to finish for this promise?  Yes-call resolver
-            if promise.complete():
-                # Call the resolver and use its return value for promise resolution
-                promise.set_resolution(thread_args["resolver"](promise, copy.copy(thread_args["spawn-args"])))
+            # Call promise resolver
+            promise.set_resolution(thread_args["resolver"](promise, copy.copy(thread_args["spawn-args"])))
 
         try:
-            args = {"command": command, "resolver": resolver, "spawn-args": spawn_args}
+            thread_args = {"command": command, "resolver": resolver, "spawn-args": spawn_args, "host": host}
 
             # Control the threads (the controller starts the thread)
-            self.spawn_ctlr.start(l_promise, run_command, args, host)
+            self.spawn_ctlr.start(l_promise, run_command, thread_args)
 
         except WTSpawnException as ex:
             print(f"ERROR.  w_async thread execution failed. {ex.promise.command}")

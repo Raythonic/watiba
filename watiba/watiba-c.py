@@ -114,6 +114,7 @@ class Compiler:
 
     # Handle spawn code blocks
     def spawn_generator(self, parms, host=None):
+        hostname = host if host else "localhost"
         assign_idx = 1
         cmd_idx = 2
         args_idx = 3 if not host else 4
@@ -134,7 +135,7 @@ class Compiler:
         # Add in args if there's any
         resolver_args = parms["match"].group(args_idx) if parms["match"].group(args_idx) else "{}"
 
-        h = f'"{host}"' if host and host[0] != "$" else host
+        h = f'"{hostname}"' if hostname[0] != "$" else hostname
         h = h.replace("$", "") if h and h[0] == "$" else h
 
         # Queue up async call which is executed (spit out) at the end of the w_spawn block

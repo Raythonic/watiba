@@ -38,14 +38,7 @@ class WTSpawnController():
         raise WTSpawnException(promise, "Promises not resolved by expiration period")
 
     # Start a thread belonging to the passed promise
-    def start(self, promise, thread_callback, thread_args, host=None):
-        host_list = self.args["hosts"]
-        if host:
-            if type(host) == list:
-                host_list = host
-            elif type(host) == str:
-                host_list = [host]
-
+    def start(self, promise, thread_callback, thread_args):
         track_promise = True
         ex_count = self.args["expire"]
         loop_counter = 0
@@ -92,15 +85,11 @@ class WTSpawnController():
         '''
         # Run the command and call the resolver if some other process out there didn't kill it first
         if not promise.killed:
-            for h in host_list:
-                thread_args["host"] = h
-                temp_id = promise.get_temp_id()
-                try:
-                    promise.attach(temp_id,
-                                   threading.Thread(target=thread_callback, args=(promise, temp_id, thread_args,)))
-                    promise.threads[temp_id].start()
-                except Exception as ex:
-                    raise ex
+            try:
+                promise.thread = threading.Thread(target=thread_callback, args=(promise, thread_args,))
+                promise.thread.start()
+            except Exception as ex:
+                raise ex
 
     # Merge in parameters settings
     def set_parms(self, parms):

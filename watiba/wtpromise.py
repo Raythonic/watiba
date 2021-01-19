@@ -31,9 +31,8 @@ class WTPromise(Exception):
         self.resolution = False
         self.start_time = time.time()
         self.end_time = None
-        self.threads = {}
-        self.thread_times = {}
-        self.temp_id = ""
+        self.thread = None
+        self.thread_id = None
         self.killed = False
         self.watcher = None
         self.children = []
@@ -66,34 +65,10 @@ class WTPromise(Exception):
     # remains a slim window when the user's code has access to a promise before any thread executes-and they may
     # just want to stop it first.  So, making that possible.  You're welcome.
     def kill(self):
-        if not self.resolved() and len(self.threads) > 0:
+        if not self.resolved() and self.thread:
             self.killed = True
         else:
             raise WTKillException(self, f'Kill failed.  Command {"running" if not self.resolved() else "completed"}.')
-
-    # Issue a temporary id for thread creation
-    def get_temp_id(self):
-        self.temp_id += "x"
-        return self.temp_id
-
-    # Attach a new thread to this promise
-    def attach(self, temp_id, thread):
-        self.threads[temp_id] = thread
-
-    # Reattach a thread to this promise under its now-known thread id
-    def reattach(self, temp_id, thread_id):
-        self.threads[thread_id] = self.threads[temp_id]
-        self.thread_times[thread_id] = {"start-time": time.time()}
-        del self.threads[temp_id]
-
-    # Detach a thread from this promise
-    def detach(self, thread_id):
-        self.thread_times[thread_id]["end-time"] = time.time()
-        del self.threads[thread_id]
-
-    # Determine if promise is complete (not resolved!)
-    def complete(self):
-        return True if len(self.threads) < 1 else False
 
     # Resolve the parent promise if one exists
     def resolve_parent(self):
@@ -184,13 +159,13 @@ class WTPromise(Exception):
 
         # Set out starting position
         p = n
-        promise_time = round(p.end_time - p.start_time, 4) if p.end_time else round(time.time() - p.start_time, 4)
+        execution_time = round(p.end_time - p.start_time, 4) if p.end_time else round(time.time() - p.start_time, 4)
         print("{}+ {}: `{}` ({}, {}, {})".format(dashes,
                                              "root" if p.depth < 1 else p.depth,
                                              p.command,
                                              "Resolved" if p.resolved() else "Unresolved",
-                                             f"Promise time: {promise_time} seconds",
-                                             f"Threads running: {len(p.threads)}"
+                                             f"Execution time: {execution_time} seconds",
+                                             f"Thread id: {len(p.thread_id)}"
                                              ), file=sys.stderr)
 
         for child in p.children:

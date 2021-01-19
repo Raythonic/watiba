@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: watiba
-Version: 0.3.90
+Version: 0.3.93
 Summary: Python syntactical sugar for embedded shell commands
 Home-page: https://github.com/Raythonic/watiba
 Author: Ray Walker
@@ -161,18 +161,7 @@ Description: # Watiba
         - **resolved()** Method to determine if this promise was marked resolved
         - **start_time** Time value of when spawned command started
         - **end_time** Time value of when spawned command was marked resolved
-        - **thread_times** Multi-dimensional dictionary where thread id is the key referencing thread's start
-                              time, key "start-time" and thread's end time, key "end-time".
-          
-        ```
-                promise.thread_times[thread_id]["start-time"]
-                promise.thread_times[thread_id]["end-time"]
-        ```
-                    Notes:
-                    1. Until the thread id is known, a temporary key is used.  If you see a key of x's, like "xxx...",
-                       then that is the temporary id.
-                    2. Thread information is available by promise method dump_tree()
-        
+        -
         ### Spawn Controller
         All spawned threads are managed by Watiba's Spawn Controller.  The controller watches for too many threads and
         incrementally slows down each thread start when that threshold is exceeded until either all the promises in the tree
@@ -333,6 +322,8 @@ Description: # Watiba
         The promise tree can be printed with the ```dump_tree()``` method on the promise.  This method is intended for
         diagnostic purposes where it must be determined why spawned commands hung.  ```dump_tree(subtree)``` accepts
         a subtree promise as an argument.  If no arguments are passed, ```dump_tree()``` dumps from the root promise on down.
+        
+        ![image](watiba/doc/images/promise_tree.png)
         ```
         # Simple example with no child promises
         p = spawn `date`:
@@ -613,13 +604,41 @@ Description: # Watiba
         the user, sequentially, synchronously until the hosts list is exhausted, or the command fails.  _chain_ returns a
         Python dictionary where the keys are the host names and the values the WTOutput from the command run on that host.
         
+        #### Chain Exception
+        The _chain_ expression raises a WTChainException on the first failed command.  The exception raised
+        has the following properties:
+        
+        _WTChainException_:
+        - **command**  The failing Shell command
+        - **host** The host reporting the failure
+        - **message** Error message
+        - **output** Reference to command output object (Refer to the "Command Results" section):
+            
+            - **output.stdout**
+            - **output.stderr**
+            - **output.exit_code**
+            - **output.cwd**
+            
+        Import this exception to catch it:
+        ```buildoutcfg
+        from watiba import WTChainException
+        ```
+        
+        
         Examples:
         ```
-        out = chain `tar -zcvf backup/file.tar.gz dir/*` {"hosts", ["serverA", "serverB"]}
-        for host,output in out.items():
-            print(f'{host} exit code: {output.exit_code}')
-            for line in output.stderr:
-                print(line)
+        from watiba import WTChainException
+        
+        try:
+            out = chain `tar -zcvf backup/file.tar.gz dir/*` {"hosts", ["serverA", "serverB"]}
+            for host,output in out.items():
+                print(f'{host} exit code: {output.exit_code}')
+                for line in output.stderr:
+                    print(line)
+         except WTChainException(ex):
+            print(f"Error: {ex.message}")
+            print(f"  host: {ex.host} exit code: {ex.output.exit_code} command: {ex.command})
+                    
         ```
         ## Piping Output with Chain (Experimental)
         The _chain_ expression supports piping STDOUT and/or STDERR to other commands executed on remote servers.  Complex
