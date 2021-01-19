@@ -152,8 +152,9 @@ A promise is either returned in assignment from outermost spawn, or passed to ch
 - **command** Shell command issued for this promise
 - **resolved()** Method to determine if this promise was marked resolved
 - **start_time** Time value of when spawned command started
-- **end_time** Time value of when spawned command was marked resolved
--
+- **end_time** Time value of when spawned command was marked resolved. None if command is still 
+  executing
+
 ### Spawn Controller
 All spawned threads are managed by Watiba's Spawn Controller.  The controller watches for too many threads and
 incrementally slows down each thread start when that threshold is exceeded until either all the promises in the tree
