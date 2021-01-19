@@ -144,12 +144,12 @@ for line in `ls -lrt`.stdout:
 The results of the command issued in backticks are available in the properties
 of the object returned by Watiba.  Following are those properties:
 
-- stdout - **array** of output lines from the command normalized for display
-- stderr - **array** of standard error output lines from the command normalized for display
-- exit_code - **integer** exit code value from command
-- cwd - **string** current working directory after command was executed
+- **stdout** - _List_ Output lines from the command normalized for display
+- **stderr** - _List_ Standard error output lines from the command normalized for display
+- **exit_code** - _Integer_ Exit code value from command
+- **cwd** - _String_ Current working directory after command was executed
 
-Technically, the returned object for any shell command is WTOutput.
+Technically, the returned object for any shell command is defined in the WTOutput class.
 
 <div id="async-spawing-and-promises"/>
 
@@ -168,7 +168,7 @@ is found in _promise.output_.  The examples throughout this README and in the _e
 ##### Useful properties in promise structure 
 A promise is either returned in assignment from outermost spawn, or passed to child spawns in argument "promise".
 
-- **output** Standard output structure as described in section "Command Results"
+- **output** Standard output structure as described in section [Command Results](#command-results)
   ```
      promise.output.stdout
      promise.output.stderr
@@ -176,13 +176,13 @@ A promise is either returned in assignment from outermost spawn, or passed to ch
      promise.output.cwd
   ```
   
-- **host** Host name on which spawned command ran
-- **children** Array of children promises for this promise node
+- **host** _String_ Host name on which spawned command ran
+- **children** _List_ Children promises for this promise node
 - **parent** Reference to parent promise node of this child promise. None if root promise.
-- **command** Shell command issued for this promise
+- **command** _String_ Shell command issued for this promise
 - **resolved()** Method to determine if this promise was marked resolved
-- **start_time** Time value of when spawned command started
-- **end_time** Time value of when spawned command was marked resolved. None if command is still 
+- **start_time** _Time_ value of when spawned command started
+- **end_time** _Time_ value of when spawned command was marked resolved. None if command is still 
   executing
 
 <div id="spawn-controller"/>
@@ -196,31 +196,28 @@ can be overridden.  The controller's purpose is to not allow run away threads an
 hung threads.
 
 Spawn control parameters:
-- _max_ - **Integer** The maximum number of spawned commands allowed before the controller enters slowdown mode
-  
-   **Default: 10**
-- _sleep-floor_ - **Seconds** The starting sleep value when the controller enters slowdown mode
-  
-   **Default: .125**
-- _sleep-increment_ - **Seconds** The amount of seconds sleep will increase every third cycle when in slowdown mode
-  
-   **Default: .125**
-- _sleep-ceiling_ - **Seconds** The highest length sleep value allowed when in slowdown mode.  (As slow as it will get.)
-  
-   **Default: 3**
-- _expire_ - **Integer** Total number of slowdown cycles allowed before the error method is called
-  
-   **Default: No expiration**
-- _error_ - **Method** Callback method invoked when slowdown mode expires.  By default, this will throw an exception.
+- **max** - _Integer_ The maximum number of spawned commands allowed before the controller enters slowdown mode.
+    **Default: 10**
+- **sleep-floor** - _Integer_ Seconds the starting sleep value when the controller enters slowdown mode.
+    **Default: .125**
+- **sleep-increment** - _Integer_ Seconds the amount of seconds sleep will increase every third cycle when in slowdown 
+  mode.  
+     **Default: .125**
+- **sleep-ceiling** - _Integer_ Seconds the highest length sleep value allowed when in slowdown mode.  
+  (As slow as it will get.)
+     **Default: 3**
+- **expire** - _Integer_ Total number of slowdown cycles allowed before the error method is called.
+     **Default: No expiration**
+- **error** - _Method_ Callback method invoked when slowdown mode expires. Use this to catch hung commands.
         This method is passed 2 arguments:
-  - _promise_ - The promise attempting execution at the time of expiration
-  - _count_ - The thread count (unresolved promises) at the time of expiration
+  - **promise** - The promise attempting execution at the time of expiration
+  - **count** - The thread count (unresolved promises) at the time of expiration
     
-  **Default: Generic error handler**
+   **Default:** Generic Watiba error handler method.  This handler will raise a _WTSpawnException_ exception.
     
 _spawn-ctl_ only overrides the values it sets and does not affect values not specified.  _spawn-ctl_ statements can
 set whichever values it wants, can be dispersed throughout your code (i.e. multiple _spawn-ctl_ statements) and 
-only affects spawns subsequent to its setting at execution time.
+only affects subsequent spawn expressions.
 
 _Notes:_
 1. Arguments can be passed to the resolver by specifying a trailing variable after the command.  If the arguments
