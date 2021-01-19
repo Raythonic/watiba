@@ -734,12 +734,24 @@ Example of first line of _~/.local/bin/watiba-c_watiba-c_:
 #!/usr/bin/python3
 ```
 
-If your system does not have a _~/.local/bin_, then you'll have to copy watiba/watiba-c-bin.py from the package installation location to a
-location that's in your PATH.
+
+
+##### Environments without ~/.local/bin
+If your system does **not** have a _~/.local/bin_, then you can copy watiba/watiba-c-bin.py from the package installation location to a
+location that's in your PATH.  Note that you may have to change the first line in watiba-c-bin.py identifying the
+Python interpreter to the correct location in your environment.
 
 Example assuming the location of the package, and assuming ~/bin is in your PATH:
 ```buildoutcfg
 cp ~/.local/lib/python3.8/site-packages/watiba/watiba-c-bin.py ~/bin/watiba-c
+```
+
+Changing the Python interpreter location:
+```buildoutcfg
+edit bin/watiba-c
+Change: 
+    #!/usr/bin/python3 
+to your python interpreter
 ```
 
 To pre-compile a .wt file:
