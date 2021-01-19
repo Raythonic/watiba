@@ -108,7 +108,7 @@ class WTPromise(Exception):
     # Count resolve promises in tree
     def resolved_count(self, start_at_top=True):
         # Full tree count?
-        return self.spawn_count(True, start_at_top)
+        return self.spawn_count(resolved_only=True, start_at_top=True)
 
     # Encapsulate setting relating parent/child promises
     def relate(self, parent_promise):
