@@ -741,6 +741,8 @@ If your system does **not** have a _~/.local/bin_, then you can copy watiba/wati
 location that's in your PATH.  Note that you may have to change the first line in watiba-c-bin.py identifying the
 Python interpreter to the correct location in your environment.
 
+This will require you to know where your PIP packages are installed.
+
 Example assuming the location of the package, and assuming ~/bin is in your PATH:
 ```buildoutcfg
 cp ~/.local/lib/python3.8/site-packages/watiba/watiba-c-bin.py ~/bin/watiba-c
