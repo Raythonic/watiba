@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: watiba
-Version: 0.4.17
+Version: 0.4.18
 Summary: Python syntactical sugar for embedded shell commands
 Home-page: https://github.com/Raythonic/watiba
 Author: Ray Walker
@@ -769,7 +769,7 @@ Description: # Watiba
         ## Installation
         ### PIP
         If you installed this as a Python package, e.g. pip, then the pre-compiler can be 
-        found in your user's home dir at _~/.local/bin/watiba-c_ should that location exists on your system.
+        found in your user's home dir at _~/.local/bin/watiba-c_ should that location exist on your system.
         
         If your system doesn't have _~/.local/bin_, refer to the "Pre-compiling" section below.
         
@@ -781,7 +781,7 @@ Description: # Watiba
         pip install watiba
         ```
         
-        The pre-compiler can be found in your user's home dir at _~/.local/bin/watiba-c_
+        The pre-compiler can be found in your user's home dir at _~/.local/bin/watiba-c_.  
         If your system doesn't have _~/.local/bin_, you can copy _bin/watiba-c_ from the dir where you
         cloned watiba to a location in your PATH.
         
