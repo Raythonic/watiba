@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: watiba
-Version: 0.3.99
+Version: 0.3.100
 Summary: Python syntactical sugar for embedded shell commands
 Home-page: https://github.com/Raythonic/watiba
 Author: Ray Walker
@@ -160,8 +160,9 @@ Description: # Watiba
         - **command** Shell command issued for this promise
         - **resolved()** Method to determine if this promise was marked resolved
         - **start_time** Time value of when spawned command started
-        - **end_time** Time value of when spawned command was marked resolved
-        -
+        - **end_time** Time value of when spawned command was marked resolved. None if command is still 
+          executing
+        
         ### Spawn Controller
         All spawned threads are managed by Watiba's Spawn Controller.  The controller watches for too many threads and
         incrementally slows down each thread start when that threshold is exceeded until either all the promises in the tree
@@ -741,12 +742,24 @@ Description: # Watiba
         #!/usr/bin/python3
         ```
         
-        If your system does not have a _~/.local/bin_, then you'll have to copy watiba/watiba-c-bin.py from the package installation location to a
-        location that's in your PATH.
+        
+        
+        ##### Environments without ~/.local/bin
+        If your system does **not** have a _~/.local/bin_, then you can copy watiba/watiba-c-bin.py from the package installation location to a
+        location that's in your PATH.  Note that you may have to change the first line in watiba-c-bin.py identifying the
+        Python interpreter to the correct location in your environment.
         
         Example assuming the location of the package, and assuming ~/bin is in your PATH:
         ```buildoutcfg
         cp ~/.local/lib/python3.8/site-packages/watiba/watiba-c-bin.py ~/bin/watiba-c
+        ```
+        
+        Changing the Python interpreter location:
+        ```buildoutcfg
+        edit ~/bin/watiba-c
+        Change: 
+            #!/usr/bin/python3 
+        to your python interpreter
         ```
         
         To pre-compile a .wt file:

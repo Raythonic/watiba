@@ -169,8 +169,9 @@ is found in <em>promise.output</em>.  The examples throughout this README and in
 <li><strong>parent</strong> Reference to parent promise node of this child promise. None if root promise.</li>
 <li><strong>command</strong> Shell command issued for this promise</li>
 <li><strong>resolved()</strong> Method to determine if this promise was marked resolved</li>
-<li><strong>start<em>time</strong> Time value of when spawned command started
-<h2>- <strong>end</em>time</strong> Time value of when spawned command was marked resolved</h2></li>
+<li><strong>start_time</strong> Time value of when spawned command started</li>
+<li><strong>end_time</strong> Time value of when spawned command was marked resolved. None if command is still 
+executing</li>
 </ul>
 
 <h3>Spawn Controller</h3>
@@ -810,12 +811,23 @@ in <em>~/.local/bin/watiba-c</em>.  If it is, however, incorrect, you'll need to
 
 <p>```</p>
 
-<p>If your system does not have a <em>~/.local/bin</em>, then you'll have to copy watiba/watiba-c-bin.py from the package installation location to a
-location that's in your PATH.</p>
+<h5>Environments without ~/.local/bin</h5>
+
+<p>If your system does <strong>not</strong> have a <em>~/.local/bin</em>, then you can copy watiba/watiba-c-bin.py from the package installation location to a
+location that's in your PATH.  Note that you may have to change the first line in watiba-c-bin.py identifying the
+Python interpreter to the correct location in your environment.</p>
 
 <p>Example assuming the location of the package, and assuming ~/bin is in your PATH:
 <code>buildoutcfg
 cp ~/.local/lib/python3.8/site-packages/watiba/watiba-c-bin.py ~/bin/watiba-c
+</code></p>
+
+<p>Changing the Python interpreter location:
+<code>buildoutcfg
+edit ~/bin/watiba-c
+Change: 
+    #!/usr/bin/python3 
+to your python interpreter
 </code></p>
 
 <p>To pre-compile a .wt file:
