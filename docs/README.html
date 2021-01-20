@@ -876,26 +876,14 @@ For example:
 <code>buildoutcfg
 rwalk@walkubu:~$ watiba-c version
 Watiba 0.3.26
-Python 3.8
-</code>
-<em>Note</em>: The Watiba PIP installation attempts to locate your python interpreter and writes it as the first line
-in <em>~/.local/bin/watiba-c</em>.  If it is, however, incorrect, you'll need to edit the first line of
-<em>~/.local/bin/watiba-c</em> to properly load Python.</p>
-
-<p>Example of first line of <em>~/.local/bin/watiba-c</em>watiba-c_:
-```buildoutcfg</p>
-
-<h1>!/usr/bin/python3</h1>
-
-<p>```</p>
+</code></p>
 
 <p><div id="environments-without-local-bin"/></p>
 
 <h4>Environments without ~/.local/bin</h4>
 
 <p>If your system does <strong>not</strong> have a <em>~/.local/bin</em>, then you can copy watiba/watiba-c-bin.py from the package installation location to a
-location that's in your PATH.  Note that you may have to change the first line in watiba-c-bin.py identifying the
-Python interpreter to the correct location in your environment.</p>
+location that's in your PATH. </p>
 
 <p>This will require you to know where your PIP packages are installed.  To locate it, enter and note the
 <em>location</em> line:
@@ -915,17 +903,9 @@ Required-by: </p>
 
 <p>```</p>
 
-<p>Example assuming the location of the package, and assuming ~/bin is in your PATH:
+<p>Example assuming the location of the package is where <code>pip show</code> said above, and assuming ~/bin is in your PATH:
 <code>buildoutcfg
 cp ~/.local/lib/python3.8/site-packages/watiba/watiba-c-bin.py ~/bin/watiba-c
-</code></p>
-
-<p>Changing the Python interpreter location:
-<code>buildoutcfg
-edit ~/bin/watiba-c
-Change: 
-    #!/usr/bin/python3 
-to your python interpreter
 </code></p>
 
 <p>To pre-compile a .wt file:

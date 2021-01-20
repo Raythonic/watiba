@@ -15,7 +15,7 @@ home = os.path.expanduser("~")
 
 # If this user has a .local/bin in their home directory, build the executable there
 if os.path.exists(f'{home}/.local/bin'):
-    copyfile("watiba-c-bin.py", f"{home}/watiba-c")
+    copyfile("watiba-c-bin.py", f"{home}/.local/bin/watiba-c")
 
 setuptools.setup(
     name="watiba", # Replace with your own username
