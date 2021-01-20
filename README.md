@@ -788,7 +788,6 @@ For example:
 ```buildoutcfg
 rwalk@walkubu:~$ watiba-c version
 Watiba 0.3.26
-Python 3.8
 ```
 
 Example of first line of _~/.local/bin/watiba-c_watiba-c_:
