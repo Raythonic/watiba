@@ -10,37 +10,33 @@ with open("README.md", "r") as fh:
 with open("watiba/version.py", "r") as fh:
     new_version = fh.read().strip()
 
-# Test will only exist on the building server
-if not os.path.exists("test"):
-    # If we land here, we're installing in the user's environment
+# Prepare to create a watiba-c pre-compiler executable on the user's system
+home = os.path.expanduser("~")
 
-    # Prepare to create a watiba-c pre-compiler executable on the user's system
-    home = os.path.expanduser("~")
+# If this user has a .local/bin in their home directory, build the executable there
+if os.path.exists(f'{home}/.local/bin'):
+    # Find out where their python interpreter is located
+    py_loc = f'#!{sys.executable}\n'
 
-    # If this user has a .local/bin in their home directory, build the executable there
-    if os.path.exists(f'{home}/.local/bin'):
-        # Find out where their python interpreter is located
-        py_loc = f'#!{sys.executable}\n'
+    # Set the executable destination
+    dest_file = f"{home}/.local/bin/watiba-c"
 
-        # Set the executable destination
-        dest_file = f"{home}/.local/bin/watiba-c"
+    # Create the executable in ~/.local/bin/watiba-c
+    with open(dest_file, 'w') as wf:
+        # Python interpreter from user's environment
+        wf.write(py_loc)
 
-        # Create the executable in ~/.local/bin/watiba-c
-        with open(dest_file, 'w') as wf:
-            # Python interpreter from user's environment
-            wf.write(py_loc)
-
-            # Create new executable for user's environment
-            with open("watiba/watiba-c-bin.py", 'r') as rf:
-                # Used to skip first line in executable
-                write = False
-                # Skip first line
-                for line in rf.readlines():
-                    if write:
-                        wf.write(line)
-                    write = True
-        # Make it executable
-        os.chmod(dest_file, 0o0766)
+        # Create new executable for user's environment
+        with open("watiba/watiba-c-bin.py", 'r') as rf:
+            # Used to skip first line in executable
+            write = False
+            # Skip first line
+            for line in rf.readlines():
+                if write:
+                    wf.write(line)
+                write = True
+    # Make it executable
+    os.chmod(dest_file, 0o0766)
 
 
 setuptools.setup(
