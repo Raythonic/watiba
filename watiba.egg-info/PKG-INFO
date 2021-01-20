@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: watiba
-Version: 0.4.21
+Version: 0.4.25
 Summary: Python syntactical sugar for embedded shell commands
 Home-page: https://github.com/Raythonic/watiba
 Author: Ray Walker
@@ -796,23 +796,13 @@ Description: # Watiba
         ```buildoutcfg
         rwalk@walkubu:~$ watiba-c version
         Watiba 0.3.26
-        Python 3.8
-        ```
-        _Note_: The Watiba PIP installation attempts to locate your python interpreter and writes it as the first line
-        in _~/.local/bin/watiba-c_.  If it is, however, incorrect, you'll need to edit the first line of
-        _~/.local/bin/watiba-c_ to properly load Python.
-        
-        Example of first line of _~/.local/bin/watiba-c_watiba-c_:
-        ```buildoutcfg
-        #!/usr/bin/python3
         ```
         
         <div id="environments-without-local-bin"/>
         
         #### Environments without ~/.local/bin
         If your system does **not** have a _~/.local/bin_, then you can copy watiba/watiba-c-bin.py from the package installation location to a
-        location that's in your PATH.  Note that you may have to change the first line in watiba-c-bin.py identifying the
-        Python interpreter to the correct location in your environment.
+        location that's in your PATH. 
         
         This will require you to know where your PIP packages are installed.  To locate it, enter and note the
         _location_ line:
@@ -832,17 +822,9 @@ Description: # Watiba
         
         ```
         
-        Example assuming the location of the package, and assuming ~/bin is in your PATH:
+        Example assuming the location of the package is where ```pip show``` said above, and assuming ~/bin is in your PATH:
         ```buildoutcfg
         cp ~/.local/lib/python3.8/site-packages/watiba/watiba-c-bin.py ~/bin/watiba-c
-        ```
-        
-        Changing the Python interpreter location:
-        ```buildoutcfg
-        edit ~/bin/watiba-c
-        Change: 
-            #!/usr/bin/python3 
-        to your python interpreter
         ```
         
         To pre-compile a .wt file:
