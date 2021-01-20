@@ -1,6 +1,6 @@
 import setuptools
 import os
-import sys
+from shutil import copyfile
 
 # Populate the package's long version with README
 with open("README.md", "r") as fh:
@@ -15,29 +15,7 @@ home = os.path.expanduser("~")
 
 # If this user has a .local/bin in their home directory, build the executable there
 if os.path.exists(f'{home}/.local/bin'):
-    # Find out where their python interpreter is located
-    py_loc = f'#!{sys.executable}\n'
-
-    # Set the executable destination
-    dest_file = f"{home}/.local/bin/watiba-c"
-
-    # Create the executable in ~/.local/bin/watiba-c
-    with open(dest_file, 'w') as wf:
-        # Python interpreter from user's environment
-        wf.write(py_loc)
-
-        # Create new executable for user's environment
-        with open("watiba/watiba-c-bin.py", 'r') as rf:
-            # Used to skip first line in executable
-            write = False
-            # Skip first line
-            for line in rf.readlines():
-                if write:
-                    wf.write(line)
-                write = True
-    # Make it executable
-    os.chmod(dest_file, 0o0766)
-
+    copyfile("watiba-c-bin.py", f"{home}/watiba-c")
 
 setuptools.setup(
     name="watiba", # Replace with your own username

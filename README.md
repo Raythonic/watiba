@@ -790,9 +790,6 @@ rwalk@walkubu:~$ watiba-c version
 Watiba 0.3.26
 Python 3.8
 ```
-_Note_: The Watiba PIP installation attempts to locate your python interpreter and writes it as the first line
-in _~/.local/bin/watiba-c_.  If it is, however, incorrect, you'll need to edit the first line of
-_~/.local/bin/watiba-c_ to properly load Python.
 
 Example of first line of _~/.local/bin/watiba-c_watiba-c_:
 ```buildoutcfg
@@ -824,17 +821,9 @@ Required-by:
 
 ```
 
-Example assuming the location of the package, and assuming ~/bin is in your PATH:
+Example assuming the location of the package is where ```pip show``` said above, and assuming ~/bin is in your PATH:
 ```buildoutcfg
 cp ~/.local/lib/python3.8/site-packages/watiba/watiba-c-bin.py ~/bin/watiba-c
-```
-
-Changing the Python interpreter location:
-```buildoutcfg
-edit ~/bin/watiba-c
-Change: 
-    #!/usr/bin/python3 
-to your python interpreter
 ```
 
 To pre-compile a .wt file:
