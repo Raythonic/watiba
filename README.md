@@ -305,7 +305,7 @@ if __name__ == "__main__":
 
 <div id="join-wait-watch"/>
 
-####Join, Wait, or Watch
+#### Join, Wait, or Watch
 
 Once commands are spawned, the caller can wait for _all_ promises, including inner or child promises, to complete, or
 the caller can wait for just a specific promise to complete.  To wait for all _child_ promises including
