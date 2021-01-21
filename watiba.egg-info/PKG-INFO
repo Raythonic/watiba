@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: watiba
-Version: 0.4.49
+Version: 0.4.50
 Summary: Python syntactical sugar for embedded shell commands
 Home-page: https://github.com/Raythonic/watiba
 Author: Ray Walker
@@ -313,7 +313,7 @@ Description: # Watiba
         
         <div id="join-wait-watch"/>
         
-        ####Join, Wait, or Watch
+        #### Join, Wait, or Watch
         
         Once commands are spawned, the caller can wait for _all_ promises, including inner or child promises, to complete, or
         the caller can wait for just a specific promise to complete.  To wait for all _child_ promises including
