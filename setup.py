@@ -1,5 +1,5 @@
 import setuptools
-import os
+import os, stat
 from shutil import copyfile
 
 # Populate the package's long version with README
@@ -16,6 +16,7 @@ home = os.path.expanduser("~")
 # If this user has a .local/bin in their home directory, build the executable there
 if os.path.exists(f'{home}/.local/bin'):
     copyfile("watiba/watiba-c-bin.py", f"{home}/.local/bin/watiba-c")
+    os.chmod(f"{home}/.local/bin/watiba-c", stat.S_IEXEC)
 
 setuptools.setup(
     name="watiba", # Replace with your own username
