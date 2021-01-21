@@ -1,7 +1,7 @@
 README.md
 setup.py
 watiba/__init__.py
-watiba/version.py
+watiba/__version__.py
 watiba/watiba-c-bin.py
 watiba/watiba-c.py
 watiba/watiba.py
