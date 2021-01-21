@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 # Get our new version number
-with open("watiba/version.py", "r") as fh:
+with open("version.cfg", "r") as fh:
     new_version = fh.read().strip()
 
 # Prepare to create a watiba-c pre-compiler executable on the user's system
