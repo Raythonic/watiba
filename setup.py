@@ -35,4 +35,5 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires='>=3.8',
+    data_files=["watiba/version.conf"]
 )
