@@ -41,8 +41,7 @@ fi
 
 export WATIBA_VERSION=${new_ver}
 
-# Tag this version
-git tag -a v${new_ver} -m "Version ${new_ver}"
+
 
 echo "Compiling md doc with new version ${new_ver}"
 sed 's/__version__/${new_ver}/g' < README.template > README.md
@@ -55,6 +54,10 @@ echo "Updating Poetry pyproject.toml file with new version ${new_ver}.  Overwrit
 echo "Press enter to continue"
 read yn
 sed "s/__version__/${new_ver}/g" < pyproject.template > pyproject.toml
+
+git add .
+git commit -m "Build version ${new_ver}"
+git tag -a v${new_ver} -m "Version ${new_ver}"
 
 if [ "$branch" != "main" ]
 then
