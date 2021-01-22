@@ -2,15 +2,20 @@
 
 cd ~/git/watiba
 
+parms = "$1"
+
 # Find our git branch
 branch=$(git branch | grep "\*" | awk '{print $2}')
 
-echo "On git branch ${branch}.  Proceed?"
-read yn
-if [ "$yn" != "y" ]
+if [ "$parms" != "--silent" ]
 then
-  echo "Terminating."
-  exit 0
+  echo "On git branch ${branch}.  Proceed?"
+  read yn
+  if [ "$yn" != "y" ]
+  then
+    echo "Terminating."
+    exit 0
+  fi
 fi
 
 # Create a work space for version number change
@@ -53,8 +58,12 @@ echo "Building watiba-c script with new version ${new_ver}"
 sed "s/__version__/${new_ver}/g" < watiba/watiba-c.py > bin/watiba-c
 
 echo "Updating Poetry pyproject.toml file with new version ${new_ver}.  Overwriting pyporject.toml!!"
-echo "Press enter to continue"
-read yn
+if [ "$parms" != "--silent" ]
+then
+  echo "Press enter to continue"
+  read yn
+fi
+
 sed "s/__version__/${new_ver}/g" < pyproject.template > pyproject.toml
 
 git add .
@@ -64,9 +73,16 @@ git push origin
 
 if [ "$branch" != "main" ]
 then
-  echo ""
-  echo "Merge ${branch} into main?"
-  read yn
+
+  if [ "$parms" != "--silent" ]
+  then
+    echo ""
+    echo "Merge ${branch} into main?"
+    read yn
+  else
+    echo "Merging ${branch} into main."
+    yn="y"
+  fi
 
   if [ "$yn" == "y" ]
   then

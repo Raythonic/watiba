@@ -9,7 +9,7 @@ with open("version.conf", "r") as fh:
     new_version = fh.read().strip()
 
 setuptools.setup(
-    name="watiba", # Replace with your own username
+    name="watiba",
     version=new_version,
     author="Ray Walker",
     author_email="raythonic@gmail.com",
