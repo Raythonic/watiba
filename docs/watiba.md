@@ -761,7 +761,7 @@ serverC and issue ```echo "$line" | grep something``` on serverV.  It is piping 
 
 ## Installation
 ### PIP
-If you installed this as a Python package, e.g. pip, then the pre-compiler can be 
+If you installed this as a Python package, e.g. pip, then the pre-compiler, _watiba-c_,
 will be placed in your system's PATH by PIP.
 
 ### GITHUB
