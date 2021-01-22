@@ -1,5 +1,5 @@
 # Watiba
-Version **0.5.22**
+Version **0.5.23**
 
 Watiba, pronounced wah-TEE-bah, is a lightweight Python pre-compiler for embedding Linux shell 
 commands within Python applications.  It is similar to other languages' syntactical enhancements where
@@ -761,7 +761,7 @@ serverC and issue ```echo "$line" | grep something``` on serverV.  It is piping 
 
 ## Installation
 ### PIP
-If you installed this as a Python package, e.g. pip, then the pre-compiler can be 
+If you installed this as a Python package, e.g. pip, then the pre-compiler, _watiba-c_,
 will be placed in your system's PATH by PIP.
 
 ### GITHUB
