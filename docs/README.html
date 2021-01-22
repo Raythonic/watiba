@@ -37,10 +37,7 @@ BASH shell commands with Python.</p>
 <li><a href="#command-chaining">Command Chaining</a></li>
 <li><a href="#piping-output">Command Chain Piping (Experimental)</a></li>
 <li><a href="#installation">Installation</a></li>
-<li><a href="#pre-compiling">Pre-compiling</a>
-<ol>
-<li><a href="#environments-without-local-bin">Environments Without ~/.local/bin</a></li>
-</ol></li>
+<li><a href="#pre-compiling">Pre-compiling</a></li>
 <li><a href="#code-examples">Code Examples</a></li>
 </ol>
 
@@ -845,9 +842,7 @@ serverC and issue <code>echo "$line" | grep something</code> on serverV.  It is 
 <h3>PIP</h3>
 
 <p>If you installed this as a Python package, e.g. pip, then the pre-compiler can be 
-found in your user's home dir at <em>~/.local/bin/watiba-c</em> should that location exist on your system.</p>
-
-<p>If your system doesn't have <em>~/.local/bin</em>, refer to the "Pre-compiling" section below.</p>
+will be placed in your system's PATH by PIP.</p>
 
 <h3>GITHUB</h3>
 
@@ -857,12 +852,8 @@ watbia module.  Follow these steps to install Watiba locally.
 
 <h1>Watiba package required</h1>
 
-<p>pip install watiba
+<p>pip3 install watiba
 ```</p>
-
-<p>The pre-compiler can be found in your user's home dir at <em>~/.local/bin/watiba-c</em>. <br />
-If your system doesn't have <em>~/.local/bin</em>, you can copy <em>bin/watiba-c</em> from the dir where you
-cloned watiba to a location in your PATH.</p>
 
 <p><div id="pre-compiling"/></p>
 
@@ -876,36 +867,6 @@ For example:
 <code>buildoutcfg
 rwalk@walkubu:~$ watiba-c version
 Watiba 0.3.26
-</code></p>
-
-<p><div id="environments-without-local-bin"/></p>
-
-<h4>Environments without ~/.local/bin</h4>
-
-<p>If your system does <strong>not</strong> have a <em>~/.local/bin</em>, then you can copy watiba/watiba-c-bin.py from the package installation location to a
-location that's in your PATH. </p>
-
-<p>This will require you to know where your PIP packages are installed.  To locate it, enter and note the
-<em>location</em> line:
-```buildoutcfg
-pip show watiba</p>
-
-<p>Name: watiba
-Version: 0.4.1
-Summary: Python syntactical sugar for embedded shell commands
-Home-page: https://github.com/Raythonic/watiba
-Author: Ray Walker
-Author-email: raythonic@gmail.com
-License: MIT
-Location: /home/rwalk/.local/lib/python3.8/site-packages
-Requires: 
-Required-by: </p>
-
-<p>```</p>
-
-<p>Example assuming the location of the package is where <code>pip show</code> said above, and assuming ~/bin is in your PATH:
-<code>buildoutcfg
-cp ~/.local/lib/python3.8/site-packages/watiba/watiba-c-bin.py ~/bin/watiba-c
 </code></p>
 
 <p>To pre-compile a .wt file:
