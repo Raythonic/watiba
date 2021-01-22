@@ -2,7 +2,7 @@
 
 cd ~/git/watiba
 
-parms = "$1"
+parms="$1"
 
 # Find our git branch
 branch=$(git branch | grep "\*" | awk '{print $2}')
