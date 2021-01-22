@@ -10,6 +10,7 @@ test/push_package.sh
 
 echo ""
 echo "Installing package ${ver}"
+test/install_package.sh
 
 echo ""
 echo "Compiling examples and smoke test for ${ver}"
