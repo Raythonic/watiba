@@ -44,8 +44,6 @@ fi
 
 export WATIBA_VERSION=${new_ver}
 
-
-
 echo "Compiling md doc with new version ${new_ver}"
 sed 's/__version__/${new_ver}/g' < README.template > README.md
 markdown README.md > docs/README.html
