@@ -59,6 +59,7 @@ sed "s/__version__/${new_ver}/g" < pyproject.template > pyproject.toml
 git add .
 git commit -m "Build version ${new_ver}"
 git tag -a v${new_ver} -m "Version ${new_ver}"
+git push origin
 
 if [ "$branch" != "main" ]
 then
@@ -77,7 +78,6 @@ then
     fi
     git add .
     git merge ${branch}
-    git tag -a v${new_ver} -m "Version ${new_ver}"
     git push origin
     git checkout ${branch}
   fi
