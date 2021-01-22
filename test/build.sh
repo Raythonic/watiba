@@ -113,7 +113,7 @@ then
     fi
     if [ "$yn" == "y" ]
     then
-      echo "Pushing changes to github ${branch}"
+      echo "Pushing changes to github main"
       git push origin
     fi
     git checkout ${branch}
