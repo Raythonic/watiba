@@ -25,9 +25,9 @@ rm -rf dist
 mkdir dist
 
 # Build the dist package
-declare -i version=$(git tag | tail -1 | tr -d 'v' | awk 'BEGIN {FS="."}{print $1}')
-declare -i release=$(git tag | tail -1 | tr -d 'v' | awk 'BEGIN {FS="."}{print $2}')
-declare -i mod=$(git tag | tail -1 | tr -d 'v' | awk 'BEGIN {FS="."}{print $3}')
+declare -i version=$(git describe --abbrev=0 | tail -1 | tr -d 'v' | awk 'BEGIN {FS="."}{print $1}')
+declare -i release=$(git describe --abbrev=0 | tail -1 | tr -d 'v' | awk 'BEGIN {FS="."}{print $2}')
+declare -i mod=$(git describe --abbrev=0 | tail -1 | tr -d 'v' | awk 'BEGIN {FS="."}{print $3}')
 
 mod=${mod}+1
 

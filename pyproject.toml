@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "watiba"
-version = "0.5.10"
+version = "0.5.11"
 description = "Syntactical sugar for Python that integrates shell commands"
 authors = ["Ray Walker <raythonic@gmail.com>"]
 license = "MIT"
