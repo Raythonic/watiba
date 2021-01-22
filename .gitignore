@@ -4,3 +4,4 @@ tmp/
 notes.txt
 .pypirc
 venv/
+watiba.egg-info/
