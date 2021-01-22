@@ -43,6 +43,7 @@ then
 fi
 
 export WATIBA_VERSION=${new_ver}
+echo "${new_ver}" > version.conf
 
 echo "Compiling md doc with new version ${new_ver}"
 sed 's/__version__/${new_ver}/g' < README.template > README.md
@@ -90,5 +91,5 @@ then
   fi
 fi
 
-echo "Running poetry build"
-poetry build
+echo "Running build"
+python3 setup.py sdist
