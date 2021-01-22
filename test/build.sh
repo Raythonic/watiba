@@ -43,11 +43,16 @@ then
   new_ver=${resp}
 fi
 
+# Publish our new version number
 export WATIBA_VERSION=${new_ver}
 echo "${new_ver}" > version.conf
 
+# Get current date
+dat=$(date +"%Y/%m/%d")
+
 echo "Compiling md doc with new version ${new_ver}"
 sed "s/__version__/${new_ver}/g" < docs/watiba.md > README.md
+sed -i "s/__version__/${new_ver}/g" README.md
 markdown README.md > docs/README.html
 
 echo "Building watiba-c script with new version ${new_ver}"
