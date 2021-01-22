@@ -108,7 +108,7 @@ then
     yn="y"
     if [ "$parms" != "--silent" ]
     then
-      echo "Push ${new_ver} to github ${branch}?"
+      echo "Push ${new_ver} to github main?"
       read yn
     fi
     if [ "$yn" == "y" ]
