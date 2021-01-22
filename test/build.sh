@@ -33,7 +33,7 @@ mkdir dist
 declare -a current_ver=($(git describe --abbrev=0 | tail -1 | tr -d 'v' | tr '.' ' '))
 declare -a current_ver=($(git describe --abbrev=0 | tail -1 | tr -d 'v' | tr '.' ' '))
 declare -i new_mod=${current_ver[2]}+1
-declare new_ver=${current_ver[0]}"."${current_ver[2]}"."${new_mod}
+declare new_ver=${current_ver[0]}"."${current_ver[1]}"."${new_mod}
 
 echo "Git tagging this release: ${new_ver}"
 echo "Hit enter to proceed or enter new version number"
