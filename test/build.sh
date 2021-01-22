@@ -57,15 +57,6 @@ markdown README.md > docs/README.html
 echo "Building watiba-c script with new version ${new_ver}"
 sed "s/__version__/${new_ver}/g" < watiba/watiba-c.py > bin/watiba-c
 
-echo "Updating Poetry pyproject.toml file with new version ${new_ver}.  Overwriting pyporject.toml!!"
-if [ "$parms" != "--silent" ]
-then
-  echo "Press enter to continue"
-  read yn
-fi
-
-sed "s/__version__/${new_ver}/g" < pyproject.template > pyproject.toml
-
 git add .
 git commit -m "Build version ${new_ver}"
 git tag -a v${new_ver} -m "Version ${new_ver}"
