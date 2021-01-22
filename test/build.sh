@@ -48,7 +48,7 @@ export WATIBA_VERSION=${new_ver}
 echo "${new_ver}" > version.conf
 
 # Get current date
-dat=$(date +"%Y-%m-%d")
+dat=$(date +"%Y\/%m\/%d")
 
 echo "Compiling md doc with new version ${new_ver}"
 sed "s/__version__/${new_ver}/g" < docs/watiba.md > README.md
@@ -61,7 +61,19 @@ sed "s/__version__/${new_ver}/g" < watiba/watiba-c.py > bin/watiba-c
 git add .
 git commit -m "Build version ${new_ver}"
 git tag -a v${new_ver} -m "Version ${new_ver}"
-git push origin
+
+yn="y"
+if [ "$parms" != "--silent" ]
+then
+  echo "Push ${new_ver} to github ${branch}?"
+  read yn
+fi
+
+if [ "$yn" == "y" ]
+  then
+    echo "Pushing changes to github ${branch}"
+    git push origin
+fi
 
 if [ "$branch" != "main" ]
 then
@@ -87,7 +99,18 @@ then
     fi
     git add .
     git merge ${branch}
-    git push origin
+
+    yn="y"
+    if [ "$parms" != "--silent" ]
+    then
+      echo "Push ${new_ver} to github ${branch}?"
+      read yn
+    fi
+    if [ "$yn" == "y" ]
+    then
+      echo "Pushing changes to github ${branch}"
+      git push origin
+    fi
     git checkout ${branch}
   fi
 
