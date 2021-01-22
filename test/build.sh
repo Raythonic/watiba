@@ -21,6 +21,9 @@ fi
 
 mkdir tmp
 
+rm -rf dist
+mkdir dist
+
 # Build the dist package
 declare -i version=$(git tag | tail -1 | tr -d 'v' | awk 'BEGIN {FS="."}{print $1}')
 declare -i release=$(git tag | tail -1 | tr -d 'v' | awk 'BEGIN {FS="."}{print $2}')
