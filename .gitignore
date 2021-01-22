@@ -1,7 +1,6 @@
 .idea/
 dist/
 tmp/
-test/
 notes.txt
 .pypirc
 

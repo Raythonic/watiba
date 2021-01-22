@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "watiba"
+version = "__version__"
+description = "Syntactical sugar for Python that integrates shell commands"
+authors = ["Ray Walker <raythonic@gmail.com>"]
+license = "MIT"
+
+[tool.poetry.scripts]
+watiba-c = "watiba:bin/watiba-c"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+watiba = {git = "https://github.com/Raythonic/watiba.git"}
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
