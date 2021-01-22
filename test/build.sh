@@ -30,7 +30,8 @@ rm -rf dist
 mkdir dist
 
 # Build the dist package
-declare -a current_ver = ($(git describe --abbrev=0 | tail -1 | tr -d 'v' | tr '.' ' '))
+declare -a current_ver=($(git describe --abbrev=0 | tail -1 | tr -d 'v' | tr '.' ' '))
+declare -a current_ver=($(git describe --abbrev=0 | tail -1 | tr -d 'v' | tr '.' ' '))
 declare -i new_mod=${current_ver[2]}+1
 declare new_ver=${current_ver[0]}"."${current_ver[2]}"."${new_mod}
 
