@@ -46,11 +46,11 @@ export WATIBA_VERSION=${new_ver}
 echo "${new_ver}" > version.conf
 
 echo "Compiling md doc with new version ${new_ver}"
-sed 's/__version__/${new_ver}/g' < README.template > README.md
+sed "s/__version__/${new_ver}/g" < README.template > README.md
 markdown README.md > docs/README.html
 
 echo "Building watiba-c script with new version ${new_ver}"
-sed 's/__version__/${new_ver}/g' < watiba/watiba-c.py > bin/watiba-c
+sed "s/__version__/${new_ver}/g" < watiba/watiba-c.py > bin/watiba-c
 
 echo "Updating Poetry pyproject.toml file with new version ${new_ver}.  Overwriting pyporject.toml!!"
 echo "Press enter to continue"

@@ -1,12 +1,14 @@
 Metadata-Version: 2.1
 Name: watiba
-Version: 0.4.83
+Version: 0.5.14
 Summary: Python syntactical sugar for embedded shell commands
 Home-page: https://github.com/Raythonic/watiba
 Author: Ray Walker
 Author-email: raythonic@gmail.com
 License: MIT
 Description: # Watiba
+        Version **${new_ver}**
+        
         Watiba, pronounced wah-TEE-bah, is a lightweight Python pre-compiler for embedding Linux shell 
         commands within Python applications.  It is similar to other languages' syntactical enhancements where
         XML or HTML is integrated into a language such as JavaScript.  That is the concept applied here but integrating
