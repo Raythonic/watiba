@@ -52,7 +52,7 @@ dat=$(date +"%Y/%m/%d")
 
 echo "Compiling md doc with new version ${new_ver}"
 sed "s/__version__/${new_ver}/g" < docs/watiba.md > README.md
-sed -i "s/__version__/${new_ver}/g" README.md
+sed -i "s/__current_date__/${dat}/g" README.md
 markdown README.md > docs/README.html
 
 echo "Building watiba-c script with new version ${new_ver}"
