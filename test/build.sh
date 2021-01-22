@@ -99,7 +99,7 @@ then
     git checkout ${branch}
   fi
 
-  chk=$(git branch | head -1 | awk '{print $2}')
+  chk=$(git branch | grep "\*" | awk '{print $2}')
   if [ "$chk" != "${branch}" ]
   then
     echo "Error: cannot get back to branch ${branch}.  Failed to checkout ${branch}"
