@@ -47,7 +47,7 @@ export WATIBA_VERSION=${new_ver}
 echo "${new_ver}" > version.conf
 
 echo "Compiling md doc with new version ${new_ver}"
-sed "s/__version__/${new_ver}/g" < README.template > README.md
+sed "s/__version__/${new_ver}/g" < docs/watiba.md > README.md
 markdown README.md > docs/README.html
 
 echo "Building watiba-c script with new version ${new_ver}"

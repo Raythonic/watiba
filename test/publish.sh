@@ -1,5 +1,5 @@
 #!/bin/bash
-cd /home/rwalk/git/watiba
+cd ~/git/watiba
 test/build.sh
 ver=$(cat version.conf)
 echo "Build of ${ver} successful"
