@@ -1,0 +1,175 @@
+#!/usr/bin/python3
+import os
+
+# This will change the CWD for all subsequent commands
+`cd /tmp`
+
+# This will CWD only for the commands within the backticks,
+# but NOT for any subsequent commands (the dash prefix prevents the context
+# change)
+-`cd /home`
+
+# This demonstrates a CWD change that is only contained within the backticks
+# This will print "/tmp" as the CWD not "/home"
+print("CWD is not /home: {}".format(-`cd /home`.cwd))
+
+# This will find text file in /tmp/, not /home
+w = `find . -name '*.txt'`
+for l in w.stdout:
+    print("File: {}".format(l))
+
+
+# This will print the output from the tar commands
+print(`echo "BLAH!" > /tmp/blah.txt && tar -zcvf /tmp/blah.tar.gz /tmp/blah.txt`.stderr)
+
+# This will print just the first line from the command's output
+print(`cat file.txt`.stdout[0])
+
+# Example of more than one command in a statement line
+if len(`ls -lrt`.stdout) > 0 or len(-`cd /tmp`.stdout) > 0:
+    print("You have stdout or stderr messages")
+
+
+# Example of receiving a Watiba object and operating from that
+# and demonstrating a command from a Python variable
+cmd = "tar -zcvf /tmp/watiba_test.tar.gz /mnt/data/git/watiba/src"
+results = `$cmd`
+if results.exit_code == 0:
+    for l in results.stderr:
+        print(l)
+
+# Print the files from the CWD, which is still /tmp from above (context)
+#  Iterate on the stdout property
+for l in `ls -lrt`.stdout:
+    print(l)
+
+# Example of printing the exit code of a failed commands
+print("Return code: {}".format(`badcmd`.exit_code))
+
+
+# Demonstrate context.  CWD is still /tmp
+print("Should be /tmp: {}".format(`pwd`.stdout[0]))
+
+# Running a command asynchronously with the outer code
+# looking for the creation of a file to signal its completion
+print("running spawn test")
+`rm /tmp/done`
+
+spawn `ls -lrt`:
+    # This is the resolver callback block
+    print("1 Spawned command done!")
+    #print("results {}".format(promise.output.stdout))
+    `touch /tmp/done`
+    return True
+
+while not os.path.exists("/tmp/done"):
+    print("1 Promise not resolved")
+    `sleep 3`
+
+
+#######################################################
+`cd /tmp && rm -rf /tmp/watbia* && mkdir watiba1 && mkdir watiba2`
+`touch watiba1/blah.txt`
+`touch watiba2/bleck.txt`
+for dir in `ls -d watiba*`.stdout:
+    tar = "tar -zcvf {}.tar.gz {}".format(dir, dir)
+    prom = spawn `$tar` {"dir": dir}: # tar this dir
+        print("{} tar complete".format(args["dir"]))
+        done = "echo 'done' > /tmp/{}/done".format(args["dir"])
+        spawn `$done` {"dir":dir}:  # mark this dir done
+            print("Done with {}".format(args["dir"]))
+            promise.resolve_parent()
+            spawn `date`:
+                promise.resolve_parent()
+                return True
+            x = 3
+            # Resolve inner promise
+            return False
+        # Don't resolve outer promise here
+        return False
+    # This will wait until ALL promises are resolved, inner and outer
+    prom.join()
+
+#######################################################
+# Running a command asynchronously with the outer code
+# looking the promise to resolve (which is done by the resolver)
+my_promise = spawn `ls -lrt`:
+    # This is the resolver callback block
+    print("2 Spawned command done!")
+    #print("results {}".format(promise.output.stdout))
+    `touch /tmp/done`  # Signal we're done
+    return True
+
+while not my_promise.resolved():
+    print("2 Promise not resolved: {}".format(my_promise.resolved()))
+    `sleep 3`
+
+########################################################
+# Pass arguments to resolver
+global_counter = 0
+print("Testing spawn args and join timeout")
+args = {"count": global_counter + 1,
+        "log": "/var/log/blah.log"}
+
+p = spawn `echo "hello" && sleep 5` args:
+    print("Args passed to me: {}".format(args))
+    return True
+
+# Wait for promise to resolve
+try:
+    # Throw exception after two seconds
+    p.join({"sleep": 1, "expire": 2})
+except Exception as ex:
+    print(ex.args)
+
+#######################################################
+# Place a watcher on promise
+global_counter = 0
+print("Testing spawn args and join timeout")
+args = {"count": global_counter + 1,
+        "log": "/var/log/blah.log"}
+
+def watcher(promise, args):
+    print("This promise is likely hung: {}".format(promise.command))
+    print("and I still have the spawn expression's args: {}".format(args))
+
+p = spawn `echo "hello" && sleep 5` args:
+    print("Args passed to me: {}".format(args))
+    print(promise.output.stdout)
+    for l in promise.output.stderr:
+        print(l)
+        for x in l:
+            spawn `echo "blah"`@walkubu3 {"hello":"there"}:
+                print(f"something from {promise.host}")
+                return True
+            print(l)
+            # This is to test indentation detection
+    return True
+
+p.watch(watcher)
+print("watch() does not pause like join or wait")
+
+if True:
+    watiba-ctl {"ssh-port":32}
+
+# Example of chaining commands.  Server names are those of developer and won't apply to your environment.
+out = chain `ls -lrt` {"hosts": ["walkubu", "walkubu2"]}
+for host,output in out.items():
+    print(f'{host} exit code: {output.exit_code}')
+    for linex in output.stderr:
+        print(linex)
+
+cmd = "ls -laF"
+out = chain `$cmd` {"hosts": ["walkubu", "walkubu2"]}
+for host,output in out.items():
+    print(f'{host} exit code: {output.exit_code}')
+    for liney in output.stderr:
+        print(liney)
+
+
+spawn `hostname`:
+    print("yes")
+    return True
+
+print("Complete")
+
