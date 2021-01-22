@@ -48,7 +48,7 @@ export WATIBA_VERSION=${new_ver}
 echo "${new_ver}" > version.conf
 
 # Get current date
-dat=$(date +"%Y/%m/%d")
+dat=$(date +"%Y-%m-%d")
 
 echo "Compiling md doc with new version ${new_ver}"
 sed "s/__version__/${new_ver}/g" < docs/watiba.md > README.md
