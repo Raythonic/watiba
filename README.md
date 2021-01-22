@@ -31,7 +31,6 @@ Features:
 8. [Command Chain Piping (Experimental)](#piping-output)
 9. [Installation](#installation)
 10. [Pre-compiling](#pre-compiling)
-    1. [Environments Without ~/.local/bin](#environments-without-local-bin)
 11. [Code Examples](#code-examples)
 
 <div id="usage"/>
@@ -761,21 +760,16 @@ serverC and issue ```echo "$line" | grep something``` on serverV.  It is piping 
 ## Installation
 ### PIP
 If you installed this as a Python package, e.g. pip, then the pre-compiler can be 
-found in your user's home dir at _~/.local/bin/watiba-c_ should that location exist on your system.
-
-If your system doesn't have _~/.local/bin_, refer to the "Pre-compiling" section below.
+will be placed in your system's PATH by PIP.
 
 ### GITHUB
 If you cloned this from github, you'll still need to install the package with pip, first, for the
 watbia module.  Follow these steps to install Watiba locally.
 ```
 # Watiba package required
-pip install watiba
+pip3 install watiba
 ```
 
-The pre-compiler can be found in your user's home dir at _~/.local/bin/watiba-c_.  
-If your system doesn't have _~/.local/bin_, you can copy _bin/watiba-c_ from the dir where you
-cloned watiba to a location in your PATH.
 
 <div id="pre-compiling"/>
 
@@ -788,35 +782,6 @@ For example:
 ```buildoutcfg
 rwalk@walkubu:~$ watiba-c version
 Watiba 0.3.26
-```
-
-<div id="environments-without-local-bin"/>
-
-#### Environments without ~/.local/bin
-If your system does **not** have a _~/.local/bin_, then you can copy watiba/watiba-c-bin.py from the package installation location to a
-location that's in your PATH. 
-
-This will require you to know where your PIP packages are installed.  To locate it, enter and note the
-_location_ line:
-```buildoutcfg
-pip show watiba
-
-Name: watiba
-Version: 0.4.1
-Summary: Python syntactical sugar for embedded shell commands
-Home-page: https://github.com/Raythonic/watiba
-Author: Ray Walker
-Author-email: raythonic@gmail.com
-License: MIT
-Location: /home/rwalk/.local/lib/python3.8/site-packages
-Requires: 
-Required-by: 
-
-```
-
-Example assuming the location of the package is where ```pip show``` said above, and assuming ~/bin is in your PATH:
-```buildoutcfg
-cp ~/.local/lib/python3.8/site-packages/watiba/watiba-c-bin.py ~/bin/watiba-c
 ```
 
 To pre-compile a .wt file:

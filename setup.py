@@ -10,14 +10,6 @@ with open("README.md", "r") as fh:
 with open("version.conf", "r") as fh:
     new_version = fh.read().strip()
 
-# Prepare to create a watiba-c pre-compiler executable on the user's system
-home = os.path.expanduser("~")
-
-# If this user has a .local/bin in their home directory, build the executable there
-if os.path.exists(f'{home}/.local/bin'):
-    copyfile("watiba/watiba-c-bin.py", f"{home}/.local/bin/watiba-c")
-    os.chmod(f"{home}/.local/bin/watiba-c", 0o755)
-
 setuptools.setup(
     name="watiba", # Replace with your own username
     version=new_version,
@@ -35,5 +27,6 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires='>=3.8',
+    scripts=["bin/watiba-c"],
     data_files=["version.conf"]
 )
