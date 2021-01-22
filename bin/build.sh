@@ -128,4 +128,4 @@ then
 fi
 
 echo "Running build"
-python3 setup.py sdist
+python -m python3 setup.py sdist
