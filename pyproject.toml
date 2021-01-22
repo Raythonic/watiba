@@ -1,12 +1,12 @@
 [tool.poetry]
 name = "watiba"
-version = "0.5.12"
+version = "0.5.13"
 description = "Syntactical sugar for Python that integrates shell commands"
 authors = ["Ray Walker <raythonic@gmail.com>"]
 license = "MIT"
 
 [tool.poetry.scripts]
-watiba-c = "watiba.bin.watiba-c:main"
+watiba-c = "bin.watiba-c:main"
 
 [tool.poetry.dependencies]
 python = "^3.8"
