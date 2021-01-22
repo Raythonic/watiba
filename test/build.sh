@@ -36,7 +36,7 @@ declare new_ver=${current_ver[0]}"."${current_ver[1]}"."${new_mod}
 
 echo "Git tagging this release: ${new_ver}"
 
-resp = ""
+resp=""
 if [ "$parms" != "--silent" ]
 then
   echo "Hit enter to proceed or enter new version number"
