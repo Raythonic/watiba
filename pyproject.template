@@ -6,7 +6,7 @@ authors = ["Ray Walker <raythonic@gmail.com>"]
 license = "MIT"
 
 [tool.poetry.scripts]
-watiba-c = "watiba:bin/watiba-c"
+watiba-c = "watiba:bin/watiba-c:main"
 
 [tool.poetry.dependencies]
 python = "^3.8"
