@@ -103,8 +103,7 @@ then
       echo "Error: cannot merge with main.  Checkout of main failed"
       exit 1
     fi
-    git add .
-    git merge ${branch}
+    git merge ${branch} -X theirs
 
     yn="y"
     if [ "$parms" != "--silent" ]
