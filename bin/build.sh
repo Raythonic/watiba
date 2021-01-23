@@ -74,7 +74,7 @@ fi
 if [ "$yn" == "y" ]
   then
     echo "Pushing changes to github ${branch}"
-    git push origin
+    git push origin --tags
 fi
 
 if [ "$branch" != "main" ]
@@ -100,7 +100,7 @@ then
       exit 1
     fi
     git add .
-    git merge ${branch}
+    git merge ${branch} --tags
 
     yn="y"
     if [ "$parms" != "--silent" ]
@@ -111,7 +111,7 @@ then
     if [ "$yn" == "y" ]
     then
       echo "Pushing changes to github main"
-      git push origin
+      git push origin --tags
     fi
     git checkout ${branch}
   fi
