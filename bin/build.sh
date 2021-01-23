@@ -20,6 +20,7 @@ declare new_ver=${current_ver[0]}"."${current_ver[1]}"."${new_mod}
 if [ "$parms" != "--silent" ]
 then
   echo "Building in GIT branch ${branch} version ${new_ver}!!  Correct?"
+  read yn
   if [ "$yn" != "y" ]
   then
     echo "Terminating."
