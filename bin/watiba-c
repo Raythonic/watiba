@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 <<<<<<< HEAD
+<<<<<<< HEAD
 versions = ["..1"]
 =======
 versions = ["0.5.62"]
+>>>>>>> develop
+=======
+versions = ["0.5.63"]
 >>>>>>> develop
 
 '''

@@ -1,5 +1,9 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 Created temporary directory: /tmp/pip-ephem-wheel-cache-rurbxg6i
+>>>>>>> develop
+=======
+Created temporary directory: /tmp/pip-ephem-wheel-cache-_1aeun9n
 >>>>>>> develop
 watiba==0.5.57
