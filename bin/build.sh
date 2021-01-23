@@ -42,6 +42,7 @@ mkdir dist
 
 echo "GIT tagging this release in branch \"${branch}\": v${new_ver}"
 echo "Hit ENTER to accept version, or enter new version number (no \"v\")"
+read resp
 
 if [ "$resp" != "" ]
 then
