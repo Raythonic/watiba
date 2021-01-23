@@ -1,5 +1,5 @@
 # Watiba
-#### Version:  **0.5.67**
+#### Version:  **0.5.68**
 #### Date: 2021/01/23
 
 Watiba, pronounced wah-TEE-bah, is a lightweight Python pre-compiler for embedding Linux shell 
