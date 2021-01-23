@@ -52,6 +52,9 @@ fi
 export WATIBA_VERSION=${new_ver}
 echo "${new_ver}" > version.conf
 
+# Get a dependency list
+pip3 freeze > requirements.txt
+
 # Get current date
 dat=$(date +"%Y\/%m\/%d")
 
