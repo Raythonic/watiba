@@ -4,12 +4,22 @@ cd ~/git/watiba
 
 parms="$1"
 
+# Get current date
+dat=$(date +"%Y\/%m\/%d")
+
 # Find our git branch
 branch=$(git branch | grep "\*" | awk '{print $2}')
 
+# Create new version number based on last git tag
+# This egrep finds that last version tag and filters out other kinds of tag names
+declare -a current_ver=($(git tag | egrep "^v[0-9]+\.[0-9]+\.[0-9]+$" | tr -d 'v' | sort --version-sort | tail -1 | tr "." " "))
+declare -i new_mod=${current_ver[2]}+1
+declare new_ver=${current_ver[0]}"."${current_ver[1]}"."${new_mod}
+
+
 if [ "$parms" != "--silent" ]
 then
-  echo "On git branch ${branch}.  Proceed?"
+  echo "Building in GIT branch \"${branch}\" version ${new_ver}!!  Correct?"
   read yn
   if [ "$yn" != "y" ]
   then
@@ -26,22 +36,13 @@ fi
 
 mkdir tmp
 
+# New source distribution
 rm -rf dist
 mkdir dist
 
-# Build the dist package
-declare -a current_ver=($(git describe --abbrev=0 | tail -1 | tr -d 'v' | tr '.' ' '))
-declare -i new_mod=${current_ver[2]}+1
-declare new_ver=${current_ver[0]}"."${current_ver[1]}"."${new_mod}
-
-echo "Git tagging this release: ${new_ver}"
-
-resp=""
-if [ "$parms" != "--silent" ]
-then
-  echo "Hit enter to proceed or enter new version number"
-  read resp
-fi
+echo "GIT tagging this release in branch \"${branch}\": v${new_ver}"
+echo "Hit ENTER to accept version, or enter new version number (no \"v\")"
+read resp
 
 if [ "$resp" != "" ]
 then
@@ -53,12 +54,16 @@ export WATIBA_VERSION=${new_ver}
 echo "${new_ver}" > version.conf
 
 # Get a dependency list
+<<<<<<< HEAD
 pip3 freeze > requirements.txt
 
 # Get current date
 dat=$(date +"%Y\/%m\/%d")
+=======
+pip3 freeze grep -v "watiba" > requirements.txt
+>>>>>>> develop
 
-echo "Compiling md doc with new version ${new_ver}"
+echo "Compiling doc with new version ${new_ver}"
 sed "s/__version__/${new_ver}/g" < docs/watiba.md > README.md
 sed -i "s/__current_date__/${dat}/g" README.md
 markdown README.md > docs/README.html
@@ -80,7 +85,7 @@ fi
 if [ "$yn" == "y" ]
   then
     echo "Pushing changes to github ${branch}"
-    git push origin
+    git push origin --tags
 fi
 
 if [ "$branch" != "main" ]
@@ -117,7 +122,7 @@ then
     if [ "$yn" == "y" ]
     then
       echo "Pushing changes to github main"
-      git push origin
+      git push origin --tags
     fi
     git checkout ${branch}
   fi

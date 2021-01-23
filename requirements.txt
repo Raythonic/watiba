@@ -1,1 +1,5 @@
+<<<<<<< HEAD
+=======
+Created temporary directory: /tmp/pip-ephem-wheel-cache-rurbxg6i
+>>>>>>> develop
 watiba==0.5.57
