@@ -11,7 +11,8 @@ dat=$(date +"%Y\/%m\/%d")
 branch=$(git branch | grep "\*" | awk '{print $2}')
 
 # Create new version number based on last git tag
-declare -a current_ver=($(git describe --abbrev=0 | tail -1 | tr -d 'v' | tr '.' ' '))
+# This egrep finds that last version tag and filters out other kinds of tag names
+declare -a current_ver=($(git tag | egrep "^v[0-9]+\.[0-9]+\.[0-9]+$" | tr -d 'v' | sort --version-sort | tail -1 | tr "." " "))
 declare -i new_mod=${current_ver[2]}+1
 declare new_ver=${current_ver[0]}"."${current_ver[1]}"."${new_mod}
 
