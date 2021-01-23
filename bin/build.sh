@@ -4,13 +4,21 @@ cd ~/git/watiba
 
 parms="$1"
 
+# Get current date
+dat=$(date +"%Y\/%m\/%d")
+
 # Find our git branch
 branch=$(git branch | grep "\*" | awk '{print $2}')
 
+# Create new version number based on last git tag
+declare -a current_ver=($(git describe --abbrev=0 | tail -1 | tr -d 'v' | tr '.' ' '))
+declare -i new_mod=${current_ver[2]}+1
+declare new_ver=${current_ver[0]}"."${current_ver[1]}"."${new_mod}
+
+
 if [ "$parms" != "--silent" ]
 then
-  echo "On git branch ${branch}.  Proceed?"
-  read yn
+  echo "Building in GIT branch ${branch} version ${new_ver}!!  Correct?"
   if [ "$yn" != "y" ]
   then
     echo "Terminating."
@@ -26,22 +34,11 @@ fi
 
 mkdir tmp
 
+# New source distribution
 rm -rf dist
 mkdir dist
 
-# Build the dist package
-declare -a current_ver=($(git describe --abbrev=0 | tail -1 | tr -d 'v' | tr '.' ' '))
-declare -i new_mod=${current_ver[2]}+1
-declare new_ver=${current_ver[0]}"."${current_ver[1]}"."${new_mod}
-
-echo "Git tagging this release: ${new_ver}"
-
-resp=""
-if [ "$parms" != "--silent" ]
-then
-  echo "Hit enter to proceed or enter new version number"
-  read resp
-fi
+echo "GIT tagging this release: ${new_ver}"
 
 if [ "$resp" != "" ]
 then
@@ -53,12 +50,9 @@ export WATIBA_VERSION=${new_ver}
 echo "${new_ver}" > version.conf
 
 # Get a dependency list
-pip3 freeze > requirements.txt
+pip3 freeze grep -v "watiba" > requirements.txt
 
-# Get current date
-dat=$(date +"%Y\/%m\/%d")
-
-echo "Compiling md doc with new version ${new_ver}"
+echo "Compiling doc with new version ${new_ver}"
 sed "s/__version__/${new_ver}/g" < docs/watiba.md > README.md
 sed -i "s/__current_date__/${dat}/g" README.md
 markdown README.md > docs/README.html
