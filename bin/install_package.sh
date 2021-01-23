@@ -3,6 +3,7 @@ pip3 uninstall watiba
 echo "Enter t to install from testpypi, p for pypi (public)"
 read resp
 
+# Check for environment to install from
 if [ "$resp" == "t" ]
 then
   echo "Installing watiba from TEST"
