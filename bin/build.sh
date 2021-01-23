@@ -105,8 +105,6 @@ then
     fi
     git add .
     git merge ${branch}
-    echo "Tagging v${new_ver} in branch \"main\""
-    git tag -a v${new_ver} -m "Version ${new_ver}"
 
     yn="y"
     if [ "$parms" != "--silent" ]
