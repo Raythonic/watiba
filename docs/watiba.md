@@ -246,7 +246,7 @@ Spawn control parameters:
 sleep value when the controller enters slowdown mode</td><td>.125 (start at 1/8th second pause)</td>
     <tr></tr>
     <td>sleep-increment</td><td>Integer</td><td>Seconds the <i>amount</i> of seconds sleep will increase every 3rd cycle when in slowdown 
-      mode</td><td>.125 (1/8th second every 3rd cycle)</td>
+      mode</td><td>.125 (Increase pause 1/8th second every 3rd cycle)</td>
     <tr></tr>
     <td>sleep-ceiling</td><td>Integer</td><td>Seconds the <i>highest</i> length sleep value allowed when in slowdown mode  
       (As slow as it will get)</td><td>3 (won't get slower than 3 second pauses)</td>
