@@ -78,9 +78,12 @@ dat=$(date +"%Y\/%m\/%d")
 python3 -m pip freeze | grep -v "watiba" > requirements.txt
 
 echo "Compiling doc with new version ${new_ver}"
+chmod 777 README.md
+rm README.md
 sed "s/__version__/${new_ver}/g" < docs/watiba.md > README.md
 sed -i "s/__current_date__/${dat}/g" README.md
 markdown README.md > docs/README.html
+chmod -w README.md
 
 echo "Building watiba-c script with new version ${new_ver}"
 sed "s/__version__/${new_ver}/g" < watiba/watiba-c.py > bin/watiba-c
