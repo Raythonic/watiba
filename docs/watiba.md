@@ -360,7 +360,7 @@ no exception will be thrown and the cycle will run only until the promise(s) are
 affected by _spawn-ctl_.
 
 _watch_ is called to establish a separate asynchronous thread that will call back a function of your choosing should
-the command the promise is attached to times out.  This is different than _join_ and _wait_ in that _watch_ is not synchronous 
+the command the promise is attached to time out.  This is different than _join_ and _wait_ in that _watch_ is not synchronous 
 and does not pause.  This is used to keep an eye on a spawned command and take action should it hang.  Your watcher
 function is passed the promise on which the watcher was attached, and the arguments, if any, from the spawn expression.
 If your command does not time out (i.e. hangs and expires), the watcher thread will quietly go away when the promise
