@@ -196,10 +196,6 @@ A promise is either returned in assignment from outermost spawn, or passed to ch
       <tr></tr>
       <td>command</td><td>String</td><td>Shell command issued for this promise</td>
       <tr></tr>
-      <td>command</td><td>String</td><td>Shell command issued for this promise</td>
-      <tr></tr>
-      <td>command</td><td>String</td><td>Shell command issued for this promise</td>
-      <tr></tr>
       <td>resolved()</td><td>Method</td><td>Call to find out if this promise is resolved</td>
       <tr></tr>
       <td>start_time</td><td>Time</td><td>Time that spawned command started</td>

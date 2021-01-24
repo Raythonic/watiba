@@ -1,5 +1,5 @@
 # Watiba
-#### Version:  **0.5.85**
+#### Version:  **0.5.86**
 #### Date: 2021/01/24
 
 Watiba, pronounced wah-TEE-bah, is a lightweight Python pre-compiler for embedding Linux shell 
@@ -193,10 +193,6 @@ A promise is either returned in assignment from outermost spawn, or passed to ch
       <td>children</td><td>List</td><td>Children promises for this promise node</td>
       <tr></tr>
       <td>parent</td><td>Reference</td><td>Parent promise node of child promise. None if root promise.</td>
-      <tr></tr>
-      <td>command</td><td>String</td><td>Shell command issued for this promise</td>
-      <tr></tr>
-      <td>command</td><td>String</td><td>Shell command issued for this promise</td>
       <tr></tr>
       <td>command</td><td>String</td><td>Shell command issued for this promise</td>
       <tr></tr>
