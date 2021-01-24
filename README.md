@@ -1,5 +1,5 @@
 # Watiba
-#### Version:  **0.5.95**
+#### Version:  **0.5.96**
 #### Date: 2021/01/24
 
 Watiba, pronounced wah-TEE-bah, is a lightweight Python pre-compiler for embedding Linux shell 
@@ -711,22 +711,16 @@ Python dictionary where the keys are the host names and the values the WTOutput 
 The _chain_ expression raises a WTChainException on the first failed command.  The exception raised
 has the following properties:
 
-<table>
-<th>Property</th><th>Data Type</th><th>Description</th>
-<tr></tr>
-<td>command</td><td>String</td><td>The shell command that failed</td>
-<tr></tr>
-<td>host</td><td>String</td><td>Host name where command failed</td>
-<tr></tr>
-<td>message</td><td>String</td><td>Error message</td>
-<tr></tr>
-<td>output</td><td>WTOuput structure:
-
-- stdout
-- stderr
-- exit_code
-- cwd</td><td>Output properties</td>
-</table>
+_WTChainException_:
+- **command**  The failing Shell command
+- **host** The host reporting the failure
+- **message** Error message
+- **output** Reference to command output object (Refer to the ["Command Results"](#command-results) section):
+    
+    - **output.stdout**
+    - **output.stderr**
+    - **output.exit_code**
+    - **output.cwd**
     
 Import this exception to catch it:
 ```buildoutcfg
