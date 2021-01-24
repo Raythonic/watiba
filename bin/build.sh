@@ -56,7 +56,7 @@ echo "${new_ver}" > version.conf
 # Get current date
 dat=$(date +"%Y\/%m\/%d")
 
-python3 -m pip freeze grep -v "watiba" > requirements.txt
+python3 -m pip freeze | grep -v "watiba" > requirements.txt
 
 echo "Compiling doc with new version ${new_ver}"
 sed "s/__version__/${new_ver}/g" < docs/watiba.md > README.md
