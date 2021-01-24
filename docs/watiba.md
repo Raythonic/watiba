@@ -213,6 +213,17 @@ A promise is either returned in assignment from outermost spawn, or passed to ch
       <td>end_time</td><td>Time</td><td>Time that promise resolved</td>
   </table>
 
+_Example of simple spawn_:
+```buildoutcfg
+prom = spawn `tar -zcvf big_file.tar.gz some_dir/*`:
+    # Resolver block to which "promise" and "args" is passed...
+    print(f"{promise.command} completed.")
+    return True  # Resolve promise
+
+# Do other things while tar is running
+# Finally wait for tar promise to resolve
+prom.join()
+```
 
 <div id="spawn-controller"/>
 
@@ -315,7 +326,7 @@ p = spawn `tar -zcvf /tmp/file.tar.gz /home/user/dir`:
     
 # Wait for spawned command to resolve (not merely complete)
 try:
-    p.join()
+    p.join({"expire": 3})
     print("tar resolved")
 except Exception as ex:
     print(ex.args)
@@ -477,7 +488,6 @@ Note: "args" is optional and can be omitted
 
 _Example of creating a watcher_:
 ```buildoutcfg
-
 # Define watcher method.  Called if command times out (i.e. expires)
 def time_out(promise, args):
     print(f"Command {promise.command} timed out.")
@@ -487,9 +497,9 @@ p = spawn `long-running.sh`:
     print("Finally completed.  Watcher method won't be called.")
     return True
  
- p.watch(time_out)  # Does not wait.  Calls method "time_out" if this promise expires (i.e. command hangs)
+p.watch(time_out)  # Does not wait.  Calls method "time_out" if this promise expires (i.e. command hangs)
  
- # Do other things..
+# Do other things...
  
 ```
 
