@@ -183,15 +183,30 @@ A promise is either returned in assignment from outermost spawn, or passed to ch
      promise.output.exit_code
      promise.output.cwd
   ```
-  
-- **host** _String_ Host name on which spawned command ran
-- **children** _List_ Children promises for this promise node
-- **parent** Reference to parent promise node of this child promise. None if root promise.
-- **command** _String_ Shell command issued for this promise
-- **resolved()** Method to determine if this promise was marked resolved
-- **start_time** _Time_ value of when spawned command started
-- **end_time** _Time_ value of when spawned command was marked resolved. None if command is still 
-  executing
+  <table>
+      <th>Property</th>
+      <th>Data Type</th>
+      <th>Description</th>
+      <tr></tr>
+      <td>host</td><td>String</td><td>Host name on which spawned command ran</td>
+      <tr></tr>
+      <td>children</td><td>List</td><td>Children promises for this promise node</td>
+      <tr></tr>
+      <td>parent</td><td>Reference</td><td>Parent promise node of child promise. None if root promise.</td>
+      <tr></tr>
+      <td>command</td><td>String</td><td>Shell command issued for this promise</td>
+      <tr></tr>
+      <td>command</td><td>String</td><td>Shell command issued for this promise</td>
+      <tr></tr>
+      <td>command</td><td>String</td><td>Shell command issued for this promise</td>
+      <tr></tr>
+      <td>resolved()</td><td>Method</td><td>Call to find out if this promise is resolved</td>
+      <tr></tr>
+      <td>start_time</td><td>Time</td><td>Time that spawned command started</td>
+      <tr></tr>
+      <td>end_time</td><td>Time</td><td>Time that promise resolved</td
+  </table>
+
 
 <div id="spawn-controller"/>
 
@@ -206,30 +221,30 @@ hung threads.
 Spawn control parameters:
 
 <table>
-<th>Key Name</th>
-<th>Data Type</th>
-<th>Description</th>
-<th>Default</th>
-<tr></tr>
-<td>max</td><td>Integer</td><td>The maximum number of spawned commands allowed before the controller enters</td><td>10</td>
-<tr></tr>
-<td>sleep-floor</td><td>Integer</td><td>Seconds the starting sleep value when the controller enters slowdown mode</td><td>.125</td>
-<tr></tr>
-<td>sleep-increment</td><td>Integer</td><td>Seconds the amount of seconds sleep will increase every third cycle when in slowdown 
-  mode</td><td>.125</td>
-<tr></tr>
-<td>sleep-ceiling</td><td>Integer</td><td>Seconds the highest length sleep value allowed when in slowdown mode  
-  (As slow as it will get)</td><td>3</td>
-<tr></tr>
-<td>expire</td><td>Integer</td><td>total number of slowdown cycles allowed before the error method is called</td><td>No expiration</td>
-<tr></tr>
-<td>error</td><td>Method</td><td>
-Callback method invoked when slowdown mode expires. Use this to catch hung commands.
-        This method is passed 2 arguments:
-
-  - **promise** - The promise attempting execution at the time of expiration
-  - **count** - The thread count (unresolved promises) at the time of expiration
-</td><td>No expiration</td>
+    <th>Key Name</th>
+    <th>Data Type</th>
+    <th>Description</th>
+    <th>Default</th>
+    <tr></tr>
+    <td>max</td><td>Integer</td><td>The maximum number of spawned commands allowed before the controller enters</td><td>10</td>
+    <tr></tr>
+    <td>sleep-floor</td><td>Integer</td><td>Seconds the starting sleep value when the controller enters slowdown mode</td><td>.125</td>
+    <tr></tr>
+    <td>sleep-increment</td><td>Integer</td><td>Seconds the amount of seconds sleep will increase every third cycle when in slowdown 
+      mode</td><td>.125</td>
+    <tr></tr>
+    <td>sleep-ceiling</td><td>Integer</td><td>Seconds the highest length sleep value allowed when in slowdown mode  
+      (As slow as it will get)</td><td>3</td>
+    <tr></tr>
+    <td>expire</td><td>Integer</td><td>total number of slowdown cycles allowed before the error method is called</td><td>No expiration</td>
+    <tr></tr>
+    <td>error</td><td>Method</td><td>
+    Callback method invoked when slowdown mode expires. Use this to catch hung commands.
+            This method is passed 2 arguments:
+    
+- **promise** - The promise attempting execution at the time of expiration
+- **count** - The thread count (unresolved promises) at the time of expiration
+    </td><td>No expiration</td>
 </table>
     
 _spawn-ctl_ only overrides the values it sets and does not affect values not specified.  _spawn-ctl_ statements can
