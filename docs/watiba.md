@@ -204,7 +204,7 @@ A promise is either returned in assignment from outermost spawn, or passed to ch
       <tr></tr>
       <td>start_time</td><td>Time</td><td>Time that spawned command started</td>
       <tr></tr>
-      <td>end_time</td><td>Time</td><td>Time that promise resolved</td
+      <td>end_time</td><td>Time</td><td>Time that promise resolved</td>
   </table>
 
 
@@ -226,17 +226,17 @@ Spawn control parameters:
     <th>Description</th>
     <th>Default</th>
     <tr></tr>
-    <td>max</td><td>Integer</td><td>The maximum number of spawned commands allowed before the controller enters</td><td>10</td>
+    <td>max</td><td>Integer</td><td>The maximum number of spawned commands allowed before the controller enters slowdown mode</td><td>10</td>
     <tr></tr>
-    <td>sleep-floor</td><td>Integer</td><td>Seconds the starting sleep value when the controller enters slowdown mode</td><td>.125</td>
+    <td>sleep-floor</td><td>Integer</td><td>Seconds of <i>starting</i> sleep value when the controller enters slowdown mode</td><td>.125</td>
     <tr></tr>
-    <td>sleep-increment</td><td>Integer</td><td>Seconds the amount of seconds sleep will increase every third cycle when in slowdown 
+    <td>sleep-increment</td><td>Integer</td><td>Seconds the <i>amount</i> of seconds sleep will increase every 3rd cycle when in slowdown 
       mode</td><td>.125</td>
     <tr></tr>
-    <td>sleep-ceiling</td><td>Integer</td><td>Seconds the highest length sleep value allowed when in slowdown mode  
+    <td>sleep-ceiling</td><td>Integer</td><td>Seconds the <i>highest</i> length sleep value allowed when in slowdown mode  
       (As slow as it will get)</td><td>3</td>
     <tr></tr>
-    <td>expire</td><td>Integer</td><td>total number of slowdown cycles allowed before the error method is called</td><td>No expiration</td>
+    <td>expire</td><td>Integer</td><td>Total number of slowdown cycles allowed before the error method is called</td><td>No expiration</td>
     <tr></tr>
     <td>error</td><td>Method</td><td>
     Callback method invoked when slowdown mode expires. Use this to catch hung commands.
@@ -551,13 +551,22 @@ p.join()  # Wait for ALL promises to be resolved
 
 ### Results from Spawned Commands
 Spawned commands return their results in the _promise.output_ property of the _promise_ object passed to
-the resolver block, and in the spawn expression if there is an assignment in that spawn expression.  
+the resolver block, and in the spawn expression if there is an assignment in that spawn expression.
+
 The result properties can then be accessed as followed:
- 
-- **promise.output.stdout** - _List_ of output lines from the command normalized for display
-- **promise.output.stderr** - _List_ of standard error output lines from the command normalized for display
-- **promise.output.exit_code** - _Integer_ exit code value from command
-- **promise.output.cwd** - _String_ current working directory after command was executed
+
+<table>
+    <th>Property</th><th>Data Type</th><th>Description</th>
+    <tr></tr>
+    <td>promise.output.stdout</td><td>List</td><td>STDOUT lines from the command normalized for display</td>
+    <tr></tr>
+    <td>promise.output.stderr</td><td>List</td><td>STDERR lines from the command normalized for display</td>
+    <tr></tr>
+    <td>promise.output.exit_code</td><td>Integer</td><td>Exit code value from command</td>
+    <tr></tr>
+    <td>promise.output.cwd</td><td>String</td><td>Current working directory <i>after</i> command was executed</td>
+</table>
+
 
 _Notes:_
 1. Watiba backticked commands can exist within the resolver 
