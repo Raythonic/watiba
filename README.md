@@ -1,5 +1,5 @@
 # Watiba
-#### Version:  **0.6.2**
+#### Version:  **0.6.3**
 #### Date: 2021/01/24
 
 Watiba, pronounced wah-TEE-bah, is a lightweight Python pre-compiler for embedding Linux shell 
@@ -462,6 +462,32 @@ try:
     p.wait({"sleep":1, "expire":20})
 except Exception as ex:
     print(ex.args)
+```
+
+**_watch_ syntax**
+```
+promise.watch(callback, {args})
+Where args is a Python dictionary with the following options:
+    "sleep" - seconds of sleep for each iteration (fractions such as .5 are honored)
+        default: .5 seconds
+    "expire" - number of sleep iterations until an excpetions is raised
+        default: no expiration
+Note: "args" is optional and can be omitted
+```
+
+_Example of creating a watcher_:
+```buildoutcfg
+def time_out(promise, args):
+    print(f"Command {promise.command} timed out.")
+    
+p = spawn `long-running.sh`:
+    print("Finally completed.  Watcher method won't be called.")
+    return True
+ 
+ p.watch(time_out)  # Does not wait
+ 
+ # Do other things..
+ 
 ```
 
 <div id="promise-tree"/>
