@@ -1,5 +1,5 @@
 # Watiba
-#### Version:  **0.5.82**
+#### Version:  **0.5.83**
 #### Date: 2021/01/23
 
 Watiba, pronounced wah-TEE-bah, is a lightweight Python pre-compiler for embedding Linux shell 
@@ -770,7 +770,7 @@ If you cloned this from github, you'll still need to install the package with pi
 watbia module.  Follow these steps to install Watiba locally.
 ```
 # Watiba package required
-pip3 install watiba
+python3 -m pip install watiba
 ```
 
 
