@@ -1,6 +1,6 @@
 <h1>Watiba</h1>
 
-<h4>Version:  <strong>0.5.87</strong></h4>
+<h4>Version:  <strong>0.5.88</strong></h4>
 
 <h4>Date: 2021/01/24</h4>
 
@@ -179,12 +179,17 @@ cause a CWD change either explicitly or implicitly.</p>
 <p>The results of the command issued in backticks are available in the properties
 of the object returned by Watiba.  Following are those properties:</p>
 
-<ul>
-<li><strong>stdout</strong> - <em>List</em> Output lines from the command normalized for display</li>
-<li><strong>stderr</strong> - <em>List</em> Standard error output lines from the command normalized for display</li>
-<li><strong>exit<em>code</strong> - _Integer</em> Exit code value from command</li>
-<li><strong>cwd</strong> - <em>String</em> Current working directory after command was executed</li>
-</ul>
+<table>
+    <th>Property</th><th>Data Type</th><th>Description</th>
+    <tr></tr>
+    <td>stdout</td><td>List</td><td>STDOUT lines from the command normalized for display</td>
+    <tr></tr>
+    <td>stderr</td><td>List</td><td>STDERR lines from the command normalized for display</td>
+    <tr></tr>
+    <td>exit_code</td><td>Integer</td><td>Exit code value from command</td>
+    <tr></tr>
+    <td>cwd</td><td>String</td><td>Current working directory <i>after</i> command was executed</td>
+</table>
 
 <p>Technically, the returned object for any shell command is defined in the WTOutput class.</p>
 
