@@ -213,6 +213,17 @@ A promise is either returned in assignment from outermost spawn, or passed to ch
       <td>end_time</td><td>Time</td><td>Time that promise resolved</td>
   </table>
 
+_Example of simple spawn_:
+```buildoutcfg
+prom = spawn `tar -zcvf big_file.tar.gz some_dir/*`:
+    # Resolver block to which "promise" and "args" is passed...
+    print(f"{promise.command} completed.")
+    return True  # Resolve promise
+
+# Do other things while tar is running
+# Finally wait for tar promise to resolve
+prom.join()
+```
 
 <div id="spawn-controller"/>
 
