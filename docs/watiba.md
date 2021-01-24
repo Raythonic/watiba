@@ -200,7 +200,7 @@ A promise is either returned in assignment from outermost spawn, or passed to ch
       <tr></tr>
       <td>resolve_parent()</td><td>Method</td><td>Call inside resolver block to resolve parent promise</td>
       <tr></tr>
-      <td>dump_tree()</td><td>Method</td><td>Call show the promise tree.  Takes subtree argument otherwise it defaults to the root promise</td>
+      <td>tree_dump()</td><td>Method</td><td>Call show the promise tree.  Takes subtree argument otherwise it defaults to the root promise</td>
       <tr></tr>
       <td>join()</td><td>Method</td><td>Call to wait on entire promise tree</td>
       <tr></tr>
