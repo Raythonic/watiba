@@ -83,7 +83,7 @@ rm README.md
 sed "s/__version__/${new_ver}/g" < docs/watiba.md > README.md
 sed -i "s/__current_date__/${dat}/g" README.md
 markdown README.md > docs/README.html
-chmod -w README.md
+chmod 0444 README.md
 
 echo "Building watiba-c script with new version ${new_ver}"
 sed "s/__version__/${new_ver}/g" < watiba/watiba-c.py > bin/watiba-c

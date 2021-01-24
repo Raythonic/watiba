@@ -1,6 +1,6 @@
 # Watiba
-#### Version:  **0.6.1**
-#### Date: 2021/01/24
+#### Version:  ****
+#### Date: 
 
 Watiba, pronounced wah-TEE-bah, is a lightweight Python pre-compiler for embedding Linux shell 
 commands within Python applications.  It is similar to other languages' syntactical enhancements where
@@ -675,7 +675,7 @@ watiba-ctl {"ssh-port": 2233}
 Examples:
 ```buildoutcfg
 p = spawn `ls -lrt`@remoteserver {parms}:
-    for line in promise.output.stdout:
+    for line in promise.output.stdout: ddd
         print(line)
     return True
      
