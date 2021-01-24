@@ -326,7 +326,7 @@ p = spawn `tar -zcvf /tmp/file.tar.gz /home/user/dir`:
     
 # Wait for spawned command to resolve (not merely complete)
 try:
-    p.join()
+    p.join({"expire": 3})
     print("tar resolved")
 except Exception as ex:
     print(ex.args)
