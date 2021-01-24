@@ -80,7 +80,7 @@ fi
 if [ "$yn" == "y" ]
   then
     echo "Pushing changes to github ${branch}"
-    git push origin develop --tags
+    git push origin ${branch} --tags
 fi
 
 if [ "$branch" != "main" ]
