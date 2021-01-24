@@ -1,5 +1,5 @@
 #!/bin/bash
-pip3 uninstall watiba
+python3 -m pip uninstall watiba
 echo "Enter t to install from testpypi, p for pypi (public)"
 read resp
 
