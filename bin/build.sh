@@ -1,4 +1,11 @@
 #!/bin/bash
+declare -i chk=$(which python3 | grep "watiba" | wc -l)
+if [ $chk -ne 1 ]
+then
+  echo "You forgot to source your venv"
+  ls ~/.env
+  exit 0
+fi
 
 cd ~/git/watiba
 
