@@ -214,6 +214,14 @@ This exception is raised by the default error method. This method as well as oth
 can be overridden.  The controller's purpose is to not allow run away threads and provide signaling of possible
 hung threads.
 
+_spawn-ctl_ example:
+```buildoutcfg
+# Only allow 20 spawns max, 
+# and increase slowdown by 1/2 second each 3rd cycle
+...python code...
+spawn-ctl {"max":20, "sleep-increment":.250}  
+```
+
 Spawn control parameters:
 
 <table>
