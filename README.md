@@ -1,5 +1,5 @@
 # Watiba
-#### Version:  **0.5.86**
+#### Version:  **0.5.87**
 #### Date: 2021/01/24
 
 Watiba, pronounced wah-TEE-bah, is a lightweight Python pre-compiler for embedding Linux shell 
@@ -176,13 +176,6 @@ is found in _promise.output_.  The examples throughout this README and in the _e
 ##### Useful properties in promise structure 
 A promise is either returned in assignment from outermost spawn, or passed to child spawns in argument "promise".
 
-- **output** Standard output structure as described in section [Command Results](#command-results)
-  ```
-     promise.output.stdout
-     promise.output.stderr
-     promise.output.exit_code
-     promise.output.cwd
-  ```
   <table>
       <th>Property</th>
       <th>Data Type</th>
