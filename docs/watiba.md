@@ -477,14 +477,17 @@ Note: "args" is optional and can be omitted
 
 _Example of creating a watcher_:
 ```buildoutcfg
+
+# Define watcher method.  Called if command times out (i.e. expires)
 def time_out(promise, args):
     print(f"Command {promise.command} timed out.")
-    
+
+# Spawn a thread running some command that hangs
 p = spawn `long-running.sh`:
     print("Finally completed.  Watcher method won't be called.")
     return True
  
- p.watch(time_out)  # Does not wait
+ p.watch(time_out)  # Does not wait.  Calls method "time_out" if this promise expires (i.e. command hangs)
  
  # Do other things..
  
