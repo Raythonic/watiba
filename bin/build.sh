@@ -59,8 +59,8 @@ do
   declare -i chk_user_ver=$(echo "$resp" | egrep "^[0-9]+\.[0-9]+\.[0-9]+$" | wc -l)
   if [ $chk_user_ver -ne 1 ]
   then
-    print("Incorrect format!  Must be nn.nn.nn")
-    print("Re-enter new version number")
+    echo "Incorrect format!  Must be nn.nn.nn"
+    echo "Re-enter new version number"
     read resp
   else
       new_ver=${resp}
