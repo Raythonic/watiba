@@ -204,24 +204,33 @@ can be overridden.  The controller's purpose is to not allow run away threads an
 hung threads.
 
 Spawn control parameters:
-- **max** - _Integer_ The maximum number of spawned commands allowed before the controller enters slowdown mode.
-    **Default: 10**
-- **sleep-floor** - _Integer_ Seconds the starting sleep value when the controller enters slowdown mode.
-    **Default: .125**
-- **sleep-increment** - _Integer_ Seconds the amount of seconds sleep will increase every third cycle when in slowdown 
-  mode.  
-     **Default: .125**
-- **sleep-ceiling** - _Integer_ Seconds the highest length sleep value allowed when in slowdown mode.  
-  (As slow as it will get.)
-     **Default: 3**
-- **expire** - _Integer_ Total number of slowdown cycles allowed before the error method is called.
-     **Default: No expiration**
-- **error** - _Method_ Callback method invoked when slowdown mode expires. Use this to catch hung commands.
+
+<table>
+<th>Key Name</th>
+<th>Data Type</th>
+<th>Description</th>
+<th>Default</th>
+<tr></tr>
+<td>max</td><td>Integer</td><td>The maximum number of spawned commands allowed before the controller enters</td><td>10</td>
+<tr></tr>
+<td>sleep-floor</td><td>Integer</td><td>Seconds the starting sleep value when the controller enters slowdown mode</td><td>.125</td>
+<tr></tr>
+<td>sleep-increment</td><td>Integer</td><td>Seconds the amount of seconds sleep will increase every third cycle when in slowdown 
+  mode</td><td>.125</td>
+<tr></tr>
+<td>sleep-ceiling</td><td>Integer</td><td>Seconds the highest length sleep value allowed when in slowdown mode  
+  (As slow as it will get)</td><td>3</td>
+<tr></tr>
+<td>expire</td><td>Integer</td><td>total number of slowdown cycles allowed before the error method is called</td><td>No expiration</td>
+<tr></tr>
+<td>error</td><td>Method</td><td>
+Callback method invoked when slowdown mode expires. Use this to catch hung commands.
         This method is passed 2 arguments:
+
   - **promise** - The promise attempting execution at the time of expiration
   - **count** - The thread count (unresolved promises) at the time of expiration
-    
-   **Default:** Generic Watiba error handler method.  This handler will raise a _WTSpawnException_ exception.
+</td><td>No expiration</td>
+</table>
     
 _spawn-ctl_ only overrides the values it sets and does not affect values not specified.  _spawn-ctl_ statements can
 set whichever values it wants, can be dispersed throughout your code (i.e. multiple _spawn-ctl_ statements) and 
@@ -530,10 +539,10 @@ Spawned commands return their results in the _promise.output_ property of the _p
 the resolver block, and in the spawn expression if there is an assignment in that spawn expression.  
 The result properties can then be accessed as followed:
  
-- **promise.output.stdout** - array of output lines from the command normalized for display
-- **promise.output.stderr** - array of standard error output lines from the command normalized for display
-- **promise.output.exit_code** - integer exit code value from command
-- **promise.output.cwd** - current working directory after command was executed
+- **promise.output.stdout** - _List_ of output lines from the command normalized for display
+- **promise.output.stderr** - _List_ of standard error output lines from the command normalized for display
+- **promise.output.exit_code** - _Integer_ exit code value from command
+- **promise.output.cwd** - _String_ current working directory after command was executed
 
 _Notes:_
 1. Watiba backticked commands can exist within the resolver 
