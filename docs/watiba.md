@@ -166,7 +166,7 @@ Shell commands can be executed asynchronously with a defined resolver callback b
 and runs a new OS thread. The resolver is a callback block that follows the Watiba _spawn_ expression.  The spawn 
 feature is executed when a ```spawn `cmd` args: resolver block``` code block is encountered. The 
 resolver is passed the results in the promise object. (The promise structure contains the properties 
-defined in section ["Results from Spawned Command"](#spawn-results)  The _spawn_ expression also returns a _promise_ object 
+defined in section ["Results from Spawned Commands"](#spawn-results)  The _spawn_ expression also returns a _promise_ object 
 to the caller of _spawn_.  The promise object is passed to the _resolver block_ in argument _promise_.  The 
 outer code can check its state with a call to _resolved()_ on the *returned* promise object.  Output from the command
 is found in _promise.output_.  The examples throughout this README and in the _examples.wt_ file make this clear.
