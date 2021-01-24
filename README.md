@@ -1,5 +1,5 @@
 # Watiba
-#### Version:  **0.5.89**
+#### Version:  **0.5.90**
 #### Date: 2021/01/24
 
 Watiba, pronounced wah-TEE-bah, is a lightweight Python pre-compiler for embedding Linux shell 
@@ -213,6 +213,14 @@ resolve, or an expiration count is reached, at which time an exception is thrown
 This exception is raised by the default error method. This method as well as other spawn controlling parameters 
 can be overridden.  The controller's purpose is to not allow run away threads and provide signaling of possible
 hung threads.
+
+_spawn-ctl_ example:
+```buildoutcfg
+# Only allow 20 spawns max, 
+# and increase slowdown by 1/2 second each 3rd cycle
+...python code...
+spawn-ctl {"max":20, "sleep-increment":.250}  
+```
 
 Spawn control parameters:
 
