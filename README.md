@@ -245,9 +245,6 @@ Spawn control parameters:
     <td>error</td><td>Method</td><td>
     Callback method invoked when slowdown mode expires. Use this to catch hung commands.
             This method is passed 2 arguments:
-    
-- **promise** - The promise attempting execution at the time of expiration
-- **count** - The thread count (unresolved promises) at the time of expiration
     </td><td>Generic error handler.  Just throws <i>WTSpawnException</i> that hold properties <i>promise</i> and <i>message</i></td></td>
 </table>
     
