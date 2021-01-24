@@ -408,7 +408,7 @@ p.watch(watcher, {"expire": 5})
 
 **_join_ syntax**
 ```
-promise.join(optional args)
+promise.join({optional args})
 Where args is a Python dictionary with the following options:
     "sleep" - seconds of sleep for each iteration (fractions such as .5 are honored)
         default: .5 seconds
@@ -437,7 +437,7 @@ except Exception as ex:
 
 **_wait_ syntax**
 ```
-promise.wait(optional args)
+promise.wait({optional args})
 Where args is a Python dictionary with the following options:
     "sleep" - seconds of sleep for each iteration (fractions such as .5 are honored)
         default: .5 seconds
@@ -466,7 +466,7 @@ except Exception as ex:
 
 **_watch_ syntax**
 ```
-promise.watch(callback, {args})
+promise.watch(callback, {optional args})
 Where args is a Python dictionary with the following options:
     "sleep" - seconds of sleep for each iteration (fractions such as .5 are honored)
         default: .5 seconds
