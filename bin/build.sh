@@ -26,7 +26,10 @@ declare new_ver=${current_ver[0]}"."${current_ver[1]}"."${new_mod}
 
 if [ "$parms" != "--silent" ]
 then
-  echo "Building in GIT branch \"${branch}\" version ${new_ver}!!  Correct?"
+  echo ""
+  echo "Building in GIT branch \"${branch}\" version ${new_ver}."
+  echo "(Don't worry, you'll get a chance to correct the version below.)"
+  echo "Continue?"
   read yn
   if [ "$yn" != "y" ]
   then
@@ -51,10 +54,19 @@ echo "GIT tagging this release in branch \"${branch}\": v${new_ver}"
 echo "Hit ENTER to accept version, or enter new version number (no \"v\")"
 read resp
 
-if [ "$resp" != "" ]
-then
-  new_ver=${resp}
-fi
+while [ "$resp" != "" ]
+do
+  declare -i chk_user_ver=$(echo "$resp" | egrep "^[0-9]+\.[0-9]+\.[0-9]+$" | wc -l)
+  if [ $chk_user_ver -ne 1 ]
+  then
+    echo "Incorrect format!  Must be nn.nn.nn"
+    echo "Re-enter new version number"
+    read resp
+  else
+      new_ver=${resp}
+      resp=""
+  fi
+done
 
 # Publish our new version number
 export WATIBA_VERSION=${new_ver}
@@ -80,7 +92,8 @@ git tag -a v${new_ver} -m "Version ${new_ver}"
 yn="y"
 if [ "$parms" != "--silent" ]
 then
-  echo "Push ${new_ver} to github ${branch}?"
+  echo ""
+  echo "Should I push ${new_ver} to github \"${branch}\"?"
   read yn
 fi
 
@@ -96,7 +109,7 @@ then
   if [ "$parms" != "--silent" ]
   then
     echo ""
-    echo "Merge ${branch} into main?"
+    echo "Should I merge \"${branch}\" into \"main\"?"
     read yn
   else
     echo "Merging ${branch} into main."
@@ -117,7 +130,8 @@ then
     yn="y"
     if [ "$parms" != "--silent" ]
     then
-      echo "Push ${new_ver} to github main?"
+      echo ""
+      echo "Should I push ${new_ver} to github \"main\"?"
       read yn
     fi
     if [ "$yn" == "y" ]

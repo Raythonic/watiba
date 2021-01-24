@@ -200,9 +200,9 @@ A promise is either returned in assignment from outermost spawn, or passed to ch
       <tr></tr>
       <td>resolve_parent()</td><td>Method</td><td>Call inside resolver block to resolve parent promise</td>
       <tr></tr>
-      <td>tree_dump()</td><td>Method</td><td>Call show the promise tree.  Takes subtree argument otherwise it defaults to the root promise</td>
+      <td>tree_dump()</td><td>Method</td><td>Call to show the promise tree.  Takes subtree argument otherwise it defaults to the root promise</td>
       <tr></tr>
-      <td>join()</td><td>Method</td><td>Call to wait on entire promise tree</td>
+      <td>join()</td><td>Method</td><td>Call to wait on on promise and all its children</td>
       <tr></tr>
       <td>wait()</td><td>Method</td><td>Call to wait on just this promise</td>
       <tr></tr>
@@ -246,7 +246,7 @@ Spawn control parameters:
 sleep value when the controller enters slowdown mode</td><td>.125 (start at 1/8th second pause)</td>
     <tr></tr>
     <td>sleep-increment</td><td>Integer</td><td>Seconds the <i>amount</i> of seconds sleep will increase every 3rd cycle when in slowdown 
-      mode</td><td>.125 (1/8th second every 3rd cycle)</td>
+      mode</td><td>.125 (Increase pause 1/8th second every 3rd cycle)</td>
     <tr></tr>
     <td>sleep-ceiling</td><td>Integer</td><td>Seconds the <i>highest</i> length sleep value allowed when in slowdown mode  
       (As slow as it will get)</td><td>3 (won't get slower than 3 second pauses)</td>
@@ -360,7 +360,7 @@ no exception will be thrown and the cycle will run only until the promise(s) are
 affected by _spawn-ctl_.
 
 _watch_ is called to establish a separate asynchronous thread that will call back a function of your choosing should
-the command the promise is attached to times out.  This is different than _join_ and _wait_ in that _watch_ is not synchronous 
+the command the promise is attached to time out.  This is different than _join_ and _wait_ in that _watch_ is not synchronous 
 and does not pause.  This is used to keep an eye on a spawned command and take action should it hang.  Your watcher
 function is passed the promise on which the watcher was attached, and the arguments, if any, from the spawn expression.
 If your command does not time out (i.e. hangs and expires), the watcher thread will quietly go away when the promise
