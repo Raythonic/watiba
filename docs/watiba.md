@@ -406,7 +406,7 @@ print("watch() does not pause like join or wait")
 p.watch(watcher, {"expire": 5})
 ```
 
-**_join_ syntax**:
+**_join_ syntax**
 ```
 promise.join(optional args)
 Where args is a Python dictionary with the following options:
