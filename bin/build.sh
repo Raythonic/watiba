@@ -54,10 +54,19 @@ echo "GIT tagging this release in branch \"${branch}\": v${new_ver}"
 echo "Hit ENTER to accept version, or enter new version number (no \"v\")"
 read resp
 
-if [ "$resp" != "" ]
-then
-  new_ver=${resp}
-fi
+while [ "$resp" != "" ]
+do
+  declare -i chk_user_ver=$(echo "$resp" | egrep "^[0-9]+\.[0-9]+\.[0-9]+$" | wc -l)
+  if [ $chk_user_ver -ne 1 ]
+  then
+    print("Incorrect format!  Must be nn.nn.nn")
+    print("Re-enter new version number")
+    read resp
+  else
+      new_ver=${resp}
+      resp=""
+  fi
+done
 
 # Publish our new version number
 export WATIBA_VERSION=${new_ver}
