@@ -1,6 +1,6 @@
 <h1>Watiba</h1>
 
-<h4>Version:  <strong>0.6.3</strong></h4>
+<h4>Version:  <strong>0.6.4</strong></h4>
 
 <h4>Date: 2021/01/24</h4>
 
@@ -451,9 +451,9 @@ print("watch() does not pause like join or wait")</p>
 <p>p.watch(watcher, {"expire": 5})
 ```</p>
 
-<p><strong><em>join</em> syntax</strong>:
+<p><strong><em>join</em> syntax</strong>
 <code>
-promise.join(optional args)
+promise.join({optional args})
 Where args is a Python dictionary with the following options:
     "sleep" - seconds of sleep for each iteration (fractions such as .5 are honored)
         default: .5 seconds
@@ -483,7 +483,7 @@ except Exception as ex:
 
 <p><strong><em>wait</em> syntax</strong>
 <code>
-promise.wait(optional args)
+promise.wait({optional args})
 Where args is a Python dictionary with the following options:
     "sleep" - seconds of sleep for each iteration (fractions such as .5 are honored)
         default: .5 seconds
@@ -513,7 +513,7 @@ except Exception as ex:
 
 <p><strong><em>watch</em> syntax</strong>
 <code>
-promise.watch(callback, {args})
+promise.watch(callback, {optional args})
 Where args is a Python dictionary with the following options:
     "sleep" - seconds of sleep for each iteration (fractions such as .5 are honored)
         default: .5 seconds
@@ -523,15 +523,20 @@ Note: "args" is optional and can be omitted
 </code></p>
 
 <p><em>Example of creating a watcher</em>:
-```buildoutcfg
-def time_out(promise, args):
+```buildoutcfg</p>
+
+<h1>Define watcher method.  Called if command times out (i.e. expires)</h1>
+
+<p>def time_out(promise, args):
     print(f"Command {promise.command} timed out.")</p>
+
+<h1>Spawn a thread running some command that hangs</h1>
 
 <p>p = spawn <code>long-running.sh</code>:
     print("Finally completed.  Watcher method won't be called.")
     return True</p>
 
-<p>p.watch(time_out)  # Does not wait</p>
+<p>p.watch(time<em>out)  # Does not wait.  Calls method "time</em>out" if this promise expires (i.e. command hangs)</p>
 
 <p># Do other things..</p>
 

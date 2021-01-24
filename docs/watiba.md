@@ -406,9 +406,9 @@ print("watch() does not pause like join or wait")
 p.watch(watcher, {"expire": 5})
 ```
 
-**_join_ syntax**:
+**_join_ syntax**
 ```
-promise.join(optional args)
+promise.join({optional args})
 Where args is a Python dictionary with the following options:
     "sleep" - seconds of sleep for each iteration (fractions such as .5 are honored)
         default: .5 seconds
@@ -437,7 +437,7 @@ except Exception as ex:
 
 **_wait_ syntax**
 ```
-promise.wait(optional args)
+promise.wait({optional args})
 Where args is a Python dictionary with the following options:
     "sleep" - seconds of sleep for each iteration (fractions such as .5 are honored)
         default: .5 seconds
@@ -466,7 +466,7 @@ except Exception as ex:
 
 **_watch_ syntax**
 ```
-promise.watch(callback, {args})
+promise.watch(callback, {optional args})
 Where args is a Python dictionary with the following options:
     "sleep" - seconds of sleep for each iteration (fractions such as .5 are honored)
         default: .5 seconds
@@ -477,14 +477,17 @@ Note: "args" is optional and can be omitted
 
 _Example of creating a watcher_:
 ```buildoutcfg
+
+# Define watcher method.  Called if command times out (i.e. expires)
 def time_out(promise, args):
     print(f"Command {promise.command} timed out.")
-    
+
+# Spawn a thread running some command that hangs
 p = spawn `long-running.sh`:
     print("Finally completed.  Watcher method won't be called.")
     return True
  
- p.watch(time_out)  # Does not wait
+ p.watch(time_out)  # Does not wait.  Calls method "time_out" if this promise expires (i.e. command hangs)
  
  # Do other things..
  
