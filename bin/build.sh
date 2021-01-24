@@ -112,7 +112,6 @@ then
     echo "Should I merge \"${branch}\" into \"main\"?"
     read yn
   else
-    echo "Merging ${branch} into main."
     yn="y"
   fi
 
@@ -125,6 +124,8 @@ then
       echo "Error: cannot merge with main.  Checkout of main failed"
       exit 1
     fi
+
+    echo "Merging ${branch} into main."
     git merge ${branch} -X theirs
 
     yn="y"
