@@ -18,7 +18,7 @@ dat=$(date +"%Y\/%m\/%d")
 branch=$(git branch | grep "\*" | awk '{print $2}')
 
 # Create new version number based on last git tag
-# This egrep finds that last version tag and filters out other kinds of tag names
+# This egrep finds that last version tag and filters out other kinds of tag names like "feature-blah"
 declare -a current_ver=($(git tag | egrep "^v[0-9]+\.[0-9]+\.[0-9]+$" | tr -d 'v' | sort --version-sort | tail -1 | tr "." " "))
 declare -i new_mod=${current_ver[2]}+1
 declare new_ver=${current_ver[0]}"."${current_ver[1]}"."${new_mod}
@@ -26,7 +26,7 @@ declare new_ver=${current_ver[0]}"."${current_ver[1]}"."${new_mod}
 
 if [ "$parms" != "--silent" ]
 then
-  echo ""
+  echo "-----------------------------------------------------------------------------------------"
   echo "Building in GIT branch \"${branch}\" version ${new_ver}."
   echo "(Don't worry, you'll get a chance to correct the version below.)"
   echo "Continue?"
@@ -50,6 +50,7 @@ mkdir tmp
 rm -rf dist
 mkdir dist
 
+echo "-----------------------------------------------------------------------------------------"
 echo "GIT tagging this release in branch \"${branch}\": v${new_ver}"
 echo "Hit ENTER to accept version, or enter new version number (no \"v\")"
 read resp
@@ -60,7 +61,7 @@ do
   if [ $chk_user_ver -ne 1 ]
   then
     echo "Incorrect format!  Must be nn.nn.nn"
-    echo "Re-enter new version number"
+    echo "Re-enter new version number, or ENTER to keep the version number"
     read resp
   else
       new_ver=${resp}
@@ -77,6 +78,7 @@ dat=$(date +"%Y\/%m\/%d")
 
 python3 -m pip freeze | grep -v "watiba" > requirements.txt
 
+echo "-----------------------------------------------------------------------------------------"
 echo "Compiling doc with new version ${new_ver}"
 chmod 777 README.md
 rm README.md
@@ -85,6 +87,7 @@ sed -i "s/__current_date__/${dat}/g" README.md
 markdown README.md > docs/README.html
 chmod 0444 README.md
 
+echo "-----------------------------------------------------------------------------------------"
 echo "Building watiba-c script with new version ${new_ver}"
 sed "s/__version__/${new_ver}/g" < watiba/watiba-c.py > bin/watiba-c
 
@@ -95,7 +98,7 @@ git tag -a v${new_ver} -m "Version ${new_ver}"
 yn="y"
 if [ "$parms" != "--silent" ]
 then
-  echo ""
+  echo "-----------------------------------------------------------------------------------------"
   echo "Should I push ${new_ver} to github \"${branch}\"?"
   read yn
 fi
@@ -111,7 +114,7 @@ then
 
   if [ "$parms" != "--silent" ]
   then
-    echo ""
+    echo "-----------------------------------------------------------------------------------------"
     echo "Should I merge \"${branch}\" into \"main\"?"
     read yn
   else
@@ -134,7 +137,7 @@ then
     yn="y"
     if [ "$parms" != "--silent" ]
     then
-      echo ""
+      echo "-----------------------------------------------------------------------------------------"
       echo "Should I push ${new_ver} to github \"main\"?"
       read yn
     fi
