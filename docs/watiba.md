@@ -240,7 +240,7 @@ Spawn control parameters:
     
 - **promise** - The promise attempting execution at the time of expiration
 - **count** - The thread count (unresolved promises) at the time of expiration
-    </td><td>No expiration</td>
+    </td><td>Generic error handler.  Just throws <i>WTSpawnException</i> that hold properties <i>promise</i> and <i>message</i></td></td>
 </table>
     
 _spawn-ctl_ only overrides the values it sets and does not affect values not specified.  _spawn-ctl_ statements can
