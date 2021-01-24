@@ -1,6 +1,6 @@
 <h1>Watiba</h1>
 
-<h4>Version:  <strong>0.5.96</strong></h4>
+<h4>Version:  <strong>0.5.97</strong></h4>
 
 <h4>Date: 2021/01/24</h4>
 
@@ -780,17 +780,24 @@ Python dictionary where the keys are the host names and the values the WTOutput 
 <p>The <em>chain</em> expression raises a WTChainException on the first failed command.  The exception raised
 has the following properties:</p>
 
-<p><em>WTChainException</em>:
-- <strong>command</strong>  The failing Shell command
-- <strong>host</strong> The host reporting the failure
-- <strong>message</strong> Error message
-- <strong>output</strong> Reference to command output object (Refer to the <a href="#command-results">"Command Results"</a> section):</p>
+<p><em>WTChainException</em>:</p>
 
-<pre><code>- **output.stdout**
-- **output.stderr**
-- **output.exit_code**
-- **output.cwd**
-</code></pre>
+<table>
+<th>Property</th><th>Data Type</th><th>Description</th>
+<tr></tr>
+<td>command</td><td>String</td><td>Command that failed</td>
+<tr></tr>
+<td>host</td><td>String</td><td>Host where command failed</td>
+<tr></tr>
+<td>message</td><td>String</td><td>Error message</td>
+<tr></tr>
+<td>output</td><td>WTOutput structure:
+
+- stdout
+- stderr
+- exit_code
+- cwd</td><td>Output from command</td>
+</table>
 
 <p>Import this exception to catch it:
 <code>buildoutcfg

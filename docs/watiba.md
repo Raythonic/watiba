@@ -712,16 +712,23 @@ The _chain_ expression raises a WTChainException on the first failed command.  T
 has the following properties:
 
 _WTChainException_:
-- **command**  The failing Shell command
-- **host** The host reporting the failure
-- **message** Error message
-- **output** Reference to command output object (Refer to the ["Command Results"](#command-results) section):
-    
-    - **output.stdout**
-    - **output.stderr**
-    - **output.exit_code**
-    - **output.cwd**
-    
+<table>
+<th>Property</th><th>Data Type</th><th>Description</th>
+<tr></tr>
+<td>command</td><td>String</td><td>Command that failed</td>
+<tr></tr>
+<td>host</td><td>String</td><td>Host where command failed</td>
+<tr></tr>
+<td>message</td><td>String</td><td>Error message</td>
+<tr></tr>
+<td>output</td><td>WTOutput structure:
+
+- stdout
+- stderr
+- exit_code
+- cwd</td><td>Output from command</td>
+</table>
+
 Import this exception to catch it:
 ```buildoutcfg
 from watiba import WTChainException
