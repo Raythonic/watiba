@@ -80,7 +80,7 @@ fi
 if [ "$yn" == "y" ]
   then
     echo "Pushing changes to github ${branch}"
-    git push origin --tags
+    git push origin develop --tags
 fi
 
 if [ "$branch" != "main" ]
@@ -116,7 +116,7 @@ then
     if [ "$yn" == "y" ]
     then
       echo "Pushing changes to github main"
-      git push origin --tags
+      git push origin main --tags
     fi
     git checkout ${branch}
   fi
