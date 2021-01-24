@@ -204,7 +204,7 @@ A promise is either returned in assignment from outermost spawn, or passed to ch
       <tr></tr>
       <td>join()</td><td>Method</td><td>Call to wait on entire promise tree</td>
       <tr></tr>
-      <td>wait()</td><td>Method</td><td>Call wait on just this promise</td>
+      <td>wait()</td><td>Method</td><td>Call to wait on just this promise</td>
       <tr></tr>
       <td>watch()</td><td>Method</td><td>Call to create watcher on this promise</td>
       <tr></tr>
