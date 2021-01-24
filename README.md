@@ -219,7 +219,7 @@ _spawn-ctl_ example:
 # Only allow 20 spawns max, 
 # and increase slowdown by 1/2 second each 3rd cycle
 ...python code...
-spawn-ctl {"max":20, "sleep-increment":.250}  
+spawn-ctl {"max":20, "sleep-increment":.500}  
 ```
 
 Spawn control parameters:
