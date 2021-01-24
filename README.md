@@ -1,5 +1,5 @@
 # Watiba
-#### Version:  **0.5.91**
+#### Version:  **0.5.92**
 #### Date: 2021/01/24
 
 Watiba, pronounced wah-TEE-bah, is a lightweight Python pre-compiler for embedding Linux shell 
@@ -219,7 +219,7 @@ _spawn-ctl_ example:
 # Only allow 20 spawns max, 
 # and increase slowdown by 1/2 second each 3rd cycle
 ...python code...
-spawn-ctl {"max":20, "sleep-increment":.250}  
+spawn-ctl {"max":20, "sleep-increment":.500}  
 ```
 
 Spawn control parameters:
@@ -232,13 +232,13 @@ Spawn control parameters:
     <tr></tr>
     <td>max</td><td>Integer</td><td>The maximum number of spawned commands allowed before the controller enters slowdown mode</td><td>10</td>
     <tr></tr>
-    <td>sleep-floor</td><td>Integer</td><td>Seconds of <i>starting</i> sleep value when the controller enters slowdown mode</td><td>.125</td>
+    <td>sleep-floor</td><td>Integer</td><td>Seconds of <i>starting</i> sleep value when the controller enters slowdown mode</td><td>.125 (start at 1/8th second)</td>
     <tr></tr>
     <td>sleep-increment</td><td>Integer</td><td>Seconds the <i>amount</i> of seconds sleep will increase every 3rd cycle when in slowdown 
-      mode</td><td>.125</td>
+      mode</td><td>.125 (1/8th second every 3rd cycle)</td>
     <tr></tr>
     <td>sleep-ceiling</td><td>Integer</td><td>Seconds the <i>highest</i> length sleep value allowed when in slowdown mode  
-      (As slow as it will get)</td><td>3</td>
+      (As slow as it will get)</td><td>3 (won't get slower than 3 second pauses)</td>
     <tr></tr>
     <td>expire</td><td>Integer</td><td>Total number of slowdown cycles allowed before the error method is called</td><td>No expiration</td>
     <tr></tr>
