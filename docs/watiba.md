@@ -488,7 +488,7 @@ p = spawn `long-running.sh`:
  
 p.watch(time_out)  # Does not wait.  Calls method "time_out" if this promise expires (i.e. command hangs)
  
-# Do other things..
+# Do other things...
  
 ```
 
