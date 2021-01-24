@@ -1,6 +1,6 @@
 <h1>Watiba</h1>
 
-<h4>Version:  <strong>0.6.4</strong></h4>
+<h4>Version:  <strong>0.6.5</strong></h4>
 
 <h4>Date: 2021/01/24</h4>
 
@@ -242,6 +242,20 @@ is found in <em>promise.output</em>.  The examples throughout this README and in
       <td>end</em>time</td><td>Time</td><td>Time that promise resolved</td>
   </table></p>
 
+<p><em>Example of simple spawn</em>:
+<code>``buildoutcfg
+prom = spawn</code>tar -zcvf big<em>file.tar.gz some</em>dir/*`:
+    # Resolver block to which "promise" and "args" is passed...
+    print(f"{promise.command} completed.")
+    return True  # Resolve promise</p>
+
+<h1>Do other things while tar is running</h1>
+
+<h1>Finally wait for tar promise to resolve</h1>
+
+<p>prom.join()
+```</p>
+
 <p><div id="spawn-controller"/></p>
 
 <h4>Spawn Controller</h4>
@@ -348,7 +362,7 @@ return True
 <h1>Wait for spawned command to resolve (not merely complete)</h1>
 
 <p>try:
-    p.join()
+    p.join({"expire": 3})
     print("tar resolved")
 except Exception as ex:
     print(ex.args)
@@ -538,7 +552,7 @@ Note: "args" is optional and can be omitted
 
 <p>p.watch(time<em>out)  # Does not wait.  Calls method "time</em>out" if this promise expires (i.e. command hangs)</p>
 
-<p># Do other things..</p>
+<h1>Do other things...</h1>
 
 <p>```</p>
 
