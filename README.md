@@ -1,5 +1,5 @@
 # Watiba
-#### Version:  **0.5.94**
+#### Version:  **0.5.95**
 #### Date: 2021/01/24
 
 Watiba, pronounced wah-TEE-bah, is a lightweight Python pre-compiler for embedding Linux shell 
@@ -204,7 +204,7 @@ A promise is either returned in assignment from outermost spawn, or passed to ch
       <tr></tr>
       <td>join()</td><td>Method</td><td>Call to wait on entire promise tree</td>
       <tr></tr>
-      <td>wait()</td><td>Method</td><td>Call wait on just this promise</td>
+      <td>wait()</td><td>Method</td><td>Call to wait on just this promise</td>
       <tr></tr>
       <td>watch()</td><td>Method</td><td>Call to create watcher on this promise</td>
       <tr></tr>
@@ -242,7 +242,8 @@ Spawn control parameters:
     <tr></tr>
     <td>max</td><td>Integer</td><td>The maximum number of spawned commands allowed before the controller enters slowdown mode</td><td>10</td>
     <tr></tr>
-    <td>sleep-floor</td><td>Integer</td><td>Seconds of <i>starting</i> sleep value when the controller enters slowdown mode</td><td>.125 (start at 1/8th second)</td>
+    <td>sleep-floor</td><td>Integer</td><td>Seconds of <i>starting</i> 
+sleep value when the controller enters slowdown mode</td><td>.125 (start at 1/8th second pause)</td>
     <tr></tr>
     <td>sleep-increment</td><td>Integer</td><td>Seconds the <i>amount</i> of seconds sleep will increase every 3rd cycle when in slowdown 
       mode</td><td>.125 (1/8th second every 3rd cycle)</td>
