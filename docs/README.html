@@ -1,8 +1,8 @@
 <h1>Watiba</h1>
 
-<h4>Version:  <strong>0.5.84</strong></h4>
+<h4>Version:  <strong>0.5.85</strong></h4>
 
-<h4>Date: 2021/01/23</h4>
+<h4>Date: 2021/01/24</h4>
 
 <p>Watiba, pronounced wah-TEE-bah, is a lightweight Python pre-compiler for embedding Linux shell 
 commands within Python applications.  It is similar to other languages' syntactical enhancements where
@@ -196,7 +196,7 @@ of the object returned by Watiba.  Following are those properties:</p>
 and runs a new OS thread. The resolver is a callback block that follows the Watiba <em>spawn</em> expression.  The spawn 
 feature is executed when a <code>spawn `cmd` args: resolver block</code> code block is encountered. The 
 resolver is passed the results in the promise object. (The promise structure contains the properties 
-defined in "Results from Spawned Command" of this README.)  The <em>spawn</em> expression also returns a <em>promise</em> object 
+defined in section <a href="#spawn-results">"Results from Spawned Commands"</a>  The <em>spawn</em> expression also returns a <em>promise</em> object 
 to the caller of <em>spawn</em>.  The promise object is passed to the <em>resolver block</em> in argument <em>promise</em>.  The 
 outer code can check its state with a call to <em>resolved()</em> on the <em>returned</em> promise object.  Output from the command
 is found in <em>promise.output</em>.  The examples throughout this README and in the <em>examples.wt</em> file make this clear.</p>
@@ -208,21 +208,36 @@ is found in <em>promise.output</em>.  The examples throughout this README and in
 <p>A promise is either returned in assignment from outermost spawn, or passed to child spawns in argument "promise".</p>
 
 <ul>
-<li><p><strong>output</strong> Standard output structure as described in section <a href="#command-results">Command Results</a>
+<li><strong>output</strong> Standard output structure as described in section <a href="#command-results">Command Results</a>
 <code>
  promise.output.stdout
  promise.output.stderr
  promise.output.exit_code
  promise.output.cwd
-</code></p></li>
-<li><p><strong>host</strong> <em>String</em> Host name on which spawned command ran</p></li>
-<li><strong>children</strong> <em>List</em> Children promises for this promise node</li>
-<li><strong>parent</strong> Reference to parent promise node of this child promise. None if root promise.</li>
-<li><strong>command</strong> <em>String</em> Shell command issued for this promise</li>
-<li><strong>resolved()</strong> Method to determine if this promise was marked resolved</li>
-<li><strong>start<em>time</strong> _Time</em> value of when spawned command started</li>
-<li><strong>end<em>time</strong> _Time</em> value of when spawned command was marked resolved. None if command is still 
-executing</li>
+</code>
+<table>
+  <th>Property</th>
+  <th>Data Type</th>
+  <th>Description</th>
+  <tr></tr>
+  <td>host</td><td>String</td><td>Host name on which spawned command ran</td>
+  <tr></tr>
+  <td>children</td><td>List</td><td>Children promises for this promise node</td>
+  <tr></tr>
+  <td>parent</td><td>Reference</td><td>Parent promise node of child promise. None if root promise.</td>
+  <tr></tr>
+  <td>command</td><td>String</td><td>Shell command issued for this promise</td>
+  <tr></tr>
+  <td>command</td><td>String</td><td>Shell command issued for this promise</td>
+  <tr></tr>
+  <td>command</td><td>String</td><td>Shell command issued for this promise</td>
+  <tr></tr>
+  <td>resolved()</td><td>Method</td><td>Call to find out if this promise is resolved</td>
+  <tr></tr>
+  <td>start<em>time</td><td>Time</td><td>Time that spawned command started</td>
+  <tr></tr>
+  <td>end</em>time</td><td>Time</td><td>Time that promise resolved</td>
+</table></li>
 </ul>
 
 <p><div id="spawn-controller"/></p>
@@ -236,25 +251,34 @@ This exception is raised by the default error method. This method as well as oth
 can be overridden.  The controller's purpose is to not allow run away threads and provide signaling of possible
 hung threads.</p>
 
-<p>Spawn control parameters:
-- <strong>max</strong> - <em>Integer</em> The maximum number of spawned commands allowed before the controller enters slowdown mode.
-    <strong>Default: 10</strong>
-- <strong>sleep-floor</strong> - <em>Integer</em> Seconds the starting sleep value when the controller enters slowdown mode.
-    <strong>Default: .125</strong>
-- <strong>sleep-increment</strong> - <em>Integer</em> Seconds the amount of seconds sleep will increase every third cycle when in slowdown 
-  mode. <br />
-     <strong>Default: .125</strong>
-- <strong>sleep-ceiling</strong> - <em>Integer</em> Seconds the highest length sleep value allowed when in slowdown mode. <br />
-  (As slow as it will get.)
-     <strong>Default: 3</strong>
-- <strong>expire</strong> - <em>Integer</em> Total number of slowdown cycles allowed before the error method is called.
-     <strong>Default: No expiration</strong>
-- <strong>error</strong> - <em>Method</em> Callback method invoked when slowdown mode expires. Use this to catch hung commands.
-        This method is passed 2 arguments:
-  - <strong>promise</strong> - The promise attempting execution at the time of expiration
-  - <strong>count</strong> - The thread count (unresolved promises) at the time of expiration</p>
+<p>Spawn control parameters:</p>
 
-<p><strong>Default:</strong> Generic Watiba error handler method.  This handler will raise a <em>WTSpawnException</em> exception.</p>
+<table>
+    <th>Key Name</th>
+    <th>Data Type</th>
+    <th>Description</th>
+    <th>Default</th>
+    <tr></tr>
+    <td>max</td><td>Integer</td><td>The maximum number of spawned commands allowed before the controller enters slowdown mode</td><td>10</td>
+    <tr></tr>
+    <td>sleep-floor</td><td>Integer</td><td>Seconds of <i>starting</i> sleep value when the controller enters slowdown mode</td><td>.125</td>
+    <tr></tr>
+    <td>sleep-increment</td><td>Integer</td><td>Seconds the <i>amount</i> of seconds sleep will increase every 3rd cycle when in slowdown 
+      mode</td><td>.125</td>
+    <tr></tr>
+    <td>sleep-ceiling</td><td>Integer</td><td>Seconds the <i>highest</i> length sleep value allowed when in slowdown mode  
+      (As slow as it will get)</td><td>3</td>
+    <tr></tr>
+    <td>expire</td><td>Integer</td><td>Total number of slowdown cycles allowed before the error method is called</td><td>No expiration</td>
+    <tr></tr>
+    <td>error</td><td>Method</td><td>
+    Callback method invoked when slowdown mode expires. Use this to catch hung commands.
+            This method is passed 2 arguments:
+
+- **promise** - The promise attempting execution at the time of expiration
+- **count** - The thread count (unresolved promises) at the time of expiration
+    </td><td>No expiration</td>
+</table>
 
 <p><em>spawn-ctl</em> only overrides the values it sets and does not affect values not specified.  <em>spawn-ctl</em> statements can
 set whichever values it wants, can be dispersed throughout your code (i.e. multiple <em>spawn-ctl</em> statements) and 
@@ -578,18 +602,26 @@ p = spawn `ls -lrt`:
 p.join()  # Wait for ALL promises to be resolved
 </code></p>
 
+<p><div id="spawn-results"/></p>
+
 <h3>Results from Spawned Commands</h3>
 
 <p>Spawned commands return their results in the <em>promise.output</em> property of the <em>promise</em> object passed to
-the resolver block, and in the spawn expression if there is an assignment in that spawn expression. <br />
-The result properties can then be accessed as followed:</p>
+the resolver block, and in the spawn expression if there is an assignment in that spawn expression.</p>
 
-<ul>
-<li><strong>promise.output.stdout</strong> - array of output lines from the command normalized for display</li>
-<li><strong>promise.output.stderr</strong> - array of standard error output lines from the command normalized for display</li>
-<li><strong>promise.output.exit_code</strong> - integer exit code value from command</li>
-<li><strong>promise.output.cwd</strong> - current working directory after command was executed</li>
-</ul>
+<p>The result properties can then be accessed as followed:</p>
+
+<table>
+    <th>Property</th><th>Data Type</th><th>Description</th>
+    <tr></tr>
+    <td>promise.output.stdout</td><td>List</td><td>STDOUT lines from the command normalized for display</td>
+    <tr></tr>
+    <td>promise.output.stderr</td><td>List</td><td>STDERR lines from the command normalized for display</td>
+    <tr></tr>
+    <td>promise.output.exit_code</td><td>Integer</td><td>Exit code value from command</td>
+    <tr></tr>
+    <td>promise.output.cwd</td><td>String</td><td>Current working directory <i>after</i> command was executed</td>
+</table>
 
 <p><em>Notes:</em>
 1. Watiba backticked commands can exist within the resolver 
