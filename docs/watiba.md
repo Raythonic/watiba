@@ -152,10 +152,17 @@ for line in `ls -lrt`.stdout:
 The results of the command issued in backticks are available in the properties
 of the object returned by Watiba.  Following are those properties:
 
-- **stdout** - _List_ Output lines from the command normalized for display
-- **stderr** - _List_ Standard error output lines from the command normalized for display
-- **exit_code** - _Integer_ Exit code value from command
-- **cwd** - _String_ Current working directory after command was executed
+<table>
+    <th>Property</th><th>Data Type</th><th>Description</th>
+    <tr></tr>
+    <td>stdout</td><td>List</td><td>STDOUT lines from the command normalized for display</td>
+    <tr></tr>
+    <td>stderr</td><td>List</td><td>STDERR lines from the command normalized for display</td>
+    <tr></tr>
+    <td>exit_code</td><td>Integer</td><td>Exit code value from command</td>
+    <tr></tr>
+    <td>cwd</td><td>String</td><td>Current working directory <i>after</i> command was executed</td>
+</table>
 
 Technically, the returned object for any shell command is defined in the WTOutput class.
 
