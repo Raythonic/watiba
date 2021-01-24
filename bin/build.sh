@@ -26,7 +26,10 @@ declare new_ver=${current_ver[0]}"."${current_ver[1]}"."${new_mod}
 
 if [ "$parms" != "--silent" ]
 then
-  echo "Building in GIT branch \"${branch}\" version ${new_ver}!!  Correct?"
+  echo ""
+  echo "Building in GIT branch \"${branch}\" version ${new_ver}."
+  echo "(Don't worry, you'll get a chance to correct the version below.)"
+  echo "Continue?"
   read yn
   if [ "$yn" != "y" ]
   then
@@ -80,7 +83,8 @@ git tag -a v${new_ver} -m "Version ${new_ver}"
 yn="y"
 if [ "$parms" != "--silent" ]
 then
-  echo "Push ${new_ver} to github ${branch}?"
+  echo ""
+  echo "Should I push ${new_ver} to github \"${branch}\"?"
   read yn
 fi
 
@@ -96,7 +100,7 @@ then
   if [ "$parms" != "--silent" ]
   then
     echo ""
-    echo "Merge ${branch} into main?"
+    echo "Should I merge \"${branch}\" into \"main\"?"
     read yn
   else
     echo "Merging ${branch} into main."
@@ -117,7 +121,8 @@ then
     yn="y"
     if [ "$parms" != "--silent" ]
     then
-      echo "Push ${new_ver} to github main?"
+      echo ""
+      echo "Should I push ${new_ver} to github \"main\"?"
       read yn
     fi
     if [ "$yn" == "y" ]
