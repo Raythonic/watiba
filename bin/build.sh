@@ -206,4 +206,5 @@ then
     bin/push_package.sh --both
   else
     bin/push_package.sh
+  fi
 fi
