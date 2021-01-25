@@ -67,7 +67,7 @@ do
   if [ $chk_user_ver -ne 1 ]
   then
     echo "Incorrect format!  Must be nn.nn.nn"
-    echo "Re-enter new version number, or ENTER to keep the version number"
+    echo "Re-enter new version number, or ENTER to keep version number ${new_ver}"
     read resp
   else
       new_ver=${resp}
@@ -155,9 +155,9 @@ fi
 chk=$(git branch | grep "\*" | awk '{print $2}')
 if [ "$chk" != "${branch}" ]
 then
-  echo "Error: cannot get back to branch ${branch}.  Failed to checkout ${branch}"
+  echo "Error: cannot get back to branch \"${branch}\".  Failed to checkout \"${branch}\""
   exit 1
-  fi
+fi
 
 
 echo "Running build"
