@@ -1,5 +1,23 @@
 #!/bin/bash
+####################################################################################################
+# This script does the following:
+#  1. Update README with version and timestamp
+#  2. Generate HTML version of README
+#  3. Create pip freeze requirements file (list of dependencies)
+#  4. Add and commit the changes above
+#  5. Tag the version number (GIT)
+#  6. Push new version to GITHUB current branch (prompted)
+#  7. Merge branch with main (prompted)
+#  8. Push new version to GITHUB branch main (prompted)
+#  9. Build PIP package in dist/
+#  10.  Push package to pypi.org and/or test.pypi.org (prompted)
+#
+# Author: Ray Walker  raythonic@gmail.com
+####################################################################################################
+
+# Make sure we're in the watiba virtual environment
 declare -i chk_venv=$(which python3 | grep "watiba" | wc -l)
+
 if [ $chk_venv -ne 1 ]
 then
   echo "You forgot to source your venv"
@@ -7,8 +25,10 @@ then
   exit 0
 fi
 
+# Make sure we're in a known CWD
 cd ~/git/watiba
 
+# Get our command line argument
 parms="$1"
 
 # Get current date
@@ -30,6 +50,7 @@ declare -i new_mod=${current_ver[2]}+1
 declare new_ver=${current_ver[0]}"."${current_ver[1]}"."${new_mod}
 
 
+# Validate what we're about to do
 if [ "$parms" != "--silent" ]
 then
   echo "-----------------------------------------------------------------------------------------"
@@ -56,24 +77,29 @@ mkdir tmp
 rm -rf dist
 mkdir dist
 
-echo "-----------------------------------------------------------------------------------------"
-echo "GIT tagging this release in branch \"${branch}\": v${new_ver}"
-echo "Hit ENTER to accept version, or enter new version number (no \"v\")"
-read resp
+resp=""
+# Give user a chance to change the version number
+if [ "$parms" != "--silent" ]
+then
+  echo "-----------------------------------------------------------------------------------------"
+  echo "GIT tagging this release in branch \"${branch}\": v${new_ver}"
+  echo "Hit ENTER to accept version, or enter new version number (no \"v\")"
+  read resp
 
-while [ "$resp" != "" ]
-do
-  declare -i chk_user_ver=$(echo "$resp" | egrep "^[0-9]+\.[0-9]+\.[0-9]+$" | wc -l)
-  if [ $chk_user_ver -ne 1 ]
-  then
-    echo "Incorrect format!  Must be nn.nn.nn"
-    echo "Re-enter new version number, or ENTER to keep version number ${new_ver}"
-    read resp
-  else
-      new_ver=${resp}
-      resp=""
-  fi
-done
+  while [ "$resp" != "" ]
+  do
+    declare -i chk_user_ver=$(echo "$resp" | egrep "^[0-9]+\.[0-9]+\.[0-9]+$" | wc -l)
+    if [ $chk_user_ver -ne 1 ]
+    then
+      echo "Incorrect format!  Must be nn.nn.nn"
+      echo "Re-enter new version number, or ENTER to keep version number ${new_ver}"
+      read resp
+    else
+        new_ver=${resp}
+        resp=""
+    fi
+  done
+fi
 
 # Publish our new version number
 export WATIBA_VERSION=${new_ver}
@@ -82,6 +108,7 @@ echo "${new_ver}" > version.conf
 # Get current date
 dat=$(date +"%Y\/%m\/%d")
 
+# Dump our dependencies
 python3 -m pip freeze | grep -v "watiba" > requirements.txt
 
 echo "-----------------------------------------------------------------------------------------"
@@ -115,13 +142,12 @@ if [ "$yn" == "y" ]
     git push origin ${branch} --tags
 fi
 
+yn="y"
 if [ "$parms" != "--silent" ]
 then
   echo "-----------------------------------------------------------------------------------------"
   echo "Should I merge \"${branch}\" into \"main\"?"
   read yn
-else
-  yn="y"
 fi
 
 if [ "$yn" == "y" ]
@@ -152,6 +178,8 @@ then
   git checkout ${branch}
 fi
 
+# Make sure we've returned to the branch we started with
+# Make sure we've returned to the branch we started with
 chk=$(git branch | grep "\*" | awk '{print $2}')
 if [ "$chk" != "${branch}" ]
 then
@@ -159,6 +187,18 @@ then
   exit 1
 fi
 
-
-echo "Running build"
+echo "----------------------------------------------------------------------------------------------"
+echo "Building PIP package"
 python3 setup.py sdist
+
+yn="y"
+if [ "$parms" != "--silent" ]
+then
+  echo "Should I push the PIP package out?"
+  read yn
+fi
+
+if [ "$yn" == "y" ]
+then
+  bin/push_package.bash
+fi
