@@ -19,7 +19,7 @@ branch=$(git branch | grep "\*" | awk '{print $2}')
 
 if [ "$branch" == "main" ]
 then
-  echo "You're running under branch \"main\".  Go to the right branch, oofus."
+  echo "You're running under branch \"main\".  Go to the right branch, Doofus."
   exit 0
 fi
 
