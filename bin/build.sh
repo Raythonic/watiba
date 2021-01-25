@@ -201,5 +201,9 @@ fi
 
 if [ "$yn" == "y" ]
 then
-  bin/push_package.sh
+  if [ "$parms" == "--silent" ]
+  then
+    bin/push_package.sh --both
+  else
+    bin/push_package.sh
 fi
