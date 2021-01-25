@@ -201,5 +201,5 @@ fi
 
 if [ "$yn" == "y" ]
 then
-  bin/push_package.sh
+  bin/push_package.sh --both
 fi

@@ -1,11 +1,29 @@
 #!/bin/bash
 cd ~/git/watiba
 
-echo "Enter:"
-echo "   t - test pypi"
-echo "   p - pypi (public)"
-echo "   B - both"
-read resp
+parms=${1}
+resp=""
+
+case "${parm}" in
+  '--both')
+      resp="B"
+      ;;
+  '--test')
+      resp="t"
+      ;;
+  '--prod')
+      resp="p"
+      ;;
+esac
+
+if [ "$resp" == "" ]
+then
+  echo "Enter:"
+  echo "   t - test pypi"
+  echo "   p - pypi (public)"
+  echo "   B - both"
+  read resp
+fi
 
 if [ "$resp" == "t" ] || [ "$resp" == "B" ]
 then
