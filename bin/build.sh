@@ -115,13 +115,12 @@ if [ "$yn" == "y" ]
     git push origin ${branch} --tags
 fi
 
+yn="y"
 if [ "$parms" != "--silent" ]
 then
   echo "-----------------------------------------------------------------------------------------"
   echo "Should I merge \"${branch}\" into \"main\"?"
   read yn
-else
-  yn="y"
 fi
 
 if [ "$yn" == "y" ]
