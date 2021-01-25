@@ -213,7 +213,7 @@ class WTPromise(Exception):
             expiration = int(args["expire"]) * 4 if "expire" in args else 60
 
             # Sleep in 1 second chunks so if resolved we end quickly
-            while expire > 0 and not promise.resolved():
+            while expiration > 0 and not promise.resolved():
                 time.sleep(sleep_time)
                 expiration -= 1
 
