@@ -161,7 +161,7 @@ then
   fi
 
   echo "Merging ${branch} into main."
-  git merge ${branch} -X theirs
+  git merge ${branch} -X theirs -m "Build ${new_ver}"
 
   yn="y"
   if [ "$parms" != "--silent" ]
