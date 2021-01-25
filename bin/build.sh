@@ -194,11 +194,12 @@ python3 setup.py sdist
 yn="y"
 if [ "$parms" != "--silent" ]
 then
+  echo "----------------------------------------------------------------------------------------------"
   echo "Should I push the PIP package out?"
   read yn
 fi
 
 if [ "$yn" == "y" ]
 then
-  bin/push_package.bash
+  bin/push_package.sh
 fi
