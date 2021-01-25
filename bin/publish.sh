@@ -1,7 +1,7 @@
 #!/bin/bash
 cd ~/git/watiba
 bin/build.sh
-ver=$(cat version.conf)
+ver=$WATIBA_VERSION
 echo "Build of ${ver} successful"
 
 echo ""

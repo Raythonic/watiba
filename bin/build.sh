@@ -17,6 +17,12 @@ dat=$(date +"%Y\/%m\/%d")
 # Find our git branch
 branch=$(git branch | grep "\*" | awk '{print $2}')
 
+if [ "$branch" == "main" ]
+then
+  echo "You're running under branch \"main\".  Go to the right branch, Doofus."
+  exit 0
+fi
+
 # Create new version number based on last git tag
 # This egrep finds that last version tag and filters out other kinds of tag names like "feature-blah"
 declare -a current_ver=($(git tag | egrep "^v[0-9]+\.[0-9]+\.[0-9]+$" | tr -d 'v' | sort --version-sort | tail -1 | tr "." " "))
@@ -109,53 +115,50 @@ if [ "$yn" == "y" ]
     git push origin ${branch} --tags
 fi
 
-if [ "$branch" != "main" ]
+if [ "$parms" != "--silent" ]
 then
+  echo "-----------------------------------------------------------------------------------------"
+  echo "Should I merge \"${branch}\" into \"main\"?"
+  read yn
+else
+  yn="y"
+fi
 
+if [ "$yn" == "y" ]
+then
+  git checkout main
+  chk=$(git branch | grep "\*" | awk '{print $2}')
+  if [ "$chk" != "main" ]
+  then
+    echo "Error: cannot merge with main.  Checkout of main failed"
+    exit 1
+  fi
+
+  echo "Merging ${branch} into main."
+  git merge ${branch} -X theirs
+
+  yn="y"
   if [ "$parms" != "--silent" ]
   then
     echo "-----------------------------------------------------------------------------------------"
-    echo "Should I merge \"${branch}\" into \"main\"?"
+    echo "Should I push ${new_ver} to github \"main\"?"
     read yn
-  else
-    yn="y"
   fi
-
   if [ "$yn" == "y" ]
   then
-    git checkout main
-    chk=$(git branch | grep "\*" | awk '{print $2}')
-    if [ "$chk" != "main" ]
-    then
-      echo "Error: cannot merge with main.  Checkout of main failed"
-      exit 1
-    fi
-
-    echo "Merging ${branch} into main."
-    git merge ${branch} -X theirs
-
-    yn="y"
-    if [ "$parms" != "--silent" ]
-    then
-      echo "-----------------------------------------------------------------------------------------"
-      echo "Should I push ${new_ver} to github \"main\"?"
-      read yn
-    fi
-    if [ "$yn" == "y" ]
-    then
-      echo "Pushing changes to github main"
-      git push origin main --tags
-    fi
-    git checkout ${branch}
+    echo "Pushing changes to github main"
+    git push origin main --tags
   fi
-
-  chk=$(git branch | grep "\*" | awk '{print $2}')
-  if [ "$chk" != "${branch}" ]
-  then
-    echo "Error: cannot get back to branch ${branch}.  Failed to checkout ${branch}"
-    exit 1
-  fi
+  git checkout ${branch}
 fi
+
+chk=$(git branch | grep "\*" | awk '{print $2}')
+if [ "$chk" != "${branch}" ]
+then
+  echo "Error: cannot get back to branch ${branch}.  Failed to checkout ${branch}"
+  exit 1
+  fi
+
 
 echo "Running build"
 python3 setup.py sdist
