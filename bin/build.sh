@@ -158,6 +158,6 @@ then
   exit 1
 fi
 
-
-echo "Running build"
+echo "----------------------------------------------------------------------------------------------"
+echo "Building PIP package"
 python3 setup.py sdist
