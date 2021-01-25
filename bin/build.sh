@@ -11,6 +11,8 @@
 #  8. Push new version to GITHUB branch main (prompted)
 #  9. Build PIP package in dist/
 #  10.  Push package to pypi.org and/or test.pypi.org (prompted)
+#
+# Author: Ray Walker  raythonic@gmail.com
 ####################################################################################################
 
 # Make sure we're in the watiba virtual environment
