@@ -13,7 +13,7 @@
 #  10.  Push package to pypi.org and/or test.pypi.org (prompted)
 ####################################################################################################
 
-# Make sure we're in the watibe virtual environment
+# Make sure we're in the watiba virtual environment
 declare -i chk_venv=$(which python3 | grep "watiba" | wc -l)
 
 if [ $chk_venv -ne 1 ]
