@@ -155,9 +155,9 @@ fi
 chk=$(git branch | grep "\*" | awk '{print $2}')
 if [ "$chk" != "${branch}" ]
 then
-  echo "Error: cannot get back to branch ${branch}.  Failed to checkout ${branch}"
+  echo "Error: cannot get back to branch \"${branch}\".  Failed to checkout \"${branch}\""
   exit 1
-  fi
+fi
 
 
 echo "Running build"

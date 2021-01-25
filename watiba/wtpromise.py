@@ -210,10 +210,11 @@ class WTPromise(Exception):
         # Thread function.  Wraps watcher notification method.
         def watcher(promise, watcher_method, args):
             expire = args["expire"] * 4 if "expire" in args else 60
+            sleep = int(args["sleep"]) if "sleep" in args else .250
 
             # Sleep in 1 second chunks so if resolved we end quickly
             while expire > 0 and not promise.resolved():
-                time.sleep(.250)
+                time.sleep(sleep)
                 expire -= 1
 
             # Call the user's watcher if promise still not resolved
