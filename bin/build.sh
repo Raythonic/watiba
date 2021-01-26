@@ -37,7 +37,7 @@ if [ ! -d log ]
 then
   mkdir log
 fi
-log=log/build_$(echo "$dat" | tr -d '/').log
+log=log/build_$(echo "$dat" | tr -d '/' | tr -d '\').log
 
 # Find our git branch
 branch=$(git branch | grep "\*" | awk '{print $2}')
