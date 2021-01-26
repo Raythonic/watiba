@@ -1,2 +1,4 @@
 Compiling doc with new version 0.6.15
 Building watiba-c script with new version 0.6.15
+Pushing changes to github develop
+Error: cannot merge with main.  Checkout of main failed
