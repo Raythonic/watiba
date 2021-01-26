@@ -33,7 +33,11 @@ parms="$1"
 
 # Get current date
 dat=$(date +"%Y\/%m\/%d")
-log=logs/build_$(echo "$dat" | tr -d '/').log
+if [ ! -d log ]
+then
+  mkdir log
+fi
+log=log/build_$(echo "$dat" | tr -d '/').log
 
 # Find our git branch
 branch=$(git branch | grep "\*" | awk '{print $2}')
