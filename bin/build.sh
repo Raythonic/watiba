@@ -33,6 +33,11 @@ parms="$1"
 
 # Get current date
 dat=$(date +"%Y\/%m\/%d")
+if [ ! -d log ]
+then
+  mkdir log
+fi
+log=log/build_$(echo "$dat" | tr -d '/' | tr -d '\').log
 
 # Find our git branch
 branch=$(git branch | grep "\*" | awk '{print $2}')
@@ -112,7 +117,7 @@ dat=$(date +"%Y\/%m\/%d")
 python3 -m pip freeze | grep -v "watiba" > requirements.txt
 
 echo "-----------------------------------------------------------------------------------------"
-echo "Compiling doc with new version ${new_ver}"
+echo "Compiling doc with new version ${new_ver}" | tee -a ${log}
 chmod 777 README.md
 rm README.md
 sed "s/__version__/${new_ver}/g" < docs/watiba.md > README.md
@@ -121,7 +126,7 @@ markdown README.md > docs/README.html
 chmod 0444 README.md
 
 echo "-----------------------------------------------------------------------------------------"
-echo "Building watiba-c script with new version ${new_ver}"
+echo "Building watiba-c script with new version ${new_ver}"  | tee -a ${log}
 sed "s/__version__/${new_ver}/g" < watiba/watiba-c.py > bin/watiba-c
 
 git add .
@@ -138,7 +143,7 @@ fi
 
 if [ "$yn" == "y" ]
   then
-    echo "Pushing changes to github ${branch}"
+    echo "Pushing changes to github ${branch}"  | tee -a ${log}
     git push origin ${branch} --tags
 fi
 
@@ -156,7 +161,7 @@ then
   chk=$(git branch | grep "\*" | awk '{print $2}')
   if [ "$chk" != "main" ]
   then
-    echo "Error: cannot merge with main.  Checkout of main failed"
+    echo "Error: cannot merge with main.  Checkout of main failed"  | tee -a ${log}
     exit 1
   fi
 
@@ -172,7 +177,7 @@ then
   fi
   if [ "$yn" == "y" ]
   then
-    echo "Pushing changes to github main"
+    echo "Pushing changes to github main"  | tee -a ${log}
     git push origin main --tags
   fi
   git checkout ${branch}
@@ -183,12 +188,12 @@ fi
 chk=$(git branch | grep "\*" | awk '{print $2}')
 if [ "$chk" != "${branch}" ]
 then
-  echo "Error: cannot get back to branch \"${branch}\".  Failed to checkout \"${branch}\""
+  echo "Error: cannot get back to branch \"${branch}\".  Failed to checkout \"${branch}\""  | tee -a ${log}
   exit 1
 fi
 
 echo "----------------------------------------------------------------------------------------------"
-echo "Building PIP package"
+echo "Building PIP package"  | tee -a ${log}
 python3 setup.py sdist
 
 yn="y"
@@ -203,6 +208,7 @@ if [ "$yn" == "y" ]
 then
   if [ "$parms" == "--silent" ]
   then
+    echo "Pushing PIP package to both pypi and testpypi"  | tee -a ${log}
     bin/push_package.sh --both
   else
     bin/push_package.sh

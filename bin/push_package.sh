@@ -4,7 +4,7 @@ cd ~/git/watiba
 parms=${1}
 resp=""
 
-case "${parm}" in
+case "${parms}" in
   '--both')
       resp="B"
       ;;
