@@ -114,7 +114,7 @@ echo "${new_ver}" > version.conf
 dat=$(date +"%Y\/%m\/%d")
 
 # Dump our dependencies
-python3 -m pip freeze | grep -v "watiba" > requirements.txt
+python3 -m pip freeze > requirements.txt
 
 echo "-----------------------------------------------------------------------------------------"
 echo "Compiling doc with new version ${new_ver}" | tee -a ${log}
