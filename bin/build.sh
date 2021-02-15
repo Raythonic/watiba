@@ -122,8 +122,6 @@ chmod 777 README.md
 rm README.md
 sed "s/__version__/${new_ver}/g" < docs/watiba.md > README.md
 sed -i "s/__current_date__/${dat}/g" README.md
-markdown README.md > docs/README.html
-chmod 0444 README.md
 
 echo "-----------------------------------------------------------------------------------------"
 echo "Building watiba-c script with new version ${new_ver}"  | tee -a ${log}
