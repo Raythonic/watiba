@@ -21,7 +21,7 @@ declare -i chk_venv=$(which python3 | grep "watiba" | wc -l)
 if [ $chk_venv -ne 1 ]
 then
   echo "You forgot to source your venv"
-  ls ~/.env
+  ls ~/venv_watiba
   exit 0
 fi
 
