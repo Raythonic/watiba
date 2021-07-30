@@ -264,7 +264,7 @@ sleep value when the controller enters slowdown mode</td><td valign="top">.125 (
     <tr></tr>
     <td valign="top">expire</td><td valign="top">Integer</td><td valign="top">Total number of slowdown cycles allowed before the error method is called</td><td valign="top">No expiration</td>
     <tr></tr>
-    <td valign="top">hooks</td><td valign="top">Python dict</td><td valign="top">Dictionary of functions called before all spawned commands and parameters passed to them. Each function is called synchronously in the order that function <i>items()</i> returns them.
+    <td valign="top">hooks</td><td valign="top">Python dict</td><td valign="top">Dictionary of functions, called before all spawned commands, and parameters passed to them. Each function is called synchronously in the order that function <i>items()</i> returns them.
     <br><br>Example:<br>
     {"hooks":<br>
     &nbsp &nbsp &nbsp { funcA: {"parmA":"A", "parmB":"B"},<br>
@@ -282,8 +282,40 @@ sleep value when the controller enters slowdown mode</td><td valign="top">.125 (
 - **count** - The thread count (unresolved promises) at the time of expiration
     </td><td valign="top">Generic error handler.  Just throws <i>WTSpawnException</i> that hold properties <i>promise</i> and <i>message</i></td></td>
 </table>
-    
-_spawn-ctl_ only overrides the values it sets and does not affect values not specified.  _spawn-ctl_ statements can
+
+**Spawn hooks**
+
+Spawned commands can have Python functions executed **before** their own exection.  These functions can be passed parameters, too.  To attach a hook, simply name the function and its parameters in a Python dictionary under the key "hooks".  Each function will be called in order before each spawned command.
+
+Each function must return True if it executed properly, no errors, or False if it detected any errors.  If any hook returns false, an exception is raised naming the failed hooks and the spawned command is _not_ executed.
+
+Example:
+```
+def my_hook(parms):
+        print(parms["parmA"])
+        print(parms["parmB"])
+        return True  # Successful execution
+
+def your_hook(parms):
+        print(parms["something"])
+        if parms["something-else"] != "blah":
+            return False # Failed execution
+        return True # Successful excution
+
+
+spawn-ctl {"hooks": {my_hook: {"parmA":"A", "parmB":"B"}, your_hook: {"something":value, "something-else", other_value}}}
+
+# Spawn command, but hooks will be invoked first...
+spawn `ls -lrt`:
+    # Resolver code block
+    return True  # Resolve promise
+```
+
+Your parameters are whatever is valid for Python.  These are simply passed to their attached functions, essentially each one's key is the function name, as specified.
+
+ <hr>
+
+**_spawn-ctl_** only overrides the values it sets and does not affect values not specified.  _spawn-ctl_ statements can
 set whichever values it wants, can be dispersed throughout your code (i.e. multiple _spawn-ctl_ statements) and 
 only affects subsequent spawn expressions.
 
