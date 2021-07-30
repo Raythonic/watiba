@@ -265,12 +265,8 @@ sleep value when the controller enters slowdown mode</td><td valign="top">.125 (
     <td valign="top">expire</td><td valign="top">Integer</td><td valign="top">Total number of slowdown cycles allowed before the error method is called</td><td valign="top">No expiration</td>
     <tr></tr>
     <td valign="top">hooks</td><td valign="top">Python dict</td><td valign="top">Dictionary of functions, called before all spawned commands, and parameters passed to them. Each function is called synchronously in the order that function <i>items()</i> returns them.
-    <br><br>Example:<br>
-    {"hooks":<br>
-    &nbsp &nbsp &nbsp { funcA: {"parmA":"A", "parmB":"B"},<br>
-    &nbsp &nbsp &nbsp &nbsp funcB: {"arg1":1}<br>
-    &nbsp &nbsp &nbsp}<br>
-    }
+    Only the hooks whose regex matches the command syntax are run for
+    the given command.  For example, a hook defined with regex <i>tar -zcvf *</i> is only run for commands that match that pattern.
     </td>
     <td valign="top">No hooks</td>
     <tr></tr>
@@ -289,6 +285,20 @@ Spawned commands can have Python functions executed **before** their own exectio
 
 Each function must return True if it executed properly, no errors, or False if it detected any errors.  If any hook returns false, an exception is raised naming the failed hooks and the spawned command is _not_ executed.
 
+Hooks structure:
+{"hooks",
+    {command regex pattern:  # if Bash command matches this pattern...
+        {function: {parms},  # Run this function first with these parms
+         function: {parms}   # then run this function next with these parms
+        }
+    },
+    {command regex pattern:  # if Bash command matches this pattern...
+        {function: {parms},  # Run this function first with these parms
+         function: {parms}   # then run this function next with these parms
+        }
+    }
+}
+
 Example:
 ```
 def my_hook(parms):
@@ -303,7 +313,7 @@ def your_hook(parms):
         return True # Successful excution
 
 
-spawn-ctl {"hooks": {my_hook: {"parmA":"A", "parmB":"B"}, your_hook: {"something":value, "something-else", other_value}}}
+spawn-ctl {"hooks": {"tar ": {my_hook: {"parmA":"A", "parmB":"B"}, other_hook: {"name":"joe"}}, "ls ":{your_hook:{"arg1":1, "arg2":2}}}}
 
 # Spawn command, but hooks will be invoked first...
 spawn `ls -lrt`:

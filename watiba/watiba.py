@@ -22,6 +22,7 @@ class WTChainException(Exception):
         self.message = message
         self.command = command
         self.output = output
+        self.failed_hooks = []
 
 
 ###############################################################################################################
@@ -101,10 +102,51 @@ class Watiba(Exception):
                 and inspect.ismethod(getattr(parent_locals['promise'], "resolved")):
             # Link this child promise to its parent
             l_promise.relate(parent_locals['promise'])
+        
+        # Run all the command pre-execution hooks
+        # If any hooks returns False, meaning it somehow failed (that's determined by the hook)
+        # then report so an exception is thrown
+        def run_hooks(hooks, command):
 
+            # Aggregate success for all hook executions (any failed hook will cause this to be False)
+            success = True
+
+            # Loop through the hooks and run them.  Also track ones that fail (i.e. report a False return code)
+            for cmd_regex, functions in hooks.items():
+
+                # Does this command have attached hooks?
+                if re.match(cmd_regex, command):
+
+                    # Yes, command has hooks.  Run them.
+                    # If the hook fails track it, but keep going with the other hooks
+                    for func, parms in functions.items():
+
+                        # Call the hook.  The hook must return True if succeeded, False if failed
+                        rc = func(parms)
+
+                        # If caller's hook didn't return a bool value, then it is marked as failed
+                        rc = False if type(rc) != bool else rc
+
+                        # Track failed hooks
+                        if rc == False:
+                            self.failed_hooks.append(func.__name__)
+                    
+                        success &= rc
+            
+            return success
+
+
+        # This is run under the new thread, and under the control of wtspawncontroller.py (i.e. spawn controller calls this function)
         def run_command(promise, thread_args):
             # Get our thread id
             promise.thread_id = threading.get_ident()
+
+
+            # Run hooks, if any were defined
+            if len(thread_args["spawn-args"]["hooks"]) > 0:
+                if not run_hooks(thread_args["spawn-args"]["hooks"], thread_args["command"]):
+                    raise Exception(f"These hooks failed: {' '.join(self.failed_hooks)}")
+
 
             # Execute the command in a new thread (this is synchronously run)
             promise.output = self.execute(thread_args["command"], thread_args["host"])
@@ -112,6 +154,8 @@ class Watiba(Exception):
             # Call promise resolver
             promise.set_resolution(thread_args["resolver"](promise, copy.copy(thread_args["spawn-args"])))
 
+
+        # Call wtspawncontroller.py to run the command under a new thread
         try:
             thread_args = {"command": command, "resolver": resolver, "spawn-args": spawn_args, "host": host}
 
@@ -122,6 +166,8 @@ class Watiba(Exception):
             print(f"ERROR.  w_async thread execution failed. {ex.promise.command}")
 
         return l_promise
+    
+
 
     # Pipe either stdout or stderr to some target host with some target cmd
     def pipe(self, pipe_source, pipe_target):

@@ -27,7 +27,6 @@ class WTSpawnController():
                      "hosts": ["localhost"],  # Where to run the command. Default locally
                      "hooks": {}  # hooks and their parms.  Example: hooks: {hook_function: {parmA: "blah", parmB: "bleck"}}
                      }
-        self.failed_hooks = []
 
     # clean out any promises that have resolved
     def promises_gc(self):
@@ -77,27 +76,6 @@ class WTSpawnController():
             loop_counter += 1
             self.promises_gc()
         
-        # Run all the command pre-execution hooks
-        # If any hooks returns False, meaning it somehow failed (that's determined by the hook)
-        # then report so an exception is thrown
-        def run_hooks(self):
-
-            # Aggregate success for all hook executions
-            success = True
-
-            # Loop through the hooks and run them.  Also track ones that fail (i.e. report a False return code)
-            for func, parms in self.args["hooks"].items():
-
-                # Call the hook.  The hook must return True if succeeded, False if failed
-                rc = func(parms)
-
-                # Track failed hooks
-                if rc == False:
-                    self.failed_hooks.append(func.__name__)
-                
-                success &= rc
-            
-            return success
 
         '''
         The "kill switch" is there in case the user's app wants to pre-emptively stop this command from running.
@@ -110,11 +88,6 @@ class WTSpawnController():
         # Run the command and call the resolver if some other process out there didn't kill it first
         if not promise.killed:
             try:
-                # Run hooks, if any were defined
-                if len(self.args["hooks"]) > 0:
-                    if not self.run_hooks():
-                        raise Exception(f"These hooks failed: {' '.join(self.failed_hooks)}")
-
                 promise.thread = threading.Thread(target=thread_callback, args=(promise, thread_args,))
                 promise.thread.start()
             except Exception as ex:

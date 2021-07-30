@@ -20,7 +20,7 @@ Features:
 ## Table of Contents
 1. [Usage](#usage)
 2. [Directory Context](#directory-context)
-3. [Commands as Variables](#commands-as-variables)
+3. [Commands as Variables](#commands-as-variables)   
 4. [Command Results](#command-results)
 5. [Asynchronous Spawning and Promises](#async-spawing-and-promises)
     1. [Useful Properties in Promise](#useful-properties-in-promise)
