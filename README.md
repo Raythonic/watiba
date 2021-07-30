@@ -1,6 +1,6 @@
 # Watiba
-#### Version:  **0.6.20**
-#### Date: 2021/02/15
+#### Version:  **0.6.22**
+#### Date: 2021/07/30
 
 Watiba, pronounced wah-TEE-bah, is a lightweight Python pre-compiler for embedding Linux shell 
 commands within Python applications.  It is similar to other languages' syntactical enhancements where
@@ -155,13 +155,13 @@ of the object returned by Watiba.  Following are those properties:
 <table>
     <th>Property</th><th>Data Type</th><th>Description</th>
     <tr></tr>
-    <td>stdout</td><td>List</td><td>STDOUT lines from the command normalized for display</td>
+    <td valign="top">stdout</td><td valign="top">List</td><td valign="top">STDOUT lines from the command normalized for display</td>
     <tr></tr>
-    <td>stderr</td><td>List</td><td>STDERR lines from the command normalized for display</td>
+    <td valign="top">stderr</td><td valign="top">List</td><td valign="top">STDERR lines from the command normalized for display</td>
     <tr></tr>
-    <td>exit_code</td><td>Integer</td><td>Exit code value from command</td>
+    <td valign="top">exit_code</td><td valign="top">Integer</td><td valign="top">Exit code value from command</td>
     <tr></tr>
-    <td>cwd</td><td>String</td><td>Current working directory <i>after</i> command was executed</td>
+    <td valign="top">cwd</td><td valign="top">String</td><td valign="top">Current working directory <i>after</i> command was executed</td>
 </table>
 
 Technically, the returned object for any shell command is defined in the WTOutput class.
@@ -188,29 +188,29 @@ A promise is either returned in assignment from outermost spawn, or passed to ch
       <th>Data Type</th>
       <th>Description</th>
       <tr></tr>
-      <td>host</td><td>String</td><td>Host name on which spawned command ran</td>
+      <td valign="top">host</td><td valign="top">String</td><td valign="top">Host name on which spawned command ran</td>
       <tr></tr>
-      <td>children</td><td>List</td><td>Children promises for this promise node</td>
+      <td valign="top">children</td><td valign="top">List</td><td valign="top">Children promises for this promise node</td>
       <tr></tr>
-      <td>parent</td><td>Reference</td><td>Parent promise node of child promise. None if root promise.</td>
+      <td valign="top">parent</td><td valign="top">Reference</td><td valign="top">Parent promise node of child promise. None if root promise.</td>
       <tr></tr>
-      <td>command</td><td>String</td><td>Shell command issued for this promise</td>
+      <td valign="top">command</td><td valign="top">String</td><td valign="top">Shell command issued for this promise</td>
       <tr></tr>
-      <td>resolved()</td><td>Method</td><td>Call to find out if this promise is resolved</td>
+      <td valign="top">resolved()</td><td valign="top">Method</td><td valign="top">Call to find out if this promise is resolved</td>
       <tr></tr>
-      <td>resolve_parent()</td><td>Method</td><td>Call inside resolver block to resolve parent promise</td>
+      <td valign="top">resolve_parent()</td><td valign="top">Method</td><td valign="top">Call inside resolver block to resolve parent promise</td>
       <tr></tr>
-      <td>tree_dump()</td><td>Method</td><td>Call to show the promise tree.  Takes subtree argument otherwise it defaults to the root promise</td>
+      <td valign="top">tree_dump()</td><td valign="top">Method</td><td valign="top">Call to show the promise tree.  Takes subtree argument otherwise it defaults to the root promise</td>
       <tr></tr>
-      <td>join()</td><td>Method</td><td>Call to wait on on promise and all its children</td>
+      <td valign="top">join()</td><td valign="top">Method</td><td valign="top">Call to wait on on promise and all its children</td>
       <tr></tr>
-      <td>wait()</td><td>Method</td><td>Call to wait on just this promise</td>
+      <td valign="top">wait()</td><td valign="top">Method</td><td valign="top">Call to wait on just this promise</td>
       <tr></tr>
-      <td>watch()</td><td>Method</td><td>Call to create watcher on this promise</td>
+      <td valign="top">watch()</td><td valign="top">Method</td><td valign="top">Call to create watcher on this promise</td>
       <tr></tr>
-      <td>start_time</td><td>Time</td><td>Time that spawned command started</td>
+      <td valign="top">start_time</td><td valign="top">Time</td><td valign="top">Time that spawned command started</td>
       <tr></tr>
-      <td>end_time</td><td>Time</td><td>Time that promise resolved</td>
+      <td valign="top">end_time</td><td valign="top">Time</td><td valign="top">Time that promise resolved</td>
   </table>
 
 _Example of simple spawn_:
@@ -251,29 +251,71 @@ Spawn control parameters:
     <th>Description</th>
     <th>Default</th>
     <tr></tr>
-    <td>max</td><td>Integer</td><td>The maximum number of spawned commands allowed before the controller enters slowdown mode</td><td>10</td>
+    <td valign="top">max</td><td valign="top">Integer</td><td valign="top">The maximum number of spawned commands allowed before the controller enters slowdown mode</td><td valign="top">10</td>
     <tr></tr>
-    <td>sleep-floor</td><td>Integer</td><td>Seconds of <i>starting</i> 
-sleep value when the controller enters slowdown mode</td><td>.125 (start at 1/8th second pause)</td>
+    <td valign="top">sleep-floor</td><td valign="top">Integer</td><td valign="top">Seconds of <i>starting</i> 
+sleep value when the controller enters slowdown mode</td><td valign="top">.125 (start at 1/8th second pause)</td>
     <tr></tr>
-    <td>sleep-increment</td><td>Integer</td><td>Seconds the <i>amount</i> of seconds sleep will increase every 3rd cycle when in slowdown 
-      mode</td><td>.125 (Increase pause 1/8th second every 3rd cycle)</td>
+    <td valign="top">sleep-increment</td><td valign="top">Integer</td><td valign="top">Seconds the <i>amount</i> of seconds sleep will increase every 3rd cycle when in slowdown 
+      mode</td><td valign="top">.125 (Increase pause 1/8th second every 3rd cycle)</td>
     <tr></tr>
-    <td>sleep-ceiling</td><td>Integer</td><td>Seconds the <i>highest</i> length sleep value allowed when in slowdown mode  
-      (As slow as it will get)</td><td>3 (won't get slower than 3 second pauses)</td>
+    <td valign="top">sleep-ceiling</td><td valign="top">Integer</td><td valign="top">Seconds the <i>highest</i> length sleep value allowed when in slowdown mode  
+      (As slow as it will get)</td><td valign="top">3 (won't get slower than 3 second pauses)</td>
     <tr></tr>
-    <td>expire</td><td>Integer</td><td>Total number of slowdown cycles allowed before the error method is called</td><td>No expiration</td>
+    <td valign="top">expire</td><td valign="top">Integer</td><td valign="top">Total number of slowdown cycles allowed before the error method is called</td><td valign="top">No expiration</td>
     <tr></tr>
-    <td>error</td><td>Method</td><td>
+    <td valign="top">hooks</td><td valign="top">Python dict</td><td valign="top">Dictionary of functions, called before all spawned commands, and parameters passed to them. Each function is called synchronously in the order that function <i>items()</i> returns them.
+    <br><br>Example:<br>
+    {"hooks":<br>
+    &nbsp &nbsp &nbsp { funcA: {"parmA":"A", "parmB":"B"},<br>
+    &nbsp &nbsp &nbsp &nbsp funcB: {"arg1":1}<br>
+    &nbsp &nbsp &nbsp}<br>
+    }
+    </td>
+    <td valign="top">No hooks</td>
+    <tr></tr>
+    <td valign="top">error</td><td valign="top">Method</td><td valign="top">
     Callback method invoked when slowdown mode expires. Use this to catch hung commands.
             This method is passed 2 arguments:
     
 - **promise** - The promise attempting execution at the time of expiration
 - **count** - The thread count (unresolved promises) at the time of expiration
-    </td><td>Generic error handler.  Just throws <i>WTSpawnException</i> that hold properties <i>promise</i> and <i>message</i></td></td>
+    </td><td valign="top">Generic error handler.  Just throws <i>WTSpawnException</i> that hold properties <i>promise</i> and <i>message</i></td></td>
 </table>
-    
-_spawn-ctl_ only overrides the values it sets and does not affect values not specified.  _spawn-ctl_ statements can
+
+**Spawn hooks**
+
+Spawned commands can have Python functions executed **before** their own exection.  These functions can be passed parameters, too.  To attach a hook, simply name the function and its parameters in a Python dictionary under the key "hooks".  Each function will be called in order before each spawned command.
+
+Each function must return True if it executed properly, no errors, or False if it detected any errors.  If any hook returns false, an exception is raised naming the failed hooks and the spawned command is _not_ executed.
+
+Example:
+```
+def my_hook(parms):
+        print(parms["parmA"])
+        print(parms["parmB"])
+        return True  # Successful execution
+
+def your_hook(parms):
+        print(parms["something"])
+        if parms["something-else"] != "blah":
+            return False # Failed execution
+        return True # Successful excution
+
+
+spawn-ctl {"hooks": {my_hook: {"parmA":"A", "parmB":"B"}, your_hook: {"something":value, "something-else", other_value}}}
+
+# Spawn command, but hooks will be invoked first...
+spawn `ls -lrt`:
+    # Resolver code block
+    return True  # Resolve promise
+```
+
+Your parameters are whatever is valid for Python.  These are simply passed to their attached functions, essentially each one's key is the function name, as specified.
+
+ <hr>
+
+**_spawn-ctl_** only overrides the values it sets and does not affect values not specified.  _spawn-ctl_ statements can
 set whichever values it wants, can be dispersed throughout your code (i.e. multiple _spawn-ctl_ statements) and 
 only affects subsequent spawn expressions.
 
@@ -612,13 +654,13 @@ The result properties can then be accessed as followed:
 <table>
     <th>Property</th><th>Data Type</th><th>Description</th>
     <tr></tr>
-    <td>promise.output.stdout</td><td>List</td><td>STDOUT lines from the command normalized for display</td>
+    <td valign="top">promise.output.stdout</td><td valign="top">List</td><td valign="top">STDOUT lines from the command normalized for display</td>
     <tr></tr>
-    <td>promise.output.stderr</td><td>List</td><td>STDERR lines from the command normalized for display</td>
+    <td valign="top">promise.output.stderr</td><td valign="top">List</td><td valign="top">STDERR lines from the command normalized for display</td>
     <tr></tr>
-    <td>promise.output.exit_code</td><td>Integer</td><td>Exit code value from command</td>
+    <td valign="top">promise.output.exit_code</td><td valign="top">Integer</td><td valign="top">Exit code value from command</td>
     <tr></tr>
-    <td>promise.output.cwd</td><td>String</td><td>Current working directory <i>after</i> command was executed</td>
+    <td valign="top">promise.output.cwd</td><td valign="top">String</td><td valign="top">Current working directory <i>after</i> command was executed</td>
 </table>
 
 
@@ -754,18 +796,18 @@ _WTChainException_:
 <table>
 <th>Property</th><th>Data Type</th><th>Description</th>
 <tr></tr>
-<td>command</td><td>String</td><td>Command that failed</td>
+<td valign="top">command</td><td valign="top">String</td><td valign="top">Command that failed</td>
 <tr></tr>
-<td>host</td><td>String</td><td>Host where command failed</td>
+<td valign="top">host</td><td valign="top">String</td><td valign="top">Host where command failed</td>
 <tr></tr>
-<td>message</td><td>String</td><td>Error message</td>
+<td valign="top">message</td><td valign="top">String</td><td valign="top">Error message</td>
 <tr></tr>
-<td>output</td><td>WTOutput structure:
+<td valign="top">output</td><td valign="top">WTOutput structure:
 
 - stdout
 - stderr
 - exit_code
-- cwd</td><td>Output from command</td>
+- cwd</td><td valign="top">Output from command</td>
 </table>
 
 Import this exception to catch it:

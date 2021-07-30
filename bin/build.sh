@@ -16,12 +16,12 @@
 ####################################################################################################
 
 # Make sure we're in the watiba virtual environment
-declare -i chk_venv=$(which python3 | grep "watiba" | wc -l)
+declare -i chk_venv=$(which python3 | grep "venv_watiba" | wc -l)
 
 if [ $chk_venv -ne 1 ]
 then
   echo "You forgot to source your venv"
-  ls ~/.env
+  echo "Do this with this command:  .  ~rwalk/venv_watiba/bin/activate"
   exit 0
 fi
 
@@ -71,15 +71,11 @@ then
 fi
 
 # Create a work space for version number change
-if [ -d tmp ]
-then
-  rm -rf tmp
-fi
-
+[ -d tmp ] && rm -rf tmp
 mkdir tmp
 
 # New source distribution
-rm -rf dist
+[ -d dist ] && rm -rf dist
 mkdir dist
 
 resp=""
@@ -122,6 +118,7 @@ chmod 777 README.md
 rm README.md
 sed "s/__version__/${new_ver}/g" < docs/watiba.md > README.md
 sed -i "s/__current_date__/${dat}/g" README.md
+chmod 0444 README.md
 
 echo "-----------------------------------------------------------------------------------------"
 echo "Building watiba-c script with new version ${new_ver}"  | tee -a ${log}
@@ -181,7 +178,6 @@ then
   git checkout ${branch}
 fi
 
-# Make sure we've returned to the branch we started with
 # Make sure we've returned to the branch we started with
 chk=$(git branch | grep "\*" | awk '{print $2}')
 if [ "$chk" != "${branch}" ]
