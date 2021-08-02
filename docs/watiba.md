@@ -285,35 +285,42 @@ Spawned commands can have Python functions executed **before** their own exectio
 
 Each function must return True if it executed properly, no errors, or False if it detected any errors.  If any hook returns false, an exception is raised naming the failed hooks and the spawned command is _not_ executed.
 
-Hooks structure:
+The first parameter always passed to the hook function is the Python _match_ object from the command match.  This is provided so the hook has access
+to the tokens on the command should it need them.
+
+_Hooks structure:_
+```
 {"hooks",
     {command regex pattern:  # if Bash command matches this pattern...
-        {function: {parms},  # Run this function first with these parms
+        {function: {parms},  # Run this function first with these parms (second to the match parm)
          function: {parms}   # then run this function next with these parms
         }
     },
     {command regex pattern:  # if Bash command matches this pattern...
-        {function: {parms},  # Run this function first with these parms
+        {function: {parms},  # Run this function first with these parms (second to the match parm)
          function: {parms}   # then run this function next with these parms
         }
     }
 }
-
+```
 Example:
 ```
-def my_hook(parms):
-        print(parms["parmA"])
-        print(parms["parmB"])
-        return True  # Successful execution
+def my_hook(match, parms):
+    print(match.groups())
+    print(f'Tar file name is {match.group(1)}')
+    print(parms["parmA"])
+    print(parms["parmB"])
+    return True  # Successful execution
 
-def your_hook(parms):
-        print(parms["something"])
-        if parms["something-else"] != "blah":
-            return False # Failed execution
-        return True # Successful excution
+def your_hook(match, parms):
+    # This hook doesn't need the match object, so ignores it
+    print(parms["something"])
+    if parms["something-else"] != "blah":
+        return False # Failed execution
+    return True # Successful excution
 
 
-spawn-ctl {"hooks": {"tar ": {my_hook: {"parmA":"A", "parmB":"B"}, other_hook: {"name":"joe"}}, "ls ":{your_hook:{"arg1":1, "arg2":2}}}}
+spawn-ctl {"hooks": {"tar -zcvf (\S.*)": {my_hook: {"parmA":"A", "parmB":"B"}, other_hook: {"name":"joe"}}, "ls ":{your_hook:{"arg1":1, "arg2":2}}}}
 
 # Spawn command, but hooks will be invoked first...
 spawn `ls -lrt`:
@@ -323,6 +330,32 @@ spawn `ls -lrt`:
 
 Your parameters are whatever is valid for Python.  These are simply passed to their attached functions, essentially each one's key is the function name, as specified.
 
+**Hook Syntactical Sugar**
+- hook-cmd
+- remove-hooks
+
+In addition to setting the "hooks" parameter via _spawn-ctl_, you can
+attach hooks to commands one by one, if you wish, with this syntax:
+
+```
+hook-cmd "command regex" "function" "parms"
+```
+
+Example:
+```
+my_parms = {"some-dir":"/tmp"}
+
+def tar_hook(match, parms):
+    print(f"File is {match.group(1)}")
+    print(f"Dir is {parms['some-dir]}")
+    return True # Always return success/fail flag
+
+hook-cmd "tar -zxvf (\S.*)" tar_hook {"arg1":1, "arg2": [1,2,3]}
+
+# To remove all command hooks:
+remove-hooks
+
+```
  <hr>
 
 **_spawn-ctl_** only overrides the values it sets and does not affect values not specified.  _spawn-ctl_ statements can

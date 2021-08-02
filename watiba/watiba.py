@@ -22,7 +22,6 @@ class WTChainException(Exception):
         self.message = message
         self.command = command
         self.output = output
-        self.failed_hooks = []
 
 
 ###############################################################################################################
@@ -35,6 +34,7 @@ class Watiba(Exception):
     def __init__(self):
         self.spawn_ctlr = WTSpawnController()
         self.parms = {"ssh-port":22}
+        self.failed_hooks = []
 
     def set_parms(self, args):
         for k,v in args.items():
@@ -114,15 +114,17 @@ class Watiba(Exception):
             # Loop through the hooks and run them.  Also track ones that fail (i.e. report a False return code)
             for cmd_regex, functions in hooks.items():
 
+                m = re.match(cmd_regex, command)
+
                 # Does this command have attached hooks?
-                if re.match(cmd_regex, command):
+                if m:
 
                     # Yes, command has hooks.  Run them.
                     # If the hook fails track it, but keep going with the other hooks
                     for func, parms in functions.items():
 
                         # Call the hook.  The hook must return True if succeeded, False if failed
-                        rc = func(parms)
+                        rc = func(m, parms)
 
                         # If caller's hook didn't return a bool value, then it is marked as failed
                         rc = False if type(rc) != bool else rc
@@ -145,7 +147,9 @@ class Watiba(Exception):
             # Run hooks, if any were defined
             if len(thread_args["spawn-args"]["hooks"]) > 0:
                 if not run_hooks(thread_args["spawn-args"]["hooks"], thread_args["command"]):
-                    raise Exception(f"These hooks failed: {' '.join(self.failed_hooks)}")
+                    failed = ' '.join(self.failed_hooks)
+                    self.failed_hooks = []
+                    raise Exception(f"These hooks failed: {failed}")
 
 
             # Execute the command in a new thread (this is synchronously run)
