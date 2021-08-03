@@ -110,7 +110,11 @@ class WTSpawnController():
 
     
     # Remove all hooks
-    def remove_hooks(self):
-        self.args["hooks"] = {}
+    def remove_hooks(self, pattern = None):
+        if not pattern:
+            self.args["hooks"] = {}
+        else:
+            if pattern in self.args["hooks"]:
+                del self.args["hooks"][pattern]
         
         

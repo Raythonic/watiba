@@ -350,12 +350,18 @@ def tar_hook(match, parms):
     print(f"Dir is {parms['some-dir]}")
     return True # Always return success/fail flag
 
-hook-cmd "tar -zxvf (\S.*)" tar_hook {"arg1":1, "arg2": [1,2,3]}
+hook-cmd "tar -zxvf (\S.*)" tar_hook {"arg1":1,"arg2":[1,2,3]}
 
 # To remove all command hooks:
 remove-hooks
 
+# To remove a specific hook:
+remove-hooks "command pattern"
 ```
+
+_Note:_ To remove a specific function from a hook, rather than all the hooks for a command pattern, just redefine the command hook with hook-cmd.
+
+
  <hr>
 
 **_spawn-ctl_** only overrides the values it sets and does not affect values not specified.  _spawn-ctl_ statements can

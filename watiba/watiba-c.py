@@ -62,7 +62,7 @@ class Compiler:
             ".*?hook-cmd \s*(\S.*) (\S.*) (\S.*)": self.hook_generator,
 
            # remove-hooks
-            ".*?remove-hooks$": self.remove_hooks_generator,
+            ".*?remove-hooks\s.*?(\S.*)?$": self.remove_hooks_generator,
 
             # chain {host:cmd...
             "^(\S.*)?chain \s*`(\S.*)` \s*(\S.*)": self.chain_generator,
@@ -104,9 +104,12 @@ class Compiler:
     def hook_generator(self, parms):
         self.output.append(f'{parms["indentation"]}{watiba_ref}.spawn_ctlr.add_hook({parms["match"].group(1)}, {parms["match"].group(2)}, {parms["match"].group(3)})')
     
-    # Remove all command hooks
+    # Remove command hooks
     def remove_hooks_generator(self, parms):
-        self.output.append(f'{parms["indentation"]}{watiba_ref}.spawn_ctlr.remove_hooks()')
+        if len(parms["match"].groups()) >  0 and parms["match"].group(1) != None:
+            self.output.append(f'{parms["indentation"]}{watiba_ref}.spawn_ctlr.remove_hooks(parms["match"].group(1))')
+        else:
+            self.output.append(f'{parms["indentation"]}{watiba_ref}.spawn_ctlr.remove_hooks()')
 
     # Generate chain command
     def chain_generator(self, parms):
