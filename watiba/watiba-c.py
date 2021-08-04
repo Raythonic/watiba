@@ -263,7 +263,7 @@ if __name__ == "__main__":
         sys.exit(0)
 
     # the versions array is generated at build time (see this module in bin/)
-    if sys.argv[1] == "version":
+    if sys.argv[1] == "version" or sys.argv[1] == "--version":
         for v in versions:
             print(v)
         sys.exit(0)
