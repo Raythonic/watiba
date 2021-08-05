@@ -34,7 +34,6 @@ class Watiba(Exception):
     def __init__(self):
         self.spawn_ctlr = WTSpawnController()
         self.parms = {"ssh-port":22}
-        self.failed_hooks = []
 
     def set_parms(self, args):
         for k,v in args.items():
@@ -105,37 +104,41 @@ class Watiba(Exception):
         
         # Run all the command pre-execution hooks
         # If any hooks returns False, meaning it somehow failed (that's determined by the hook)
-        # then report so an exception is thrown
+        # then report so an exception is thrown by the caller
         def run_hooks(hooks, command):
 
-            # Aggregate success for all hook executions (any failed hook will cause this to be False)
-            success = True
+            # object returned to caller:
+            #  "success" - Aggregate True/False of all hooks.  (i.e. any hook that reports False will cause this value to return False)
+            #  "failed-hooks" - Array of hook names that reported a False condition
+            #       Note: all hooks are called in order even after one reports failure (i.e. reports False)
+            return_obj = {"success": True, "failed-hooks": []}
 
             # Loop through the hooks and run them.  Also track ones that fail (i.e. report a False return code)
             for cmd_regex, functions in hooks.items():
 
-                m = re.match(cmd_regex, command)
+                # Check if the command passed to us matches the regex expression
+                mat = re.match(cmd_regex, command)
 
                 # Does this command have attached hooks?
-                if m:
+                if mat:
 
                     # Yes, command has hooks.  Run them.
                     # If the hook fails track it, but keep going with the other hooks
                     for func, parms in functions.items():
 
                         # Call the hook.  The hook must return True if succeeded, False if failed
-                        rc = func(m, parms)
+                        rc = func(mat, parms)
 
                         # If caller's hook didn't return a bool value, then it is marked as failed
                         rc = False if type(rc) != bool else rc
 
                         # Track failed hooks
                         if rc == False:
-                            self.failed_hooks.append(func.__name__)
+                            return_obj["failed-hooks"].append(func.__name__)
                     
-                        success &= rc
+                        return_obj["success"] &= rc
             
-            return success
+            return return_obj
 
 
         # This is run under the new thread, and under the control of wtspawncontroller.py (i.e. spawn controller calls this function)
@@ -143,13 +146,13 @@ class Watiba(Exception):
             # Get our thread id
             promise.thread_id = threading.get_ident()
 
-
             # Run hooks, if any were defined
             if len(thread_args["spawn-args"]["hooks"]) > 0:
-                if not run_hooks(thread_args["spawn-args"]["hooks"], thread_args["command"]):
-                    failed = ' '.join(self.failed_hooks)
-                    self.failed_hooks = []
-                    raise Exception(f"These hooks failed: {failed}")
+                ro = run_hooks(thread_args["spawn-args"]["hooks"], thread_args["command"])
+
+                # If any hook failed, throw an exception to our caller and name the bad hooks
+                if ro["success"] != True:
+                    raise Exception(f"These hooks failed: {', '.join(ro['failed-hooks'])}")
 
 
             # Execute the command in a new thread (this is synchronously run)
