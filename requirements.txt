@@ -23,6 +23,6 @@ six==1.16.0
 tqdm==4.62.0
 twine==3.4.2
 urllib3==1.26.6
-watiba==0.6.20
+watiba==0.6.31
 webencodings==0.5.1
 zipp==3.5.0
