@@ -106,7 +106,8 @@ class WTSpawnController():
                 self.args["hooks"][pattern][function] = {parms}
             else:
                 self.args["hooks"][pattern] = {function: {parms}}
-            return
+        else:
+            self.args["hooks"] = {pattern : {function: {parms}}}
 
     
     # Remove all hooks
