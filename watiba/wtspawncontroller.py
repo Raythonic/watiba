@@ -103,9 +103,9 @@ class WTSpawnController():
     def add_hook(self, pattern, function, parms):
         if pattern in self.args['hooks']:
             if function in  self.args["hooks"][pattern]:
-                self.args["hooks"][pattern][function] = {parms}
+                self.args["hooks"][pattern][function] = parms
             else:
-                self.args["hooks"][pattern] = {function: {parms}}
+                self.args["hooks"][pattern] = {function: parms}
         else:
             self.args["hooks"] = {pattern : {function: parms}}
 
