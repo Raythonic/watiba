@@ -102,7 +102,7 @@ class WTSpawnController():
     # Add a new hook.  If command patter already exists, add the functions to it otherwise create it.
     def add_hook(self, pattern, function, parms):
         if pattern in self.args['hooks']:
-            if function in ["hooks"][pattern]:
+            if function in  self.args["hooks"][pattern]:
                 self.args["hooks"][pattern][function] = {parms}
             else:
                 self.args["hooks"][pattern] = {function: {parms}}
