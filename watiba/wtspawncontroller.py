@@ -99,23 +99,28 @@ class WTSpawnController():
             self.args[k] = v
 
 
-    # Add a new hook.  If command patter already exists, add the functions to it otherwise create it.
+    # Add a new hook.  If command pattern already exists, add the functions to it otherwise create a new pattern level.
     def add_hook(self, pattern, function, parms):
-        if pattern in self.args['hooks']:
-            if function in  self.args["hooks"][pattern]:
-                self.args["hooks"][pattern][function] = parms
-            else:
-                self.args["hooks"][pattern].update({function: parms})
-        else:
+        if not pattern:
             self.args["hooks"].update({pattern : {function: parms}})
+            return
+        
+        if pattern in self.args["hooks"] and function in  self.args["hooks"][pattern]:
+            self.args["hooks"][pattern][function] = parms
+            return
+            
+        if pattern in self.args['hooks']:
+            self.args["hooks"][pattern].update({function: parms})
+            return
 
     
-    # Remove all hooks
+    # Remove a specific hook, keyed by pattern, or all hooks if no pattern is passed
     def remove_hooks(self, pattern = None):
         if not pattern:
             self.args["hooks"] = {}
-        else:
-            if pattern in self.args["hooks"]:
-                del self.args["hooks"][pattern]
-        
+            return
+
+        if pattern in self.args["hooks"]:
+            del self.args["hooks"][pattern]
+            return
         
