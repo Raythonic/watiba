@@ -211,7 +211,7 @@ fi
 
 if [ "$parms" != "--silent" ]
 then
-  echo f"Install new Watiba {new_ver} PIP package?"
+  echo "Install new Watiba ${new_ver} PIP package?"
   read yn
 
   if [ "$yn" == "y" ]
