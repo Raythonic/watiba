@@ -208,3 +208,18 @@ then
     bin/push_package.sh
   fi
 fi
+
+if [ "$parms" != "--silent" ]
+then
+  echo f"Install new Watiba {new_ver} PIP package?"
+  read yn
+
+  if [ "$yn" == "y" ]
+  then
+    echo "Note: you may have to re-install again as the PIP package sites can take"
+    echo "a minute or so before indexing the next package version."
+    echo ""
+    echo "To install again, run bin/install_package.sh"
+    bin/install_package.sh
+  fi
+fi
