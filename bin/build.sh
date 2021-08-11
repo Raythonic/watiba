@@ -11,7 +11,7 @@
 #  8.   Push new version to GITHUB branch main (prompted)
 #  9.   Build PIP package in dist/
 #  10.  Push package to pypi.org and/or test.pypi.org (prompted)
-#  11.  Installed new PIP package from pypi (prompted, ignored if run --silent)
+#  11.  Installed new PIP package from pypi (prompted, ignored if run with --silent)
 #
 # Author: Ray Walker  raythonic@gmail.com
 ####################################################################################################

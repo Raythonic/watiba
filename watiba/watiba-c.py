@@ -100,16 +100,17 @@ class Compiler:
                                                                0] not in nothingness else self.last_stmt
 
 
-    # Generate hook-cmd command
+    # Generate command hook
     def hook_generator(self, parms):
-        self.output.append(f'{parms["indentation"]}{watiba_ref}.spawn_ctlr.add_hook({parms["match"].group(1)}, {parms["match"].group(2)}, {parms["match"].group(3)})')
+        self.output.append(f'{parms["indentation"]}{watiba_ref}.add_hook({parms["match"].group(1)}, {parms["match"].group(2)}, {parms["match"].group(3)})')
     
-    # Remove command hooks
+    # Generate removal of command hooks
     def remove_hooks_generator(self, parms):
         if len(parms["match"].groups()) >  0 and parms["match"].group(1) != None:
-            self.output.append(f'{parms["indentation"]}{watiba_ref}.spawn_ctlr.remove_hooks(parms["match"].group(1))')
-        else:
-            self.output.append(f'{parms["indentation"]}{watiba_ref}.spawn_ctlr.remove_hooks()')
+            self.output.append(f'{parms["indentation"]}{watiba_ref}.remove_hooks(parms["match"].group(1))')
+            return
+        
+        self.output.append(f'{parms["indentation"]}{watiba_ref}.remove_hooks()')
 
     # Generate chain command
     def chain_generator(self, parms):

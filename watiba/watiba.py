@@ -34,6 +34,7 @@ class Watiba(Exception):
     def __init__(self):
         self.spawn_ctlr = WTSpawnController()
         self.parms = {"ssh-port":22}
+        self.hooks = {}
 
     def set_parms(self, args):
         for k,v in args.items():
@@ -58,7 +59,7 @@ class Watiba(Exception):
     # context = track or not track current dir
     # Returns:
     #   WTOutput object that encapsulates stdout, stderr, exit code, etc.
-    def bash(self, cmd, context=True):
+    def bash(self, command, context=True):
 
         # In order to be thread-safe in the generated code, ALWAYS create a new output object for each command
         #  This is because in the generated code, the object reference, "_watiba_", is global and needs to be in scope
@@ -66,9 +67,19 @@ class Watiba(Exception):
         # singleton with no side effects.
         out = WTOutput()
 
+        # Run any command hooks defined for this command
+        results = self.run_hooks(command)
+
+        # Handle any hook failures
+        # All hooks are always run, but any one reporting a failure will cause the command to not be run
+        if results['success'] != True:
+            msg = f"One or more hooks failed. Hooks reporting a problem: {', '.join(results['failed-hooks'])}"
+            out.stderr.append(msg)
+            raise Exception(msg)
+
         # Tack on this command to see what the current dir is after the user's command is executed
         ctx = ' && echo "_watiba_cwd_($(pwd))_"' if context else ''
-        p = Popen(f"{cmd}{ctx}",
+        p = Popen(f"{command}{ctx}",
                   shell=True,
                   stdout=PIPE,
                   stderr=PIPE,
@@ -102,58 +113,11 @@ class Watiba(Exception):
             # Link this child promise to its parent
             l_promise.relate(parent_locals['promise'])
         
-        # Run all the command pre-execution hooks
-        # If any hooks returns False, meaning it somehow failed (that's determined by the hook)
-        # then report so an exception is thrown by the caller
-        def run_hooks(hooks, command):
-
-            # object returned to caller:
-            #  "success" - Aggregate True/False of all hooks.  (i.e. any hook that reports False will cause this value to return False)
-            #  "failed-hooks" - Array of hook names that reported a False condition
-            #       Note: all hooks are called in order even after one reports failure (i.e. reports False)
-            return_obj = {"success": True, "failed-hooks": []}
-
-            # Loop through the hooks and run them.  Also track ones that fail (i.e. report a False return code)
-            for cmd_regex, functions in hooks.items():
-
-                # Check if the command passed to us matches the regex expression
-                mat = re.match(cmd_regex, command)
-
-                # Does this command have attached hooks?
-                if mat:
-
-                    # Yes, command has hooks.  Run them.
-                    # If the hook fails track it, but keep going with the other hooks
-                    for func, parms in functions.items():
-
-                        # Call the hook.  The hook must return True if succeeded, False if failed
-                        rc = func(mat, parms)
-
-                        # If caller's hook didn't return a bool value, then it is marked as failed
-                        rc = False if type(rc) != bool else rc
-
-                        # Track failed hooks
-                        if rc == False:
-                            return_obj["failed-hooks"].append(func.__name__)
-                    
-                        return_obj["success"] &= rc
-            
-            return return_obj
-
 
         # This is run under the new thread, and under the control of wtspawncontroller.py (i.e. spawn controller calls this function)
         def run_command(promise, thread_args):
             # Get our thread id
             promise.thread_id = threading.get_ident()
-
-            # Run hooks, if any were defined
-            if len(thread_args["spawn-args"]["hooks"]) > 0:
-                ro = run_hooks(thread_args["spawn-args"]["hooks"], thread_args["command"])
-
-                # If any hook failed, throw an exception to our caller and name the bad hooks
-                if ro["success"] != True:
-                    raise Exception(f"These hooks failed: {', '.join(ro['failed-hooks'])}")
-
 
             # Execute the command in a new thread (this is synchronously run)
             promise.output = self.execute(thread_args["command"], thread_args["host"])
@@ -174,7 +138,43 @@ class Watiba(Exception):
 
         return l_promise
     
+    # Run all the command pre-execution hooks
+    # If any hooks returns False, meaning it somehow failed (that's determined by the hook)
+    # then report so an exception is thrown by the caller
+    def run_hooks(self, command):
 
+        # object returned to caller:
+        #  "success" - Aggregate True/False of all hooks.  (i.e. any hook that reports False will cause this value to return False)
+        #  "failed-hooks" - Array of hook names that reported a False condition
+        #       Note: all hooks are called in order even after one reports failure (i.e. reports False)
+        return_obj = {"success": True, "failed-hooks": []}
+
+        # Loop through the hooks and run them.  Also track ones that fail (i.e. report a False return code)
+        for cmd_regex, functions in self.hooks.items():
+
+            # Check if the command passed to us matches the regex expression
+            mat = re.match(cmd_regex, command)
+
+            # Does this command have attached hooks?
+            if mat:
+
+                # Yes, command has hooks.  Run them.
+                # If the hook fails track it, but keep going with the other hooks
+                for func, parms in functions.items():
+
+                    # Call the hook.  The hook must return True if succeeded, False if failed
+                    rc = func(mat, parms)
+
+                    # If caller's hook didn't return a bool value, then it is marked as failed
+                    rc = False if type(rc) != bool else rc
+
+                    # Track failed hooks
+                    if rc == False:
+                        return_obj["failed-hooks"].append(func.__name__)
+                
+                    return_obj["success"] &= rc
+        
+        return return_obj
 
     # Pipe either stdout or stderr to some target host with some target cmd
     def pipe(self, pipe_source, pipe_target):
@@ -222,3 +222,37 @@ class Watiba(Exception):
                 self.pipe(output[host].stderr, pipe_stderr)
 
         return output
+
+
+    # Add a new hook.  If command pattern already exists, add the functions to it otherwise create a new pattern level.
+    def add_hook(self, pattern, function, parms):
+
+        defined_pattern = pattern in self.hooks
+        defined_function = function in self.hooks[pattern] if defined_pattern else False
+
+        # If the command pattern and hook function are new, then add them
+        if defined_pattern and not defined_function:
+            self.hooks[pattern].update({function: parms})
+            return
+        
+        # If the command pattern already has this hook function 
+        # defined, just update the parms for the hook function
+        #  Note: defined_function cannot be True if defined_pattern is false
+        if defined_function:
+            self.hooks[pattern][function] = parms
+            return
+        
+        # At this point we know the pattern has not been defined yet
+        self.hooks.update({pattern : {function: parms}})
+
+    
+    # Remove a specific hook, keyed by pattern, or all hooks if no pattern is passed
+    def remove_hooks(self, pattern = None):
+        if not pattern:
+            self.hooks = {}
+            return
+
+        if pattern in self.hooks:
+            del self.hooks[pattern]
+            return
+        
