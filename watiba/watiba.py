@@ -43,19 +43,19 @@ class Watiba(Exception):
     # Called by spawned thread
     # Dir context is not kept by the spawn expression
     # Returns WTOutput object
-    def execute(self, cmd, host="localhost"):
+    def execute(self, command, host="localhost"):
         context = False
         if host == "localhost":
-            return self.bash(cmd, context)
+            return self.bash(command, context)
         else:
-            return self.ssh(cmd, host)
+            return self.ssh(command, host)
 
     # Run command remotely
     # Returns WTOutput object
-    def ssh(self, cmd, host, context=True):
-        return self.bash(f'ssh -p {self.parms["ssh-port"]} {host} "{cmd}"', context)
+    def ssh(self, command, host, context=True):
+        return self.bash(f'ssh -p {self.parms["ssh-port"]} {host} "{command}"', context)
 
-    # cmd - command string to execute
+    # command - command string to execute
     # context = track or not track current dir
     # Returns:
     #   WTOutput object that encapsulates stdout, stderr, exit code, etc.
@@ -150,10 +150,10 @@ class Watiba(Exception):
         return_obj = {"success": True, "failed-hooks": []}
 
         # Loop through the hooks and run them.  Also track ones that fail (i.e. report a False return code)
-        for cmd_regex, functions in self.hooks.items():
+        for command_regex, functions in self.hooks.items():
 
             # Check if the command passed to us matches the regex expression
-            mat = re.match(cmd_regex, command)
+            mat = re.match(command_regex, command)
 
             # Does this command have attached hooks?
             if mat:
@@ -176,29 +176,29 @@ class Watiba(Exception):
         
         return return_obj
 
-    # Pipe either stdout or stderr to some target host with some target cmd
+    # Pipe either stdout or stderr to some target host with some target command
     def pipe(self, pipe_source, pipe_target):
         # Pipe output to target host command
-        for pipe_to, cmd in pipe_target.items():
+        for pipe_to, command in pipe_target.items():
             for line in pipe_source:
                 # The output for piped command is not kept, but is checked for the exit code
-                out = self.ssh(f'echo "{line}" | {cmd}', pipe_to)
+                out = self.ssh(f'echo "{line}" | {command}', pipe_to)
                 if out.exit_code != 0:
                     raise WTChainException(f'Piped command failed on {pipe_to}.  Error code: {out.exit_code}', pipe_to,
-                                           cmd, out)
+                                           command, out)
 
     # chain commands across various servers.  (Run sequentially and with regard to exit code.  A bad exit code causes
     # an exception to be thrown.
     #  A dictionary structure must be passed by the user's program as follows:
     #       {"hosts": ["host1", "host2", ...],  # These are the hosts to run the command on and is required
-    #        "stdout": {"source-host": {"target-host1":cmd, "target-host2":cmd, ...}}, # Pipe stdout from source to target(s) (optional)
-    #        "stderr": {"source-host": {"target-host1":cmd, "target-host2":cmd, ...}}   # Pipe stderr from source to target(s) (optional)
+    #        "stdout": {"source-host": {"target-host1":command, "target-host2":command, ...}}, # Pipe stdout from source to target(s) (optional)
+    #        "stderr": {"source-host": {"target-host1":command, "target-host2":command, ...}}   # Pipe stderr from source to target(s) (optional)
     #       }
     # Returns dictionary of WTOutput objects by host name: {host:WTOutput, ...}
-    def chain(self, cmd, parms):
+    def chain(self, command, parms):
         output = {}
         if "hosts" not in parms:
-            raise WTChainException("No hosts in argument dict", "none", cmd, None)
+            raise WTChainException("No hosts in argument dict", "none", command, None)
 
         pipe_stdout = parms["stdout"] if "stdout" in parms else {}
         pipe_stderr = parms["stderr"] if "stderr" in parms else {}
@@ -206,11 +206,11 @@ class Watiba(Exception):
         # Loop through each host and run the command on it
         for host in parms["hosts"]:
             # Run command remotely through SSH
-            output[host] = self.ssh(cmd, host)
+            output[host] = self.ssh(command, host)
 
             # If the command fails, bomb the whole execution
             if output[host].exit_code != 0:
-                raise WTChainException(f'Command failed on {host}. Error code: {output[host].exit_code}', host, cmd,
+                raise WTChainException(f'Command failed on {host}. Error code: {output[host].exit_code}', host, command,
                                        output[host])
 
             # If we are supposed to pipe the stdout for this host, do it
