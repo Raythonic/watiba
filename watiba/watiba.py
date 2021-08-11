@@ -155,7 +155,6 @@ class Watiba(Exception):
         # Loop through the hooks and run them.  Also track ones that fail (i.e. report a False return code)
         for command_regex, functions in self.hooks.items():
 
-            # If we're in the middle of a hook execution and this command is non-recursive, skip its execution
             if self.hook_flags[command_regex]["recursive"] == False and self.hook_mode == True:
                 continue
 
@@ -169,9 +168,6 @@ class Watiba(Exception):
                 # If the hook fails track it, but keep going with the other hooks
                 for func, parms in functions.items():
 
-                    # Indicate we're in a hook
-                    self.hook_mode = True
-
                     # Call the hook.  The hook must return True if succeeded, False if failed
                     rc = func(mat, parms)
 
@@ -181,9 +177,6 @@ class Watiba(Exception):
                     # Track failed hooks
                     if rc == False:
                         return_obj["failed-hooks"].append(func.__name__)
-
-                    # Indicate we're no longer in a hook
-                    self.hook_mode = False
                 
                     return_obj["success"] &= rc
         
