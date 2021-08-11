@@ -24,8 +24,7 @@ class WTSpawnController():
                      "sleep-increment": .125,  # Incremental sleep value
                      "expire": -1,  # Default: no expiration
                      "error": self.default_error,  # Default error callback,
-                     "hosts": ["localhost"],  # Where to run the command. Default locally
-                     "hooks": {}  # hooks and their parms.  Example: hooks: {hook_function: {parmA: "blah", parmB: "bleck"}}
+                     "hosts": ["localhost"]  # Where to run the command. Default locally
                      }
 
     # clean out any promises that have resolved
@@ -97,30 +96,3 @@ class WTSpawnController():
     def set_parms(self, parms):
         for k, v in parms.items():
             self.args[k] = v
-
-
-    # Add a new hook.  If command pattern already exists, add the functions to it otherwise create a new pattern level.
-    def add_hook(self, pattern, function, parms):
-        if not pattern:
-            self.args["hooks"].update({pattern : {function: parms}})
-            return
-        
-        if pattern in self.args["hooks"] and function in  self.args["hooks"][pattern]:
-            self.args["hooks"][pattern][function] = parms
-            return
-            
-        if pattern in self.args['hooks']:
-            self.args["hooks"][pattern].update({function: parms})
-            return
-
-    
-    # Remove a specific hook, keyed by pattern, or all hooks if no pattern is passed
-    def remove_hooks(self, pattern = None):
-        if not pattern:
-            self.args["hooks"] = {}
-            return
-
-        if pattern in self.args["hooks"]:
-            del self.args["hooks"][pattern]
-            return
-        

@@ -1,16 +1,17 @@
 #!/bin/bash
 ####################################################################################################
 # This script does the following:
-#  1. Update README with version and timestamp
-#  2. Generate HTML version of README
-#  3. Create pip freeze requirements file (list of dependencies)
-#  4. Add and commit the changes above
-#  5. Tag the version number (GIT)
-#  6. Push new version to GITHUB current branch (prompted)
-#  7. Merge branch with main (prompted)
-#  8. Push new version to GITHUB branch main (prompted)
-#  9. Build PIP package in dist/
+#  1.   Update README with version and timestamp
+#  2.   Generate HTML version of README
+#  3.   Create pip freeze requirements file (list of dependencies)
+#  4.   Add and commit the changes above
+#  5.   Tag the version number (GIT)
+#  6.   Push new version to GITHUB current branch (prompted)
+#  7.   Merge branch with main (prompted)
+#  8.   Push new version to GITHUB branch main (prompted)
+#  9.   Build PIP package in dist/
 #  10.  Push package to pypi.org and/or test.pypi.org (prompted)
+#  11.  Installed new PIP package from pypi (prompted, ignored if run with --silent)
 #
 # Author: Ray Walker  raythonic@gmail.com
 ####################################################################################################
@@ -220,6 +221,7 @@ then
     echo "a minute or so before indexing the next package version."
     echo ""
     echo "To install again, run bin/install_package.sh"
+    echo ""
     bin/install_package.sh
   fi
 fi
