@@ -791,7 +791,8 @@ Your parameters are whatever is valid for Python.  These are simply passed to th
 
 _Where are the hooks run for spawned commands?_  All hooks run under the thread of the issuer on the local host, not the target thread.
 
-_Where are the hooks run for remote commands?_ As with spawned commands, all hooks are issued on the local host, not the remote.
+_Where are the hooks run for remote commands?_ As with spawned commands, all hooks are issued on the local host, not the remote.  Note that you
+can have remote backticked commands in your hook and that will run those remotely.  If your remote command matches a hook(s) pattern, then those hooks will be run.  This means if your command pattern for the first remote call runs a hook that contains another remote command that matches that same command pattern, then the hook is run again.  Since this  [hook loops!]
 
 <div id="command-chaining"/>
 

@@ -35,6 +35,8 @@ class Watiba(Exception):
         self.spawn_ctlr = WTSpawnController()
         self.parms = {"ssh-port":22}
         self.hooks = {}
+        self.hook_flags = {}
+        self.hook_mode = False
 
     def set_parms(self, args):
         for k,v in args.items():
@@ -153,6 +155,10 @@ class Watiba(Exception):
         # Loop through the hooks and run them.  Also track ones that fail (i.e. report a False return code)
         for command_regex, functions in self.hooks.items():
 
+            # If we're in the middle of a hook execution and this command is non-recursive, skip its execution
+            if self.hook_flags[command_regex]["recursive"] == False and self.hook_mode == True:
+                continue
+
             # Check if the command passed to us matches the regex expression
             mat = re.match(command_regex, command)
 
@@ -163,6 +169,9 @@ class Watiba(Exception):
                 # If the hook fails track it, but keep going with the other hooks
                 for func, parms in functions.items():
 
+                    # Indicate we're in a hook
+                    self.hook_mode = True
+
                     # Call the hook.  The hook must return True if succeeded, False if failed
                     rc = func(mat, parms)
 
@@ -172,6 +181,9 @@ class Watiba(Exception):
                     # Track failed hooks
                     if rc == False:
                         return_obj["failed-hooks"].append(func.__name__)
+
+                    # Indicate we're no longer in a hook
+                    self.hook_mode = False
                 
                     return_obj["success"] &= rc
         
@@ -226,7 +238,8 @@ class Watiba(Exception):
 
 
     # Add a new hook.  If command pattern already exists, add the functions to it otherwise create a new pattern level.
-    def add_hook(self, pattern, function, parms):
+    #  Set recursive to True to keep hook from looping because it has a matching command within it
+    def add_hook(self, pattern, function, parms, recursive = True):
 
         defined_pattern = pattern in self.hooks
         defined_function = function in self.hooks[pattern] if defined_pattern else False
@@ -243,17 +256,20 @@ class Watiba(Exception):
             self.hooks[pattern][function] = parms
             return
         
-        # At this point we know the pattern has not been defined yet
+        # At this point we know the pattern has not been defined yet, so define it
         self.hooks.update({pattern : {function: parms}})
+        self.hook_flags[pattern] = {"recursive": recursive}
 
     
     # Remove a specific hook, keyed by pattern, or all hooks if no pattern is passed
     def remove_hooks(self, pattern = None):
         if not pattern:
             self.hooks = {}
+            self.hook_flags = {}
             return
 
         if pattern in self.hooks:
             del self.hooks[pattern]
+            del self.hook_flags[pattern]
             return
         

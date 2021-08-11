@@ -61,6 +61,9 @@ class Compiler:
             # hook-cmd "command pattern" {function: {parms}, function: {parms}}
             ".*?hook-cmd \s*(\S.*) (\S.*) (\S.*)": self.hook_generator,
 
+            # hook-cmd-nr (non-recursive) "command pattern" {function: {parms}, function: {parms}}
+            ".*?hook-cmd-nr \s*(\S.*) (\S.*) (\S.*)": self.hook_nr_generator,
+
            # remove-hooks
             ".*?remove-hooks\s.*?(\S.*)?$": self.remove_hooks_generator,
 
@@ -99,10 +102,21 @@ class Compiler:
                 self.last_stmt = self.current_statement if self.current_statement.lstrip()[
                                                                0] not in nothingness else self.last_stmt
 
-
     # Generate command hook
     def hook_generator(self, parms):
-        self.output.append(f'{parms["indentation"]}{watiba_ref}.add_hook({parms["match"].group(1)}, {parms["match"].group(2)}, {parms["match"].group(3)})')
+        self.output.append(f'{parms["indentation"]}{watiba_ref}.add_hook(\
+            {parms["match"].group(1)}, \
+            {parms["match"].group(2)}, \
+            {parms["match"].group(3)}, \
+            True)')
+    
+    # Generate command non-recursive hook
+    def hook_nr_generator(self, parms):
+        self.output.append(f'{parms["indentation"]}{watiba_ref}.add_hook(\
+            {parms["match"].group(1)}, \
+            {parms["match"].group(2)}, \
+            {parms["match"].group(3)}, \
+            False)')
     
     # Generate removal of command hooks
     def remove_hooks_generator(self, parms):
