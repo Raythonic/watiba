@@ -781,7 +781,7 @@ hook-cmd "tar -zcvf (\S.*)" my_hook: {"parmA":"A", "parmB":"B"}
 hook-cmd "tar -zcvf (\S.*)" your_hook: {"parmD":1, "parmE":"something"}
 
 # Spawn command, but hooks will be invoked first...
-spawn `tar -zcvf /tmp/files/* files.tar.gz`:
+spawn `tar -zcvf files.tar.gz /tmp/files/* `:
     # Resolver code block
     return True  # Resolve promise
 ```
@@ -792,7 +792,27 @@ Your parameters are whatever is valid for Python.  These are simply passed to th
 _Where are the hooks run for spawned commands?_  All hooks run under the thread of the issuer on the local host, not the target thread.
 
 _Where are the hooks run for remote commands?_ As with spawned commands, all hooks are issued on the local host, not the remote.  Note that you
-can have remote backticked commands in your hook and that will run those remotely.  If your remote command matches a hook(s) pattern, then those hooks will be run.  This means if your command pattern for the first remote call runs a hook that contains another remote command that matches that same command pattern, then the hook is run again.  Since this  [hook loops!]
+can have remote backticked commands in your hook and that will run those remotely.  If your remote command matches a hook(s) pattern, then those hooks will be run.  This means if your command pattern for the first remote call runs a hook that contains another remote command that matches that same command pattern, then the hook is run again.  Since this can lead to infinte hook loops, Watiba offers a non-recursive definition for the command pattern.  Note that this non-recursive setting
+only applies to the command pattern and not the hook function itself.  So if _hookA_ is run for two different command patterns, say, "ls -lrt" and "ls -laF" you can
+make one non-recusrive and still run the same hook for both commands.  For the recursive command pattern, the hook has no limit to its recursion.  For non-recursive,
+it will only be called once during the recursion process.
+
+To set a command pattern as non-recursive, use _hook-cmd-nr_.
+
+Example using a variation on a previous example:
+
+```
+def my_hook(match, parms)
+    `tar -zcvf /tmp/files`  # my_hook will NOT because for this command even though it matches
+    print("Will be called only once!")
+    return True
+
+# Note the "-nr" on the expression.  That's for non-recursive
+hook-cmd-nr "tar -zcvf (\S.*)" my_hook: {"parmA":"A", "parmB":"B"}
+
+# my_hook will be called before this command runs
+` tar -zcvf tarball.tar.gz /home/user/files.*`
+```
 
 <div id="command-chaining"/>
 
