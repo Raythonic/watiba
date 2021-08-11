@@ -168,8 +168,14 @@ class Watiba(Exception):
                 # If the hook fails track it, but keep going with the other hooks
                 for func, parms in functions.items():
 
+                    # Indicate we're in a hook
+                    self.hook_mode = True
+
                     # Call the hook.  The hook must return True if succeeded, False if failed
                     rc = func(mat, parms)
+
+                    # Indicate we're no longer in a hook
+                    self.hook_mode = False
 
                     # If caller's hook didn't return a bool value, then it is marked as failed
                     rc = False if type(rc) != bool else rc
