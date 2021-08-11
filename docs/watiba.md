@@ -30,11 +30,12 @@ Features:
     5. [Threads](#threads)
 6. [Remote Execution](#remote-execution)
     1. [Change SSH port for remote execution](#change-ssh-port)
-7. [Command Chaining](#command-chaining)
-8. [Command Chain Piping (Experimental)](#piping-output)
-9. [Installation](#installation)
-10. [Pre-compiling](#pre-compiling)
-11. [Code Examples](#code-examples)
+7. [Command Hooks](#command-hooks)
+8. [Command Chaining](#command-chaining)
+9. [Command Chain Piping (Experimental)](#piping-output)
+10. [Installation](#installation)
+11. [Pre-compiling](#pre-compiling)
+12. [Code Examples](#code-examples)
 
 <div id="usage"/>
 
@@ -264,12 +265,6 @@ sleep value when the controller enters slowdown mode</td><td valign="top">.125 (
     <tr></tr>
     <td valign="top">expire</td><td valign="top">Integer</td><td valign="top">Total number of slowdown cycles allowed before the error method is called</td><td valign="top">No expiration</td>
     <tr></tr>
-    <td valign="top">hooks</td><td valign="top">Python dict</td><td valign="top">Dictionary of functions, called before all spawned commands, and parameters passed to them. Each function is called synchronously in the order that function <i>items()</i> returns them.
-    Only the hooks whose regex matches the command syntax are run for
-    the given command.  For example, a hook defined with regex <i>tar -zcvf *</i> is only run for commands that match that pattern.
-    </td>
-    <td valign="top">No hooks</td>
-    <tr></tr>
     <td valign="top">error</td><td valign="top">Method</td><td valign="top">
     Callback method invoked when slowdown mode expires. Use this to catch hung commands.
             This method is passed 2 arguments:
@@ -278,90 +273,6 @@ sleep value when the controller enters slowdown mode</td><td valign="top">.125 (
 - **count** - The thread count (unresolved promises) at the time of expiration
     </td><td valign="top">Generic error handler.  Just throws <i>WTSpawnException</i> that hold properties <i>promise</i> and <i>message</i></td></td>
 </table>
-
-**Spawn hooks**
-
-Spawned commands can have Python functions executed **before** their own exection.  These functions can be passed parameters, too.  To attach a hook, simply name the function and its parameters in a Python dictionary under the key "hooks".  Each function will be called in order before each spawned command.
-
-Each function must return True if it executed properly, no errors, or False if it detected any errors.  If any hook returns false, an exception is raised naming the failed hooks and the spawned command is _not_ executed.
-
-The first parameter always passed to the hook function is the Python _match_ object from the command match.  This is provided so the hook has access
-to the tokens on the command should it need them.
-
-_Hooks structure:_
-```
-{"hooks",
-    {command regex pattern:  # if Bash command matches this pattern...
-        {function: {parms},  # Run this function first with these parms (second to the match parm)
-         function: {parms}   # then run this function next with these parms
-        }
-    },
-    {command regex pattern:  # if Bash command matches this pattern...
-        {function: {parms},  # Run this function first with these parms (second to the match parm)
-         function: {parms}   # then run this function next with these parms
-        }
-    }
-}
-```
-Example:
-```
-def my_hook(match, parms):
-    print(match.groups())
-    print(f'Tar file name is {match.group(1)}')
-    print(parms["parmA"])
-    print(parms["parmB"])
-    return True  # Successful execution
-
-def your_hook(match, parms):
-    # This hook doesn't need the match object, so ignores it
-    print(parms["something"])
-    if parms["something-else"] != "blah":
-        return False # Failed execution
-    return True # Successful excution
-
-
-spawn-ctl {"hooks": {"tar -zcvf (\S.*)": {my_hook: {"parmA":"A", "parmB":"B"}, other_hook: {"name":"joe"}}, "ls ":{your_hook:{"arg1":1, "arg2":2}}}}
-
-# Spawn command, but hooks will be invoked first...
-spawn `ls -lrt`:
-    # Resolver code block
-    return True  # Resolve promise
-```
-
-Your parameters are whatever is valid for Python.  These are simply passed to their attached functions, essentially each one's key is the function name, as specified.
-
-**Hook Syntactical Sugar**
-- hook-cmd
-- remove-hooks
-
-In addition to setting the "hooks" parameter via _spawn-ctl_, you can
-attach hooks to commands one by one, if you wish, with this syntax:
-
-```
-hook-cmd "command regex" "function" "parms"
-```
-
-Example:
-```
-my_parms = {"some-dir":"/tmp"}
-
-def tar_hook(match, parms):
-    print(f"File is {match.group(1)}")
-    print(f"Dir is {parms['some-dir]}")
-    return True # Always return success/fail flag
-
-hook-cmd "tar -zxvf (\S.*)" tar_hook {"arg1":1,"arg2":[1,2,3]}
-
-# To remove all command hooks:
-remove-hooks
-
-# To remove a specific hook:
-remove-hooks "command pattern"
-```
-
-_Note:_ To remove a specific function from a hook, rather than all the hooks for a command pattern, just redefine the command hook with hook-cmd.
-
-
  <hr>
 
 **_spawn-ctl_** only overrides the values it sets and does not affect values not specified.  _spawn-ctl_ statements can
@@ -828,6 +739,59 @@ out = `ls -lrt`@$remotename
 for line in out.stdout:
     print(line)
 ```
+
+
+<div id="command-hooks"/>
+
+## Command Hooks
+
+All commands, spawned, remote, or local, can have Python functions executed **before** exection.  These functions can be passed parameters, too.  To attach a hook:
+1. Code one or more Python functions that will be the hooks.  At the end of each hook, you must return True if the hook was successful, or False
+if something wrong.
+2. Use the _hook-cmd_ expression to attach those hooks to a command
+pattern, which is a regular expression
+3. To remove the hooks, use the _remove-hooks "pattern"_ expression.  If a pattern, i.e. command regex pattern, is omitted, then all command hooks are removed.
+
+**hook-cmd "command pattern" function parms**
+
+The first parameter always passed to the hook function is the Python _match_ object from the command match.  This is provided so the hook has access
+to the tokens on the command should it need them.
+
+Example:
+```
+def my_hook(match, parms):
+    print(match.groups())
+    print(f'Tar file name is {match.group(1)}')
+    print(parms["parmA"])
+    print(parms["parmB"])
+    return True  # Successful execution
+
+def your_hook(match, parms):
+    # This hook doesn't need the match object, so ignores it
+    print(parms["something"])
+    if parms["something-else"] != "blah":
+        return False # Failed execution
+    return True # Successful excution
+
+
+# Add first hook to my tar command
+hook-cmd "tar -zcvf (\S.*)" my_hook: {"parmA":"A", "parmB":"B"}
+
+# Add another hook to my tar command
+hook-cmd "tar -zcvf (\S.*)" your_hook: {"parmD":1, "parmE":"something"}
+
+# Spawn command, but hooks will be invoked first...
+spawn `tar -zcvf /tmp/files/* files.tar.gz`:
+    # Resolver code block
+    return True  # Resolve promise
+```
+
+Your parameters are whatever is valid for Python.  These are simply passed to their attached functions, essentially each one's key is the function name, as specified.
+
+
+_Where are the hooks run for spawned commands?_  All hooks run under the thread of the issuer on the local host, not the target thread.
+
+_Where are the hooks run for remote commands?_ As with spawned commands, all hooks are issued on the local host, not the remote.
 
 <div id="command-chaining"/>
 

@@ -48,6 +48,7 @@ class Watiba(Exception):
         if host == "localhost":
             return self.bash(command, context)
         else:
+            # A simple wrapper for self.bash()
             return self.ssh(command, host)
 
     # Run command remotely
