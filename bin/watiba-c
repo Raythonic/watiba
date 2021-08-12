@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-versions = ["0.6.42"]
+versions = ["0.6.43"]
 
 '''
 Watiba pre-complier.  Watiba commands are BASH embedded commands between backtick characters (i.e. `), like traditional Bash captures.
@@ -104,19 +104,19 @@ class Compiler:
 
     # Generate command hook
     def hook_generator(self, parms):
-        self.output.append(f'{parms["indentation"]}{watiba_ref}.add_hook(\
-            {parms["match"].group(1).strip()}, \
-            {parms["match"].group(2).strip()}, \
-            {parms["match"].group(3).strip()}, \
-            True)')
+        self.output.append(f"""{parms["indentation"]}{watiba_ref}.add_hook(
+            {parms["match"].group(1).strip()}, 
+            {parms["match"].group(2).strip()}, 
+            {parms["match"].group(3).strip()}, 
+            True)""")
     
     # Generate command non-recursive hook
     def hook_nr_generator(self, parms):
-        self.output.append(f'{parms["indentation"]}{watiba_ref}.add_hook(\
-            {parms["match"].group(1).strip()}, \
-            {parms["match"].group(2).strip()}, \
-            {parms["match"].group(3).strip()}, \
-            False)')
+        self.output.append(f"""{parms["indentation"]}{watiba_ref}.add_hook(
+            {parms["match"].group(1).strip()},
+            {parms["match"].group(2).strip()},
+            {parms["match"].group(3).strip()},
+            False)""")
     
     # Generate removal of command hooks
     def remove_hooks_generator(self, parms):
