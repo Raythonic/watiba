@@ -105,23 +105,23 @@ class Compiler:
     # Generate command hook
     def hook_generator(self, parms):
         self.output.append(f'{parms["indentation"]}{watiba_ref}.add_hook(\
-            {parms["match"].group(1)}, \
-            {parms["match"].group(2)}, \
-            {parms["match"].group(3)}, \
+            {parms["match"].group(1).strip()}, \
+            {parms["match"].group(2).strip()}, \
+            {parms["match"].group(3).strip()}, \
             True)')
     
     # Generate command non-recursive hook
     def hook_nr_generator(self, parms):
         self.output.append(f'{parms["indentation"]}{watiba_ref}.add_hook(\
-            {parms["match"].group(1)}, \
-            {parms["match"].group(2)}, \
-            {parms["match"].group(3)}, \
+            {parms["match"].group(1).strip()}, \
+            {parms["match"].group(2).strip()}, \
+            {parms["match"].group(3).strip()}, \
             False)')
     
     # Generate removal of command hooks
     def remove_hooks_generator(self, parms):
         if len(parms["match"].groups()) >  0 and parms["match"].group(1) != None:
-            self.output.append(f'{parms["indentation"]}{watiba_ref}.remove_hooks(parms["match"].group(1))')
+            self.output.append(f'{parms["indentation"]}{watiba_ref}.remove_hooks({parms["match"].group(1).strip()})')
             return
         
         self.output.append(f'{parms["indentation"]}{watiba_ref}.remove_hooks()')
