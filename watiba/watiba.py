@@ -155,6 +155,7 @@ class Watiba(Exception):
         # Loop through the hooks and run them.  Also track ones that fail (i.e. report a False return code)
         for command_regex, functions in self.hooks.items():
 
+            # Avoid a loop on this command pattern
             if self.hook_flags[command_regex]["recursive"] == False and self.hook_mode == True:
                 continue
 
