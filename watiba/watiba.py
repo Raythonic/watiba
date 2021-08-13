@@ -169,13 +169,13 @@ class Watiba(Exception):
                 # If the hook fails track it, but keep going with the other hooks
                 for func, parms in functions.items():
 
-                    # Indicate we're in a hook
+                    # Track this pattern as an active hook
                     self.active_patterns[command_regex] = True
 
                     # Call the hook.  The hook must return True if succeeded, False if failed
                     rc = func(mat, parms)
 
-                    # Indicate we're no longer in a hook
+                    # Remove tracking of this pattern
                     del self.active_patterns[command_regex]
 
                     # If caller's hook didn't return a bool value, then it is marked as failed
@@ -263,11 +263,14 @@ class Watiba(Exception):
     
     # Remove a specific hook, keyed by pattern, or all hooks if no pattern is passed
     def remove_hooks(self, pattern = None):
+
+        # No pattern passed, so nuke it all!
         if not pattern:
             self.hooks = {}
             self.hook_flags = {}
             return
 
+        # Remove the hook for only the pattern passed
         if pattern in self.hooks:
             del self.hooks[pattern]
             del self.hook_flags[pattern]
