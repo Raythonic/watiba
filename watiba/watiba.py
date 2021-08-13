@@ -36,7 +36,7 @@ class Watiba(Exception):
         self.parms = {"ssh-port":22}
         self.hooks = {}
         self.hook_flags = {}
-        self.hook_mode = False
+        self.active_patterns = {}
 
     def set_parms(self, args):
         for k,v in args.items():
@@ -156,7 +156,7 @@ class Watiba(Exception):
         for command_regex, functions in self.hooks.items():
 
             # Avoid a loop on this command pattern
-            if self.hook_flags[command_regex]["recursive"] == False and self.hook_mode == True:
+            if self.hook_flags[command_regex]["recursive"] == False and command_regex in self.active_patterns:
                 continue
 
             # Check if the command passed to us matches the regex expression
@@ -169,14 +169,14 @@ class Watiba(Exception):
                 # If the hook fails track it, but keep going with the other hooks
                 for func, parms in functions.items():
 
-                    # Indicate we're in a hook
-                    self.hook_mode = True
+                    # Track this pattern as an active hook
+                    self.active_patterns[command_regex] = True
 
                     # Call the hook.  The hook must return True if succeeded, False if failed
                     rc = func(mat, parms)
 
-                    # Indicate we're no longer in a hook
-                    self.hook_mode = False
+                    # Remove tracking of this pattern
+                    del self.active_patterns[command_regex]
 
                     # If caller's hook didn't return a bool value, then it is marked as failed
                     rc = False if type(rc) != bool else rc
@@ -263,11 +263,14 @@ class Watiba(Exception):
     
     # Remove a specific hook, keyed by pattern, or all hooks if no pattern is passed
     def remove_hooks(self, pattern = None):
+
+        # No pattern passed, so nuke it all!
         if not pattern:
             self.hooks = {}
             self.hook_flags = {}
             return
 
+        # Remove the hook for only the pattern passed
         if pattern in self.hooks:
             del self.hooks[pattern]
             del self.hook_flags[pattern]
