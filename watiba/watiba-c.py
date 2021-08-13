@@ -108,7 +108,7 @@ class Compiler:
             f'{parms["match"].group(1).strip()},' 
             f'{parms["match"].group(2).strip()},' 
             f'{parms["match"].group(3).strip()},' 
-            'True')
+            'True)')
     
     # Generate command non-recursive hook
     def hook_nr_generator(self, parms):
@@ -116,7 +116,7 @@ class Compiler:
             f'{parms["match"].group(1).strip()},' 
             f'{parms["match"].group(2).strip()},' 
             f'{parms["match"].group(3).strip()},' 
-            'False')
+            'False)')
     
     # Generate removal of command hooks
     def remove_hooks_generator(self, parms):
