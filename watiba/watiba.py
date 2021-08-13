@@ -36,7 +36,7 @@ class Watiba(Exception):
         self.parms = {"ssh-port":22}
         self.hooks = {}
         self.hook_flags = {}
-        self.hook_mode = False
+        self.active_patterns = {}
 
     def set_parms(self, args):
         for k,v in args.items():
@@ -156,7 +156,7 @@ class Watiba(Exception):
         for command_regex, functions in self.hooks.items():
 
             # Avoid a loop on this command pattern
-            if self.hook_flags[command_regex]["recursive"] == False and self.hook_mode == True:
+            if self.hook_flags[command_regex]["recursive"] == False and command_regex in self.active_patterns:
                 continue
 
             # Check if the command passed to us matches the regex expression
@@ -170,13 +170,13 @@ class Watiba(Exception):
                 for func, parms in functions.items():
 
                     # Indicate we're in a hook
-                    self.hook_mode = True
+                    self.active_patterns[command_regex] = True
 
                     # Call the hook.  The hook must return True if succeeded, False if failed
                     rc = func(mat, parms)
 
                     # Indicate we're no longer in a hook
-                    self.hook_mode = False
+                    del self.active_patterns[command_regex]
 
                     # If caller's hook didn't return a bool value, then it is marked as failed
                     rc = False if type(rc) != bool else rc
