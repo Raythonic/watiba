@@ -48,7 +48,7 @@ class Watiba(Exception):
     def execute(self, command, host="localhost"):
         context = False
         if host == "localhost":
-            return self.bash(command, context)
+            return self.bash(command, context, run_post_hooks=False)
         else:
             # A simple wrapper for self.bash()
             return self.ssh(command, host)
@@ -59,10 +59,11 @@ class Watiba(Exception):
         return self.bash(f'ssh -p {self.parms["ssh-port"]} {host} "{command}"', context)
 
     # command - command string to execute
-    # context = track or not track current dir
+    # context - track or not track current dir
+    # run_post_hooks - allows spawned threads to avoid running post-hooks
     # Returns:
     #   WTOutput object that encapsulates stdout, stderr, exit code, etc.
-    def bash(self, command, context=True):
+    def bash(self, command, context=True, run_post_hooks=True):
 
         # In order to be thread-safe in the generated code, ALWAYS create a new output object for each command
         #  This is because in the generated code, the object reference, "_watiba_", is global and needs to be in scope
@@ -71,7 +72,7 @@ class Watiba(Exception):
         out = WTOutput()
 
         # Run any command hooks defined for this command
-        results = self.run_hooks(command, post_hook = False)
+        results = self.run_hooks(command, post_hook=False)
 
         # Handle any hook failures
         # All hooks are always run, but any one reporting a failure will cause the command to not be run
@@ -103,7 +104,8 @@ class Watiba(Exception):
         out.cwd = os.getcwd()
 
         # Run any command post-hooks defined for this command
-        results = self.run_hooks(command, post_hook = True)
+        if run_post_hooks:
+            results = self.run_hooks(command, post_hook=True)
 
         # Handle any post-hook failures
         # All hooks are always run, but any one reporting a failure will cause the command to not be run
@@ -174,6 +176,8 @@ class Watiba(Exception):
     # Run all the command pre-execution hooks
     # If any hooks returns False, meaning it somehow failed (that's determined by the hook)
     # then report so an exception is thrown by the caller
+    #
+    # post_hook - False if this is called before the command, True if after
     def run_hooks(self, command, post_hook=False):
 
         # object returned to caller:
