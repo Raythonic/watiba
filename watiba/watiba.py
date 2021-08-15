@@ -156,15 +156,18 @@ class Watiba(Exception):
     # Determine if the command pattern can be run at this time
     # Return the condition of the regex match() function
     def is_hook_runnable(self, command_regex, command, post_hook):
+
         # Avoid a loop on this command pattern
+        # Note: Doesn't matter if the command matches the pattern or not.
         if self.hook_flags[command_regex]["recursive"] == False and command_regex in self.active_patterns:
             return None
         
         # See if we're to run this hook before or after the command
+        # Note: Doesn't matter if the command matches the pattern or not.
         if self.hook_flags[command_regex]["post"] != post_hook:
             return None
 
-        # Check if the command passed to us matches the regex expression
+        # Tell the caller if the command passed to us matches the regex expression
         return re.match(command_regex, command)
 
 
@@ -182,6 +185,7 @@ class Watiba(Exception):
         # Loop through the hooks and run them.  Also track ones that fail (i.e. report a False return code)
         for command_regex, functions in self.hooks.items():
 
+            # Are we allowed to run this hook for this command?
             mat = self.is_hook_runnable(command_regex, command, post_hook)
 
             # Does this command have attached hooks?
