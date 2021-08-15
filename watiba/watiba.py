@@ -71,7 +71,7 @@ class Watiba(Exception):
         out = WTOutput()
 
         # Run any command hooks defined for this command
-        results = self.run_hooks(command)
+        results = self.run_hooks(command, post_hook = False)
 
         # Handle any hook failures
         # All hooks are always run, but any one reporting a failure will cause the command to not be run
@@ -101,6 +101,17 @@ class Watiba(Exception):
                     os.chdir(m.group(1))
                     del out.stdout[n]
         out.cwd = os.getcwd()
+
+        # Run any command post-hooks defined for this command
+        results = self.run_hooks(command, post_hook = True)
+
+        # Handle any post-hook failures
+        # All hooks are always run, but any one reporting a failure will cause the command to not be run
+        if results['success'] != True:
+            msg = f"One or more post-hooks failed. Hooks reporting a problem: {', '.join(results['failed-hooks'])}"
+            out.stderr.append(msg)
+            raise Exception(msg)
+
         return out
 
     def spawn(self, command, resolver, spawn_args, parent_locals, host="localhost"):
@@ -141,10 +152,26 @@ class Watiba(Exception):
 
         return l_promise
     
+
+    # Determine if the command pattern can be run at this time
+    # Return the condition of the regex match() function
+    def is_hook_runnable(self, command_regex, command, post_hook):
+        # Avoid a loop on this command pattern
+        if self.hook_flags[command_regex]["recursive"] == False and command_regex in self.active_patterns:
+            return None
+        
+        # See if we're to run this hook before or after the command
+        if self.hook_flags[command_regex]["post"] != post_hook:
+            return None
+
+        # Check if the command passed to us matches the regex expression
+        return re.match(command_regex, command)
+
+
     # Run all the command pre-execution hooks
     # If any hooks returns False, meaning it somehow failed (that's determined by the hook)
     # then report so an exception is thrown by the caller
-    def run_hooks(self, command):
+    def run_hooks(self, command, post_hook=False):
 
         # object returned to caller:
         #  "success" - Aggregate True/False of all hooks.  (i.e. any hook that reports False will cause this value to return False)
@@ -155,16 +182,10 @@ class Watiba(Exception):
         # Loop through the hooks and run them.  Also track ones that fail (i.e. report a False return code)
         for command_regex, functions in self.hooks.items():
 
-            # Avoid a loop on this command pattern
-            if self.hook_flags[command_regex]["recursive"] == False and command_regex in self.active_patterns:
-                continue
-
-            # Check if the command passed to us matches the regex expression
-            mat = re.match(command_regex, command)
+            mat = self.is_hook_runnable(command_regex, command, post_hook)
 
             # Does this command have attached hooks?
             if mat:
-
                 # Yes, command has hooks.  Run them.
                 # If the hook fails track it, but keep going with the other hooks
                 for func, parms in functions.items():
@@ -239,7 +260,7 @@ class Watiba(Exception):
 
     # Add a new hook.  If command pattern already exists, add the functions to it otherwise create a new pattern level.
     #  Set recursive to True to keep hook from looping because it has a matching command within it
-    def add_hook(self, pattern, function, parms, recursive = True):
+    def add_hook(self, pattern, function, parms, recursive=True, post=False):
 
         defined_pattern = pattern in self.hooks
         defined_function = function in self.hooks[pattern] if defined_pattern else False
@@ -258,7 +279,7 @@ class Watiba(Exception):
         
         # At this point we know the pattern has not been defined yet, so define it
         self.hooks.update({pattern : {function: parms}})
-        self.hook_flags[pattern] = {"recursive": recursive}
+        self.hook_flags[pattern] = {"recursive": recursive, "post": post}
 
     
     # Remove a specific hook, keyed by pattern, or all hooks if no pattern is passed
