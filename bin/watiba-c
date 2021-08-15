@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-versions = ["0.6.49"]
+versions = ["0.6.50"]
 
 '''
 Watiba pre-complier.  Watiba commands are BASH embedded commands between backtick characters (i.e. `), like traditional Bash captures.
@@ -59,16 +59,16 @@ class Compiler:
             "^watiba-ctl \s*(\S.*)": self.watiba_ctl_args,
 
             # hook-cmd "command pattern" {function: {parms}, function: {parms}}
-            ".*?hook-cmd \s*(\S.*) (\S.*) (\S.*)": self.hook_generator,
-
-            # hook-cmd-nr (non-recursive) "command pattern" {function: {parms}, function: {parms}}
-            ".*?hook-cmd-nr \s*(\S.*) (\S.*) (\S.*)": self.hook_nr_generator,
-
-            # hook-cmd "command pattern" {function: {parms}, function: {parms}}
             ".*?post-hook-cmd \s*(\S.*) (\S.*) (\S.*)": self.post_hook_generator,
 
             # hook-cmd-nr (non-recursive) "command pattern" {function: {parms}, function: {parms}}
             ".*?post-hook-cmd-nr \s*(\S.*) (\S.*) (\S.*)": self.post_hook_nr_generator,
+
+            # hook-cmd "command pattern" {function: {parms}, function: {parms}}
+            ".*?hook-cmd \s*(\S.*) (\S.*) (\S.*)": self.hook_generator,
+
+            # hook-cmd-nr (non-recursive) "command pattern" {function: {parms}, function: {parms}}
+            ".*?hook-cmd-nr \s*(\S.*) (\S.*) (\S.*)": self.hook_nr_generator,
 
            # remove-hooks
             ".*?remove-hooks\s.*?(\S.*)?$": self.remove_hooks_generator,
@@ -139,6 +139,8 @@ class Compiler:
             f'{parms["match"].group(2).strip()},' 
             f'{parms["match"].group(3).strip()},' 
             'recursive=False, post=True)')
+    
+
 
     # Generate removal of command hooks
     def remove_hooks_generator(self, parms):
