@@ -1,6 +1,6 @@
 # Watiba
-#### Version:  **0.6.50**
-#### Date: 2021/08/15
+#### Version:  **0.6.51**
+#### Date: 2021/08/16
 
 Watiba, pronounced wah-TEE-bah, is a lightweight Python pre-compiler for embedding Linux shell 
 commands within Python applications.  It is similar to other languages' syntactical enhancements where
@@ -744,8 +744,34 @@ for line in out.stdout:
 <div id="command-hooks"/>
 
 ## Command Hooks
+Hooks are pre- or -post functions that are attached to a _command_ _pattern_, which is a regular expression (regex).  Anytime Watiba encounters a command
+that matches the pattern for the hook, the hook function is called.
 
-All commands, spawned, remote, or local, can have Python functions executed **before** exection.  These functions can be passed parameters, too.  To attach a hook:
+All commands, spawned, remote, or local, can have Python functions executed **before** exection, by default, or **post hooks** that are run **after** the command.  (Note: Post hooks are not run for spwaned commands because the resolver function is a post hook itself.)  These functions can be passed arguments, too.
+
+### Command Hook Expressions
+```
+# Run before commands that match that pattern
+hook-cmd pattern hook-function parms
+
+# Run before commands that match that pattern, but is non-recursive
+hook-cmd-nr pattern hook-function parms 
+
+# Run after commands that match that pattern
+post-hook-cmd pattern hook-function parms
+
+# Run after commands that match that pattern, but is non-recursive
+post-hook-cmd-nr pattern hook-function parms 
+```
+
+### Hook Recursion
+Hooks, which are nothing more than Python functions called before or after a command is run, can issue their own commands and, thus, cause the hook
+to be recursively called.  However, if the command in the hook block of code matches a command pattern that causes that same hook function to be run again,
+an infinte loop can occur.  To prevent that, use the **-nr** suffix on the Watiba hook expression. (-nr stands for non-recursive.)  This will ensure that
+the hook cannot be re-invoked for any commands that are within it.
+
+<br>
+To attach a hook:
 1. Code one or more Python functions that will be the hooks.  At the end of each hook, you must return True if the hook was successful, or False
 if something wrong.
 2. Use the _hook-cmd_ expression to attach those hooks to a command

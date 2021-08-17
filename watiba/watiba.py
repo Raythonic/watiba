@@ -82,7 +82,7 @@ class Watiba(Exception):
             raise Exception(msg)
 
         # Tack on this command to see what the current dir is after the user's command is executed
-        ctx = ' && echo "_watiba_cwd_($(pwd))_"' if context else ''
+        ctx = ' && echo "__watiba_cwd__($(pwd))_"' if context else ''
         p = Popen(f"{command}{ctx}",
                   shell=True,
                   stdout=PIPE,
@@ -97,7 +97,7 @@ class Watiba(Exception):
             # if asked to keep CWD context, find our echo string and remove so the
             # user doesn't see it
             for n, o in enumerate(out.stdout):
-                m = re.match(r'^_watiba_cwd_\((\S.*)\)_$', o)
+                m = re.match(r'^__watiba_cwd__\((\S.*)\)_$', o)
                 if m:
                     os.chdir(m.group(1))
                     del out.stdout[n]
@@ -180,7 +180,7 @@ class Watiba(Exception):
     # post_hook - False if this is called before the command, True if after
     def run_hooks(self, command, post_hook=False):
 
-        # object returned to caller:
+        # return_obj - object returned to caller:
         #  "success" - Aggregate True/False of all hooks.  (i.e. any hook that reports False will cause this value to return False)
         #  "failed-hooks" - Array of hook names that reported a False condition
         #       Note: all hooks are called in order even after one reports failure (i.e. reports False)
