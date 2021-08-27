@@ -71,6 +71,10 @@ class Watiba(Exception):
         # singleton with no side effects.
         out = WTOutput()
 
+
+        ##############################################################################################################
+        #                                           PRE-HOOKS
+        ##############################################################################################################
         # Run any command hooks defined for this command
         results = self.run_hooks(command, post_hook=False)
 
@@ -81,6 +85,9 @@ class Watiba(Exception):
             out.stderr.append(msg)
             raise Exception(msg)
 
+        ##############################################################################################################
+        #                                           COMMAND
+        ##############################################################################################################
         # Tack on this command to see what the current dir is after the user's command is executed
         ctx = ' && echo "__watiba_cwd__($(pwd))_"' if context else ''
         p = Popen(f"{command}{ctx}",
@@ -103,6 +110,10 @@ class Watiba(Exception):
                     del out.stdout[n]
         out.cwd = os.getcwd()
 
+
+        ##############################################################################################################
+        #                                           POST-HOOKS
+        ##############################################################################################################
         # Run any command post-hooks defined for this command
         if run_post_hooks:
             results = self.run_hooks(command, post_hook=True)
