@@ -1,6 +1,6 @@
 # Watiba
-#### Version:  **0.6.51**
-#### Date: 2021/08/16
+#### Version:  **0.6.52**
+#### Date: 2021/08/27
 
 Watiba, pronounced wah-TEE-bah, is a lightweight Python pre-compiler for embedding Linux shell 
 commands within Python applications.  It is similar to other languages' syntactical enhancements where
@@ -752,16 +752,16 @@ All commands, spawned, remote, or local, can have Python functions executed **be
 ### Command Hook Expressions
 ```
 # Run before commands that match that pattern
-hook-cmd pattern hook-function parms
+hook-cmd "pattern" hook-function parms
 
 # Run before commands that match that pattern, but is non-recursive
-hook-cmd-nr pattern hook-function parms 
+hook-cmd-nr "pattern" hook-function parms 
 
 # Run after commands that match that pattern
-post-hook-cmd pattern hook-function parms
+post-hook-cmd "pattern" hook-function parms
 
 # Run after commands that match that pattern, but is non-recursive
-post-hook-cmd-nr pattern hook-function parms 
+post-hook-cmd-nr "pattern" hook-function parms 
 ```
 
 ### Hook Recursion
