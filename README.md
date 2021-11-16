@@ -1,6 +1,6 @@
 # Watiba
-#### Version:  **0.6.52**
-#### Date: 2021/08/27
+#### Version:  **0.6.53**
+#### Date: 2021/11/15
 
 Watiba, pronounced wah-TEE-bah, is a lightweight Python pre-compiler for embedding Linux shell 
 commands within Python applications.  It is similar to other languages' syntactical enhancements where
@@ -120,26 +120,25 @@ file_name = "blah.txt"
 
 ## Directory Context
 
-
-**_Warning!_** _A dashed leading backtick will cause Watiba to lose its directory context should the command cause a CWD change either explicitly or implicitly._
-
 An important Watiba usage point is directory context is kept for dispersed shell commands.
 Any command that changes the shell's CWD is discovered and kept by Watiba.  Watiba achieves 
 this by tagging a `&& echo pwd` to the user's command, locating the result in the command's STDOUT, 
 and finally setting the Python environment to that CWD with `os.chdir(dir)`.  This is automatic and 
-opaque to the user.  The user will not see the results of the generated suffix.  However, if the `echo` 
+opaque to the user.  The user will not see the results of the generated suffix.  If the `echo` 
 suffix presents a problem for the user, it can be eliminated by prefixing the leading backtick with a
-dash.  That dash turns off the context tracking feature for that command.  But there is a nuance to be aware of: the context is still maintained _within_ the set of commands within the backticks just not
+dash.  The dash turns off the context track, by not suffixing the command, and so causes Watiba to
+lose its context.  However, the context is maintained _within_ the set of commands in the backticks just not
 when it returns.  For example, **out = -\`cd /tmp && ls -lrt\`** honors the ```cd``` within the scope
 of that execution line, but not for any backticked commands that follow later in your code.
 
+**_Warning!_** The dash will cause Watiba to lose its directory context should the command
+cause a CWD change either explicitly or implicitly.
 
-_Example of a dashed leading backtick:_
+_Example_:
 ```
 `cd /tmp`  # Context will be kept
 
-# This will print from /home/user, but context is NOT **kept**  
-# upon return to Python because of the dashed leading backtick
+# This will print from /home/user, but context is NOT kept  
 for line in -`cd /home/user && ls -lrt`.stdout:
     print(line) 
 
@@ -151,7 +150,8 @@ for line in `ls -lrt`.stdout:
 <div id="command-results"/>
 
 ## Command Results
-The results of your shell commands issued in backticks are available in the properties of the Python object returned by Watiba to the backticked statement.  Following are those object properties:
+The results of the command issued in backticks are available in the properties
+of the object returned by Watiba.  Following are those properties:
 
 <table>
     <th>Property</th><th>Data Type</th><th>Description</th>
@@ -165,13 +165,7 @@ The results of your shell commands issued in backticks are available in the prop
     <td valign="top">cwd</td><td valign="top">String</td><td valign="top">Current working directory <i>after</i> command was executed</td>
 </table>
 
-Technically, the returned object for any shell command is defined in the WTOutput class.  Therefore you can construct your backtick Python expressions in ways that are natural to the Python language.  Think of the backticked segment of your Python statement as just another Python object upon which you can reference immediately with dot notation.  
-
-``` for l in `ls -lrt`.stdout: print l ``` 
-
-can be mentally viewed as good old Python code 
-
-``` for l in object.stdout: print l ```
+Technically, the returned object for any shell command is defined in the WTOutput class.
 
 <div id="async-spawing-and-promises"/>
 
@@ -188,7 +182,7 @@ is found in _promise.output_.  The examples throughout this README and in the _e
 <div id="useful-properties-in-promise"/>
 
 ##### Useful properties in promise structure 
-A promise object is returned in assignment to the spawn statement, and is also passed to the resolver block in argument "promise".
+A promise is either returned in assignment from outermost spawn, or passed to child spawns in argument "promise".
 
   <table>
       <th>Property</th>
@@ -209,11 +203,11 @@ A promise object is returned in assignment to the spawn statement, and is also p
       <tr></tr>
       <td valign="top">tree_dump()</td><td valign="top">Method</td><td valign="top">Call to show the promise tree.  Takes subtree argument otherwise it defaults to the root promise</td>
       <tr></tr>
-      <td valign="top">join()</td><td valign="top">Method</td><td valign="top">Call to wait on a promise and all its children</td>
+      <td valign="top">join()</td><td valign="top">Method</td><td valign="top">Call to wait on on promise and all its children</td>
       <tr></tr>
-      <td valign="top">wait()</td><td valign="top">Method</td><td valign="top">Call to wait on a single promise</td>
+      <td valign="top">wait()</td><td valign="top">Method</td><td valign="top">Call to wait on just this promise</td>
       <tr></tr>
-      <td valign="top">watch()</td><td valign="top">Method</td><td valign="top">Call to create watcher on a promise</td>
+      <td valign="top">watch()</td><td valign="top">Method</td><td valign="top">Call to create watcher on this promise</td>
       <tr></tr>
       <td valign="top">start_time</td><td valign="top">Time</td><td valign="top">Time that spawned command started</td>
       <tr></tr>
@@ -237,19 +231,20 @@ prom.join()
 #### Spawn Controller
 All spawned threads are managed by Watiba's Spawn Controller.  The controller watches for too many threads and
 incrementally slows down each thread start when that threshold is exceeded until either all the promises in the tree
-resolve, or an expiration count is reached, at which time an exception is thrown on the last spawned command. This exception is raised by the default error method. This method as well as other spawn controlling parameters can be overridden.  The controller's purpose is to not allow runaway threads and provide signaling of possible hung threads.
-
+resolve, or an expiration count is reached, at which time an exception is thrown on the last spawned command.  
+This exception is raised by the default error method. This method as well as other spawn controlling parameters 
+can be overridden.  The controller's purpose is to not allow run away threads and provide signaling of possible
+hung threads.
 
 _spawn-ctl_ example:
-
-```
+```buildoutcfg
 # Only allow 20 spawns max, 
 # and increase slowdown by 1/2 second each 3rd cycle
-...some python code...
+...python code...
 spawn-ctl {"max":20, "sleep-increment":.500}  
 ```
 
-_Spawn control parameters:_
+Spawn control parameters:
 
 <table>
     <th>Key Name</th>
@@ -377,7 +372,9 @@ an expiration exception should you set a limit for iterations.  If an expiration
 no exception will be thrown and the cycle will run only until the promise(s) are resolved.  _join_ and _wait_ are not
 affected by _spawn-ctl_.
 
-_watch_ is called to establish a separate asynchronous thread that will call back a function of your choosing should the command the promise is attached to time out.  This is different than _join_ and _wait_ in that _watch_ is not synchronous and does not pause.  This is used to keep an eye on a spawned command and take action should it hang.  Your watcher
+_watch_ is called to establish a separate asynchronous thread that will call back a function of your choosing should
+the command the promise is attached to time out.  This is different than _join_ and _wait_ in that _watch_ is not synchronous 
+and does not pause.  This is used to keep an eye on a spawned command and take action should it hang.  Your watcher
 function is passed the promise on which the watcher was attached, and the arguments, if any, from the spawn expression.
 If your command does not time out (i.e. hangs and expires), the watcher thread will quietly go away when the promise
 is resolved.  _watch_ expiration is expressed in **seconds**, unlike _join_ and _wait_ which are expressed as total
@@ -391,24 +388,21 @@ p = spawn `ls -lrt`:
     ## resolver block ##
     return True
     
-# Wait for promises, 
-#   pause for 1/4 second each iteration, 
-#   and throw an exception after 4 iterations (1 second)
+# Wait for promises, pause for 1/4 second each iteration, and throw an exception after 4 iterations 
+(1 second)
 try:
     p.join({"sleep": .250, "expire": 4})
 except Exception as ex:
     print(ex.args)
 
-# Wait for this promise, 
-#    pause for 1 second each iteration, 
-#    and throw an exception after 5 iterations (5 seconds)
+# Wait for this promise, pause for 1 second each iteration, and throw an exception after 5 iterations 
+(5 seconds)
 try:
     p.wait({"sleep": 1, "expire": 5})
 except Exception as ex:
     print(ex.args)
  
-# My watcher function (called if the spawned 
-# command never resolves by its experation period)
+# My watcher function (called if spawned command never resolves by its experation period)
 def watcher(promise, args):
     print(f"This promise is likely hung: {promise.command}")
     print(f"and I still have the spawn expression's args: {args}")
@@ -514,16 +508,14 @@ p.watch(time_out)  # Does not wait.  Calls method "time_out" if this promise exp
 <div id="promise-tree"/>
 
 #### The Promise Tree
-Each _spawn_ issued inserts its promise object into a _promise tree_.  The outermost _spawn_ will generate the root
-promise, and each inner _spawn_ generates its children.  There's no defined boundry that limits how far it can nest other than available computer resources. 
-
- _wait_ only applies
-to the promise on which it is called, and is how it differs from _join_.  _wait_ does not consider any other
+Each _spawn_ issued inserts its promise object into the promise tree.  The outermost _spawn_ will generate the root
+promise and each inner _spawn_ will be among its children.  There's no limit to how far it can nest.  _wait_ only applies
+to the promise on which it is called and is how it is different than _join_.  _wait_ does not consider any other
 promise state but the one it's called for, whereas _join_ considers the one it's called for **and** anything below it
 in the tree.
 
-The promise tree can be printed with the ```dump_tree()``` method on any promise object.  This method is intended for
-diagnostic purposes when it must be determined why spawned commands hang.  ```dump_tree(subtree)``` accepts
+The promise tree can be printed with the ```dump_tree()``` method on the promise.  This method is intended for
+diagnostic purposes where it must be determined why spawned commands hung.  ```dump_tree(subtree)``` accepts
 a subtree promise as an argument.  If no arguments are passed, ```dump_tree()``` dumps from the root promise on down.
 ```
 # Simple example with no child promises
@@ -638,7 +630,7 @@ _Notes:_
 3. The command within the _spawn_ definition can be a variable
     (The same rules apply as for all backticked shell commands.  This means the variable must contain
    pure shell commands.)
-4. The leading dash to ignore directory context, i.e. CWD, _cannot_ be used in the _spawn_ expression
+4. The leading dash to ignore CWD _cannot_ be used in the _spawn_ expression
 5. The _promise.output_ object is not available until _promise.resolved()_ returns True
 
 _Simple example with the shell command as a Python variable_:
@@ -752,7 +744,7 @@ for line in out.stdout:
 <div id="command-hooks"/>
 
 ## Command Hooks
-Hooks are pre- or post- functions that are attached to a _command_ _pattern_, which is a regular expression (regex).  Anytime Watiba encounters a command
+Hooks are pre- or -post functions that are attached to a _command_ _pattern_, which is a regular expression (regex).  Anytime Watiba encounters a command
 that matches the pattern for the hook, the hook function is called.
 
 All commands, spawned, remote, or local, can have Python functions executed **before** exection, by default, or **post hooks** that are run **after** the command.  (Note: Post hooks are not run for spwaned commands because the resolver function is a post hook itself.)  These functions can be passed arguments, too.
@@ -780,13 +772,10 @@ the hook cannot be re-invoked for any commands that are within it.
 
 <br>
 To attach a hook:
-
 1. Code one or more Python functions that will be the hooks.  At the end of each hook, you must return True if the hook was successful, or False
-if something went wrong.
-
+if something wrong.
 2. Use the _hook-cmd_ expression to attach those hooks to a command
 pattern, which is a regular expression
-
 3. To remove the hooks, use the _remove-hooks "pattern"_ expression.  If a pattern, i.e. command regex pattern, is omitted, then all command hooks are removed.
 
 **hook-cmd "command pattern" function parms**
@@ -1048,7 +1037,7 @@ if len(`ls -lrt`.stdout) > 0 or len(-`cd /tmp`.stdout) > 0:
     print("You have stdout or stderr messages")
 
 
-# Example of a command as a Python variable and
+# Example of a command as a Python varible and
 #  receiving a Watiba object
 cmd = "tar -zcvf /tmp/watiba_test.tar.gz /mnt/data/git/watiba/src"
 cmd_results = `$cmd`
