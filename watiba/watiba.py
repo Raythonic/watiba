@@ -38,9 +38,9 @@ class Watiba(Exception):
         self.hook_flags = {}
         self.active_patterns = {}
 
+    # Merge in Watiba parameter changes
     def set_parms(self, args):
-        for k,v in args.items():
-            self.parms[k] = v
+        self.parms = {**self.parms, **args}
 
     # Called by spawned thread
     # Dir context is not kept by the spawn expression
