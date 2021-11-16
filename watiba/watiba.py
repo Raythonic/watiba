@@ -185,7 +185,7 @@ class Watiba(Exception):
 
 
     # Run all the command pre-execution hooks
-    # If any hooks returns False, meaning it somehow failed (that's determined by the hook)
+    # If any hook returns False, meaning it somehow failed (that's determined by the hook)
     # then report so an exception is thrown by the caller
     #
     # post_hook - False if this is called before the command, True if after
