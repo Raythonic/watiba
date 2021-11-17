@@ -51,7 +51,7 @@ def resolver1(promise, args):
     return True
 
 
-p = w.spawn('echo "success"', resolver1, {"arg1": "argument"}, locals())
+p = w.spawn('echo "success"', resolver1, {"arg1": "argument"})
 
 
 try:
@@ -77,7 +77,7 @@ def resolver2(promise, args):
     return True
 
 
-p = w.spawn('echo "success"', resolver2, {"arg1": "argument"}, locals())
+p = w.spawn('echo "success"', resolver2, {"arg1": "argument"})
 
 
 try:

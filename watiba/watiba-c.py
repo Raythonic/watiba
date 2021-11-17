@@ -200,7 +200,7 @@ class Compiler:
 
         # Queue up async call which is executed (spit out) at the end of the w_spawn block
         self.spawn_call.append(
-            f'{parms["indentation"]}{promise_assign}{watiba_ref}.spawn({cmd}, {resolver_name}, {resolver_args}, {"locals()"}, {h})')
+            f'{parms["indentation"]}{promise_assign}{watiba_ref}.spawn({cmd}, {resolver_name}, {resolver_args}, {h})')
 
         # Convert spawn `cmd`: statement to proper Python function definition
         self.output.append(f'{parms["indentation"]}def {resolver_name}(promise, args):')

@@ -127,7 +127,10 @@ class Watiba(Exception):
 
         return out
 
-    def spawn(self, command, resolver, spawn_args, parent_locals, host="localhost"):
+    def spawn(self, command, resolver, spawn_args, host="localhost"):
+        # Get parent's local var frame
+        parent_locals = inspect.currentframe().f_back.f_locals
+
         # Create a new promise object
         l_promise = WTPromise(command, host) if host else WTPromise(command)
 
