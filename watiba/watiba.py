@@ -55,8 +55,8 @@ class Watiba(Exception):
 
     # Run command remotely
     # Returns WTOutput object
-    def ssh(self, command, host, context=True):
-        return self.bash(f'ssh -p {self.parms["ssh-port"]} {host} "{command}"', context)
+    def ssh(self, command, host, context=True, port=None):
+        return self.bash(f'ssh -p {port if port else self.parms["ssh-port"]} {host} "{command}"', context)
 
     # command - command string to execute
     # context - track or not track current dir
