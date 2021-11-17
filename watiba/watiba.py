@@ -38,9 +38,9 @@ class Watiba(Exception):
         self.hook_flags = {}
         self.active_patterns = {}
 
+    # Merge in Watiba parameter changes
     def set_parms(self, args):
-        for k,v in args.items():
-            self.parms[k] = v
+        self.parms = {**self.parms, **args}
 
     # Called by spawned thread
     # Dir context is not kept by the spawn expression
@@ -55,8 +55,8 @@ class Watiba(Exception):
 
     # Run command remotely
     # Returns WTOutput object
-    def ssh(self, command, host, context=True):
-        return self.bash(f'ssh -p {self.parms["ssh-port"]} {host} "{command}"', context)
+    def ssh(self, command, host, context=True, port=None):
+        return self.bash(f'ssh -p {port if port else self.parms["ssh-port"]} {host} "{command}"', context)
 
     # command - command string to execute
     # context - track or not track current dir
@@ -184,9 +184,9 @@ class Watiba(Exception):
         return re.match(command_regex, command)
 
 
-    # Run all the command pre-execution hooks
-    # If any hooks returns False, meaning it somehow failed (that's determined by the hook)
-    # then report so an exception is thrown by the caller
+    # Run all the command hooks
+    # If any hook returns False, meaning it somehow failed (that's determined by the hook)
+    # then report it so an exception is thrown by the caller
     #
     # post_hook - False if this is called before the command, True if after
     def run_hooks(self, command, post_hook=False):

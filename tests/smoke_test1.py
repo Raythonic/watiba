@@ -9,7 +9,7 @@
 import watiba as watiba
 import sys
 
-print("Running Smoke Test 2")
+print("Running Smoke Test")
 
 print("Instantiating Watiba")
 w = watiba.Watiba()
@@ -20,19 +20,15 @@ if o.exit_code != 0:
     print(f"ERROR: error on simple echo command: {o.exit_code}")
     sys.exit(1)
 
-if o.stdout[0].strip() != "success":
+if o.stdout[0].strip() != "success 2>&1":
     print(f"ERROR: error on simple echo command.  STDOUT should say 'success': {o.stdout[0]}")
-    sys.exit(1)
-
-if o.stderr[0].strip() != "success":
-    print(f"ERROR: error on simple echo command.  STDERR should say 'success': {o.stderr[0]}")
     sys.exit(1)
 
 print("Basic shell execution passed.\n\n")
 
 ##########################################################################################################
 print("Testing remote execution on localhost")
-o = w.ssh('echo "success 2>&1"', "localhost")
+o = w.ssh('echo "success 2>&1"', "localhost", port=32)
 if o.exit_code != 0:
     print(f"ERROR: error on simple SSH echo command: {o.exit_code}")
     sys.exit(1)
@@ -41,9 +37,6 @@ if o.stdout[0].strip() != "success":
     print(f"ERROR: error on simple SSH echo command.  STDOUT should say 'success': {o.stdout[0]}")
     sys.exit(1)
 
-if o.stderr[0].strip() != "success":
-    print(f"ERROR: error on simple SSH echo command.  STDERR should say 'success': {o.stderr[0]}")
-    sys.exit(1)
 print("Remote shell execution passed.\n\n")
 
 ##########################################################################################################
@@ -58,7 +51,9 @@ def resolver1(promise, args):
     return True
 
 
-p = w.spawn('echo "success"', resolver1, {"arg1": "argument"})
+p = w.spawn('echo "success"', resolver1, {"arg1": "argument"}, locals())
+
+
 try:
     p.join()
     if p.output.stdout[0] != "success":
@@ -82,7 +77,9 @@ def resolver2(promise, args):
     return True
 
 
-p = w.spawn('echo "success"', resolver2, {"arg1": "argument"})
+p = w.spawn('echo "success"', resolver2, {"arg1": "argument"}, locals())
+
+
 try:
     p.join()
     if p.output.stdout[0] != "success":

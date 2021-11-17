@@ -94,5 +94,4 @@ class WTSpawnController():
 
     # Merge in parameters settings
     def set_parms(self, parms):
-        for k, v in parms.items():
-            self.args[k] = v
+        self.args = {**self.args, **parms}
