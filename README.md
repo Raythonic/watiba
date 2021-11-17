@@ -1,6 +1,6 @@
 # Watiba
-#### Version:  **0.6.53**
-#### Date: 2021/11/15
+#### Version:  **0.6.54**
+#### Date: 2021/11/16
 
 Watiba, pronounced wah-TEE-bah, is a lightweight Python pre-compiler for embedding Linux shell 
 commands within Python applications.  It is similar to other languages' syntactical enhancements where
@@ -67,7 +67,6 @@ context of previous `cd /tmp`.
 <div id="commands-as-variables"/>
 
 #### Commands Expressed as Variables
-
 Commands within backticks can _be_ a variable, but cannot contain snippets of Python code or Python variables. 
 The statement within the backticks _must_ be either a pure shell command or a Python variable containing a pure
 shell command.  To execute commands in a Python variable, prefix the variable name between backticks with a dollar sign.
@@ -121,7 +120,7 @@ file_name = "blah.txt"
 
 ## Directory Context
 
-An important Watiba usage point is that _directory_ _context_ is kept for dispersed shell commands.
+An important Watiba usage point is directory context is kept for dispersed shell commands.
 Any command that changes the shell's CWD is discovered and kept by Watiba.  Watiba achieves 
 this by tagging a `&& echo pwd` to the user's command, locating the result in the command's STDOUT, 
 and finally setting the Python environment to that CWD with `os.chdir(dir)`.  This is automatic and 

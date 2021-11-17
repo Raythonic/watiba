@@ -184,9 +184,9 @@ class Watiba(Exception):
         return re.match(command_regex, command)
 
 
-    # Run all the command pre-execution hooks
+    # Run all the command hooks
     # If any hook returns False, meaning it somehow failed (that's determined by the hook)
-    # then report so an exception is thrown by the caller
+    # then report it so an exception is thrown by the caller
     #
     # post_hook - False if this is called before the command, True if after
     def run_hooks(self, command, post_hook=False):
