@@ -54,7 +54,8 @@ class WTPromise(Exception):
     # The OR is to ensure we don't override a resolved promise from a race condition!
     # once some thread marks it resolved, it's resolved.
     def set_resolution(self, resolution):
-        self.resolution |= resolution
+        if type(resolution) == "bool":
+            self.resolution |= resolution
 
     ####################################################################################################################
     # kill() here just in case it's needed.  Not documenting right now.

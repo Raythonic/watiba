@@ -27,14 +27,18 @@ if o.stdout[0].strip() != "success 2>&1":
 print("Basic shell execution passed.\n\n")
 
 ##########################################################################################################
-print("Testing remote execution on localhost")
-o = w.ssh('echo "success 2>&1"', "localhost", port=32)
+print("Testing remote execution")
+host = input("On which server should this run (Default: localhost)?")
+if host == "":
+    host = "localhost"
+
+o = w.ssh('echo "success 2>&1"', host, port=32)
 if o.exit_code != 0:
-    print(f"ERROR: error on simple SSH echo command: {o.exit_code}")
+    print(f"ERROR: error on simple SSH echo command on host {host}: {o.exit_code}")
     sys.exit(1)
 
 if o.stdout[0].strip() != "success":
-    print(f"ERROR: error on simple SSH echo command.  STDOUT should say 'success': {o.stdout[0]}")
+    print(f"ERROR: error on simple SSH echo command on host {host}.  STDOUT should say 'success', but says: {o.stdout[0]}")
     sys.exit(1)
 
 print("Remote shell execution passed.\n\n")
@@ -94,32 +98,22 @@ print("Remote spawn passed.\n\n")
 ##########################################################################################################
 print("Testing directory context")
 
-w.bash("cd tmp", True)
-w.bash("touch fake_watiba_file.txt", True)
-o = w.bash("ls fake_watiba_file.txt 2> /dev/null | wc -l", True)
-if int(o.stdout[0]) == 1:
-    w.bash("rm fake_watiba_file.ext", True)
-else:
+o = w.bash("cd /tmp", context=True)
+
+if o.cwd != "/tmp":
     print(f"ERROR: context was lost")
     sys.exit(1)
-w.bash("cd ..")
+w.bash("cd ..", context=True)
 print("Directory context passed.\n\n")
 
 ##########################################################################################################
 print("Testing losing directory context")
 
 # Make sure we are in /tmp as we don't want to write somewhere else
-w.bash("cd tmp", True)
-
-# Now setup the test
-w.bash("mkdir watiba_dir && cd watiba_dir && touch fake_watiba_file.txt", False)
+w.bash("cd /tmp", context=False)
 
 # We should NOT have kept context
-o = w.bash("ls fake_watiba_file.txt 2> /dev/null | wc -l", False)
-if int(o.stdout[0]) < 1:
-    w.bash("rm fake_watiba_file.ext", False)
-    w.bash("rm -r watiba_dir", False)
-else:
+if o.cwd == "/tmp":
     print(f"ERROR: context should have been lost, but wasn't.")
     sys.exit(1)
 w.bash("cd ..")
