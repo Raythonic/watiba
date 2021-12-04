@@ -5,5 +5,4 @@ notes.txt
 .pypirc
 venv/
 watiba.egg-info/
-build/
 log/
