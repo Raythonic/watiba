@@ -126,7 +126,7 @@ this by tagging a `&& echo pwd` to the user's command, locating the result in th
 and finally setting the Python environment to that CWD with `os.chdir(dir)`.  This is automatic and 
 opaque to the user.  The user will not see the results of the generated suffix.  If the `echo` 
 suffix presents a problem for the user, it can be eliminated by prefixing the leading backtick with a
-dash.  The dash turns off the context track, by not suffixing the command, and so causes Watiba to
+dash.  The dash turns off the context tracking by not suffixing the command and so causes Watiba to
 lose its context.  However, the context is maintained _within_ the set of commands in the backticks just not
 when it returns.  For example, **out = -\`cd /tmp && ls -lrt\`** honors the ```cd``` within the scope
 of that execution line, but not for any backticked commands that follow later in your code.
