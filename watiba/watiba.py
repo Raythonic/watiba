@@ -94,6 +94,7 @@ class Watiba(Exception):
                   shell=True,
                   stdout=PIPE,
                   stderr=PIPE,
+                  executable="/bin/bash",
                   close_fds=True)
         out.exit_code = p.wait()
         out.stdout = p.stdout.read().decode('utf-8').split('\n')
