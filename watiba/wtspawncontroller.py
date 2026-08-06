@@ -7,19 +7,23 @@ Raythonic@gmail.com
 
 import time
 import threading
+from typing import Any, Callable, Dict, List
+
+from watiba.wtpromise import WTPromise
 
 
 class WTSpawnException(Exception):
-    def __init__(self, promise, message=""):
+    def __init__(self, promise: WTPromise, message: str = "") -> None:
+        super().__init__(message)
         self.promise = promise
         self.message = message
 
 
 class WTSpawnController():
-    def __init__(self):
-        self.promises = []
+    def __init__(self) -> None:
+        self.promises: List[WTPromise] = []
         self._lock = threading.RLock()
-        self.args = {"max": 10,  # Max number of threads allowed before slowdown mode
+        self.args: Dict[str, Any] = {"max": 10,  # Max number of threads allowed before slowdown mode
                      "sleep-floor": .125,  # Starting sleep value
                      "sleep-ceiling": 3,  # Maximum sleep value
                      "sleep-increment": .125,  # Incremental sleep value
@@ -29,18 +33,23 @@ class WTSpawnController():
                      }
 
     # clean out any promises that have resolved
-    def promises_gc(self):
+    def promises_gc(self) -> None:
         with self._lock:
             self.promises = [p for p in self.promises if not p.resolved() and p.exception is None]
 
-    def default_error(self, promise, promise_count):
+    def default_error(self, promise: WTPromise, promise_count: int) -> None:
         print(f"ERROR: Maximum promise/thread count reached: {promise_count}")
         print(f"  Shell command that exceeded max: {promise.command}")
         promise.tree_dump()
         raise WTSpawnException(promise, "Promises not resolved by expiration period")
 
     # Start a thread belonging to the passed promise
-    def start(self, promise, thread_callback, thread_args):
+    def start(
+        self,
+        promise: WTPromise,
+        thread_callback: Callable[[WTPromise, Dict[str, Any]], None],
+        thread_args: Dict[str, Any],
+    ) -> None:
         track_promise = True
         ex_count = self.args["expire"]
         loop_counter = 0
@@ -96,7 +105,7 @@ class WTSpawnController():
                 raise ex
 
     # Merge in parameters settings
-    def set_parms(self, parms):
+    def set_parms(self, parms: Dict[str, Any]) -> None:
         updated = {**self.args, **parms}
         if updated["max"] < 1:
             raise ValueError("spawn-ctl max must be at least 1")

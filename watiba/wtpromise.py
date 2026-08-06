@@ -5,56 +5,63 @@ Author: Ray Walker
 Raythonic@gmail.com
 '''
 
+from __future__ import annotations
+
 import sys
 import time
 import threading
+from typing import Any, Callable, Dict, List, Optional
+
+from watiba.wtoutput import WTOutput
 
 
 class WTWaitException(Exception):
-    def __init__(self, promise, message=""):
+    def __init__(self, promise: "WTPromise", message: str = "") -> None:
+        super().__init__(message)
         self.promise = promise
         self.message = message
 
 
 class WTKillException(Exception):
-    def __init__(self, promise, message=""):
+    def __init__(self, promise: "WTPromise", message: str = "") -> None:
+        super().__init__(message)
         self.promise = promise
         self.message = message
 
 
 # The object returned for Watiba thread spawns.
 class WTPromise:
-    def __init__(self, command, host="localhost", spawn_args=None):
-        self.output = None
-        self.host = host
-        self.resolution = False
-        self.start_time = time.time()
-        self.end_time = None
-        self.thread = None
-        self.thread_id = None
-        self.killed = False
-        self.watcher = None
-        self.children = []
-        self.parent = None
-        self.command = command
-        self.spawn_args = {} if spawn_args is None else spawn_args
-        self.exception = None
-        self.depth = 0
+    def __init__(self, command: str, host: str = "localhost", spawn_args: Any = None) -> None:
+        self.output: Optional[WTOutput] = None
+        self.host: str = host
+        self.resolution: bool = False
+        self.start_time: float = time.time()
+        self.end_time: Optional[float] = None
+        self.thread: Optional[threading.Thread] = None
+        self.thread_id: Optional[int] = None
+        self.killed: bool = False
+        self.watcher: Optional[threading.Thread] = None
+        self.children: List[WTPromise] = []
+        self.parent: Optional[WTPromise] = None
+        self.command: str = command
+        self.spawn_args: Any = {} if spawn_args is None else spawn_args
+        self.exception: Optional[BaseException] = None
+        self.depth: int = 0
         self.__WTPROMISE_STAMP__ = True
         self._lock = threading.RLock()
 
     # Getter to check promise state
-    def resolved(self):
+    def resolved(self) -> bool:
         return self.resolution
 
     # Set promise to resolved state
-    def set_resolved(self):
+    def set_resolved(self) -> None:
         self.set_resolution(True)
 
     # Set resolution state from resolver
     # The OR is to ensure we don't override a resolved promise from a race condition!
     # once some thread marks it resolved, it's resolved.
-    def set_resolution(self, resolution):
+    def set_resolution(self, resolution: bool) -> None:
         if not isinstance(resolution, bool):
             raise TypeError(
                 "Watiba resolver blocks must return True or False; "
@@ -65,13 +72,13 @@ class WTPromise:
             if self.resolution and self.end_time is None:
                 self.end_time = time.time()
 
-    def set_exception(self, exception):
+    def set_exception(self, exception: BaseException) -> None:
         """Record a worker failure so waiters fail instead of hanging forever."""
         with self._lock:
             self.exception = exception
             self.end_time = time.time()
 
-    def raise_if_failed(self):
+    def raise_if_failed(self) -> None:
         if self.exception is not None:
             raise self.exception
 
@@ -83,19 +90,19 @@ class WTPromise:
     # So why have it?  Because a promise is inserted in the promise tree before the thread is started, so there
     # remains a slim window when the user's code has access to a promise before any thread executes-and they may
     # just want to stop it first.  So, making that possible.  You're welcome.
-    def kill(self):
+    def kill(self) -> None:
         if not self.resolved() and self.thread:
             self.killed = True
         else:
             raise WTKillException(self, f'Kill failed.  Command {"running" if not self.resolved() else "completed"}.')
 
     # Resolve the parent promise if one exists
-    def resolve_parent(self):
+    def resolve_parent(self) -> None:
         if self.parent:
             self.parent.set_resolved()
 
     # Count this promise's children
-    def child_counter(self, child, count, resolved_only=False):
+    def child_counter(self, child: "WTPromise", count: int, resolved_only: bool = False) -> int:
         # Count 1 if not counting just resolved, otherwise only count it if it's resolved
         count += 1 if not resolved_only or child.resolved() else 0
 
@@ -107,7 +114,7 @@ class WTPromise:
 
     # Count promise tree size
     # Set resolved_only to True to only count resolved promises in the tree
-    def spawn_count(self, resolved_only=False, start_at_top=True):
+    def spawn_count(self, resolved_only: bool = False, start_at_top: bool = True) -> int:
         # Start with this promise
         p = self
 
@@ -125,12 +132,12 @@ class WTPromise:
         return count
 
     # Count resolve promises in tree
-    def resolved_count(self, start_at_top=True):
+    def resolved_count(self, start_at_top: bool = True) -> int:
         # Full tree count?
         return self.spawn_count(resolved_only=True, start_at_top=start_at_top)
 
     # Encapsulate setting relating parent/child promises
-    def relate(self, parent_promise):
+    def relate(self, parent_promise: "WTPromise") -> None:
         # Link child to parent
         self.parent = parent_promise
         self.depth = self.parent.depth + 1
@@ -140,7 +147,7 @@ class WTPromise:
     # Check the resolved state of nodes in promise tree.
     # Returns True of all nodes (promises) in tree or a subtree, starting from the position given,
     # are resolved, otherwise False.
-    def tree_resolved(self, position_node=None):
+    def tree_resolved(self, position_node: Optional["WTPromise"] = None) -> bool:
         # If we're not given a position in the tree to start from
         #   start at the root promise.
         starting_node = self if not position_node else position_node
@@ -160,12 +167,14 @@ class WTPromise:
         return total_resolved
 
     # Mostly for debugging.  Will document later if it seems necessary
-    def tree_dump(self, p=None, dashes="", header=True):
+    def tree_dump(
+        self, p: Optional["WTPromise"] = None, dashes: str = "", header: bool = True
+    ) -> None:
         if header:
             print("Dumping promise tree", file=sys.stderr)
             header = False
 
-        def indent(d):
+        def indent(d: str) -> str:
             d = d.replace("-", " ").replace("|", " ") + "    "
             # Replace just the first 4 spaces with line, then reverse it so line is on right side
             return d.replace("    ", "---|", 1)[::-1]
@@ -196,7 +205,7 @@ class WTPromise:
             self.tree_dump(child, indent(dashes), header)
 
     # Wait until this promise and all its children down the tree are ALL resolved
-    def join(self, args=None):
+    def join(self, args: Optional[Dict[str, Any]] = None) -> None:
         args = {} if args is None else args
         sleep_time = float(args.get("sleep", .5))
         expiration = int(args.get("expire", -1))
@@ -215,7 +224,7 @@ class WTPromise:
         self._raise_tree_failure(self)
 
     # Wait on just this promise
-    def wait(self, args=None):
+    def wait(self, args: Optional[Dict[str, Any]] = None) -> None:
         args = {} if args is None else args
         sleep_time = float(args.get("sleep", .5))
         expiration = int(args.get("expire", -1))
@@ -233,7 +242,7 @@ class WTPromise:
                     raise WTWaitException(self, "Wait exceeded expiration period")
         self.raise_if_failed()
 
-    def _raise_tree_failure(self, promise):
+    def _raise_tree_failure(self, promise: "WTPromise") -> None:
         promise.raise_if_failed()
         for child in list(promise.children):
             self._raise_tree_failure(child)
@@ -241,10 +250,18 @@ class WTPromise:
     # Establish a watcher thread for this promise
     # Does not pause like join or wait.
     #  Calls back user's method, specified in "notify" argument, if promise hasn't completed in time
-    def watch(self, watcher_method, args=None):
+    def watch(
+        self,
+        watcher_method: Callable[["WTPromise", Dict[str, Any]], None],
+        args: Optional[Dict[str, Any]] = None,
+    ) -> None:
         args = {} if args is None else args
         # Thread function.  Wraps watcher notification method.
-        def watcher(promise, watcher_method, args):
+        def watcher(
+            promise: "WTPromise",
+            watcher_method: Callable[["WTPromise", Dict[str, Any]], None],
+            args: Dict[str, Any],
+        ) -> None:
             sleep_time = float(args.get("sleep", .250))
             expiration_seconds = float(args.get("expire", 15))
             if sleep_time <= 0 or expiration_seconds < 0:

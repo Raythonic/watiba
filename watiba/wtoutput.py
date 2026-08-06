@@ -1,7 +1,12 @@
-# The object returned to the caller of Watiba for command results.
+from dataclasses import dataclass, field
+from typing import List
+
+
+@dataclass
 class WTOutput:
-    def __init__(self):
-        self.stdout = []
-        self.stderr = []
-        self.exit_code = 0
-        self.cwd = "."
+    """Captured output and execution metadata for a Watiba command."""
+
+    stdout: List[str] = field(default_factory=list)
+    stderr: List[str] = field(default_factory=list)
+    exit_code: int = 0
+    cwd: str = "."

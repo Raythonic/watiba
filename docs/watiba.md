@@ -121,18 +121,16 @@ file_name = "blah.txt"
 ## Directory Context
 
 An important Watiba usage point is directory context is kept for dispersed shell commands.
-Any command that changes the shell's CWD is discovered and kept by Watiba.  Watiba achieves 
-this by tagging a `&& echo pwd` to the user's command, locating the result in the command's STDOUT, 
-and finally setting the Python environment to that CWD with `os.chdir(dir)`.  This is automatic and 
-opaque to the user.  The user will not see the results of the generated suffix.  If the `echo` 
-suffix presents a problem for the user, it can be eliminated by prefixing the leading backtick with a
-dash.  The dash turns off the context tracking by not suffixing the command and so causes Watiba to
-lose its context.  However, the context is maintained _within_ the set of commands in the backticks just not
+Any command that changes the shell's CWD is discovered and kept by Watiba. Watiba stores this as a logical CWD
+for the current execution context and passes it to subsequent subprocesses; it does not call `os.chdir()` or alter
+the Python process-wide CWD. Threads and other execution contexts therefore maintain independent directories, while
+spawned commands inherit a snapshot of their parent's logical context. Prefixing the leading backtick with a dash
+turns off context updates for that command. The existing logical context is still used to start the command, and
+directory changes are maintained _within_ the set of commands in the backticks, just not
 when it returns.  For example, **out = -\`cd /tmp && ls -lrt\`** honors the ```cd``` within the scope
 of that execution line, but not for any backticked commands that follow later in your code.
 
-**_Warning!_** The dash will cause Watiba to lose its directory context should the command
-cause a CWD change either explicitly or implicitly.
+**_Warning!_** A leading dash deliberately discards any directory change made by that command.
 
 _Example_:
 ```
@@ -704,6 +702,9 @@ ssh rwalk@walkubu "ls -lrt"
 
 To execute a command remotely, a _@host_ parameter is suffixed to the backticked command.  The host name can be a
 literal or a variable.  To employ a variable, prepend a _$_ to the name following _@_ such as _@$var_.
+Watiba keeps a separate logical remote CWD for each host in the current execution context. Subsequent commands for
+that host start with an explicit remote `cd`, so remote directory changes survive separate SSH connections without
+changing the local process CWD.
 
 <div id="change-ssh-port"/>
 
@@ -754,21 +755,20 @@ All commands, spawned, remote, or local, can have Python functions executed **be
 # Run before commands that match that pattern
 hook-cmd "pattern" hook-function parms
 
-# Run before commands that match that pattern, but is non-recursive
+# Run before matching commands, but block same-pattern re-entry (legacy -nr name)
 hook-cmd-nr "pattern" hook-function parms 
 
 # Run after commands that match that pattern
 post-hook-cmd "pattern" hook-function parms
 
-# Run after commands that match that pattern, but is non-recursive
+# Run after matching commands, but block same-pattern re-entry (legacy -nr name)
 post-hook-cmd-nr "pattern" hook-function parms 
 ```
 
-### Hook Recursion
-Hooks, which are nothing more than Python functions called before or after a command is run, can issue their own commands and, thus, cause the hook
-to be recursively called.  However, if the command in the hook block of code matches a command pattern that causes that same hook function to be run again,
-an infinte loop can occur.  To prevent that, use the **-nr** suffix on the Watiba hook expression. (-nr stands for non-recursive.)  This will ensure that
-the hook cannot be re-invoked for any commands that are within it.
+### Hook Re-entry
+Hooks can issue commands that match the same hook pattern, causing that pattern to be re-entered and potentially
+loop forever. This is re-entry rather than function recursion. The legacy **-nr** suffix prevents the same pattern
+from being re-entered while one of its hooks is active.
 
 <br>
 To attach a hook:
@@ -817,13 +817,12 @@ Your parameters are whatever is valid for Python.  These are simply passed to th
 
 _Where are the hooks run for spawned commands?_  All hooks run under the thread of the issuer on the local host, not the target thread.
 
-_Where are the hooks run for remote commands?_ As with spawned commands, all hooks are issued on the local host, not the remote.  Note that you
-can have remote backticked commands in your hook and that will run those remotely.  If your remote command matches a hook(s) pattern, then those hooks will be run.  This means if your command pattern for the first remote call runs a hook that contains another remote command that matches that same command pattern, then the hook is run again.  Since this can lead to infinte hook loops, Watiba offers a non-recursive definition for the command pattern.  Note that this non-recursive setting
-only applies to the command pattern and not the hook function itself.  So if _hookA_ is run for two different command patterns, say, "ls -lrt" and "ls -laF" you can
-make one non-recusrive and still run the same hook for both commands.  For the recursive command pattern, the hook has no limit to its recursion.  For non-recursive,
-it will only be called once during the recursion process.
+_Where are hooks run for remote commands?_ Hooks run locally, even when their associated command runs remotely.
+A hook may itself issue a remote command. If that command matches the currently active pattern, the pattern is
+re-entered unless its legacy `-nr` form was used. Re-entry protection applies to the pattern, not globally to the
+hook function, so the same function can still be attached to and invoked by other patterns.
 
-To set a command pattern as non-recursive, use _hook-cmd-nr_.
+To block same-pattern re-entry, use _hook-cmd-nr_.
 
 Example using a variation on a previous example:
 
@@ -833,7 +832,7 @@ def my_hook(match, parms)
     print("Will be called only once!")
     return True
 
-# Note the "-nr" on the expression.  That's for non-recursive
+# The legacy "-nr" suffix blocks same-pattern re-entry
 hook-cmd-nr "tar -zcvf (\S.*)" my_hook: {"parmA":"A", "parmB":"B"}
 
 # my_hook will be called before this command runs
@@ -952,9 +951,9 @@ Watiba will run the backticked command in the expression on each host listed in 
 If there is a "stdout" found in the arguments, then it will name the source host as the key, i.e. the host from which
 STDOUT will be read, and fed to each host and command listed under that host.  This is true for STDERR as well.
 
-The method in which Watiba feeds the piped output is through a an _echo_ command shell piped to the command to be run
-on that host.  So, "stdout": {"serverC":{"serverV": "grep something"}} causes Watiba to read each line of STDOUT from
-serverC and issue ```echo "$line" | grep something``` on serverV.  It is piping from serverC to serverV.
+Watiba opens one SSH process for each target command and streams the source's complete output to that process on
+standard input. Thus, "stdout": {"serverC":{"serverV": "grep something"}} sends all of serverC's STDOUT through
+one `grep something` process on serverV, preserving stream-oriented command behavior.
 
 <div id="installation"/>
 
