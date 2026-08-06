@@ -30,268 +30,163 @@ class Compiler:
     def __init__(self):
         self.first_time = True
         self.current_statement = ""
-        self.output = ["import watiba",
-                       f"{watiba_ref} = watiba.Watiba()"
-                       ]
+        self.output = ["import watiba", f"{watiba_ref} = watiba.Watiba()"]
         self.resolver_count = 1
         self.spawn_call = []
         self.last_stmt = ""
-        self.stmt_count = 1
-
-        # Regex expressions for Watiba commands (order matters otherwise backticks would win over spawn)
-        self.expressions = {
-            # p = spawn `cmd`@host: block
-            "^(\S.*)?spawn \s*`(\S.*)`@(\S.*) \s*?(\S.*)?:.*": self.spawn_generator_with_host,
-
-            # p = spawn `cmd`@host: block
-            "^(\S.*)?spawn \s*`(\S.*)`@(\S.*)\s*?(\S.*)?:.*": self.spawn_generator_with_host,
-
-            # p = spawn `cmd`@host args: block
-            "^(\S.*)?spawn \s*`(\S.*)`@(\S.*) \s*?(\S.*)?:.*": self.spawn_generator_with_host,
-
-            # p = spawn `cmd` args: block
-            "^(\S.*)?spawn \s*`(\S.*)`\s*?(\S.*)?:.*": self.spawn_generator,
-
-            # spawn-ctl {args}
-            "^spawn-ctl \s*(\S.*)": self.spawn_ctl_args,
-
-            # watbia-ctl {args}
-            "^watiba-ctl \s*(\S.*)": self.watiba_ctl_args,
-
-            # hook-cmd "command pattern" {function: {parms}, function: {parms}}
-            ".*?post-hook-cmd \s*(\S.*) (\S.*) (\S.*)": self.post_hook_generator,
-
-            # hook-cmd-nr (non-recursive) "command pattern" {function: {parms}, function: {parms}}
-            ".*?post-hook-cmd-nr \s*(\S.*) (\S.*) (\S.*)": self.post_hook_nr_generator,
-
-            # hook-cmd "command pattern" {function: {parms}, function: {parms}}
-            ".*?hook-cmd \s*(\S.*) (\S.*) (\S.*)": self.hook_generator,
-
-            # hook-cmd-nr (non-recursive) "command pattern" {function: {parms}, function: {parms}}
-            ".*?hook-cmd-nr \s*(\S.*) (\S.*) (\S.*)": self.hook_nr_generator,
-
-           # remove-hooks
-            ".*?remove-hooks\s.*?(\S.*)?$": self.remove_hooks_generator,
-
-            # chain {host:cmd...
-            "^(\S.*)?chain \s*`(\S.*)` \s*(\S.*)": self.chain_generator,
-
-            # `cmd`@host
-            ".*?([\-])?`(\S.*?)`@(\S.*) .*?": self.backticks_generator_with_host,
-
-            # `cmd`
-            ".*?([\-])?`(\S.*?)`.*?": self.backticks_generator
-        }
+        self.stmt_count = 0
+        identifier = r"[A-Za-z_]\w*"
+        host = rf"(?:\$?{identifier}|[A-Za-z0-9_.-]+)"
+        self.spawn_pattern = re.compile(
+            rf"^(?:(?P<assignment>{identifier}\s*=\s*))?spawn\s+"
+            rf"`(?P<command>[^`]+)`(?:@(?P<host>{host}))?"
+            r"(?:\s+(?P<args>.*?))?\s*:\s*(?:#.*)?$"
+        )
+        self.chain_pattern = re.compile(
+            rf"^(?:(?P<assignment>{identifier}\s*=\s*))?chain\s+"
+            r"`(?P<command>[^`]+)`\s+(?P<args>.+)$"
+        )
+        self.hook_pattern = re.compile(
+            rf"^(?P<kind>post-hook-cmd-nr|post-hook-cmd|hook-cmd-nr|hook-cmd)\s+"
+            rf"(?P<pattern>[rR]?(?:\"(?:\\.|[^\"])*\"|'(?:\\.|[^'])*'))\s+"
+            rf"(?P<function>{identifier}):?\s+(?P<args>.+)$"
+        )
+        self.backtick_pattern = re.compile(
+            rf"(?P<context>-)?`(?P<command>[^`]+)`(?:@(?P<host>{host}))?"
+        )
 
     # Flush output and any queue spawn calls that are located after the resolver block
     def flush(self, final=False):
-        # Statements to ignore when looking for block terminations
-        nothingness = ["#"]
-
-        if final and len(self.spawn_call) > 0:
-            if re.search("^return ", self.last_stmt.strip()):
-                # Spit out spawn calls if they're queued up
-                while len(self.spawn_call) > 0:
-                    print(self.spawn_call.pop())
-            else:
-                print("ERROR in flush: Resolver block not properly terminated with return.", file=sys.stderr)
-                print(f"    Block at line {self.stmt_count} incorrectly terminated with:", file=sys.stderr)
-                print(f"      {self.last_stmt}", file=sys.stderr)
-                sys.exit(1)
+        if final:
+            while self.spawn_call:
+                self._close_resolver()
 
         # Print our generated output
         if not self.first_time:
             while len(self.output) > 0:
                 print(self.output.pop(0))
 
-            if len(self.current_statement.strip()) > 0:
-                self.last_stmt = self.current_statement if self.current_statement.lstrip()[
-                                                               0] not in nothingness else self.last_stmt
+            stripped = self.current_statement.strip()
+            if stripped and not stripped.startswith("#"):
+                self.last_stmt = self.current_statement
 
-    # Generate command hook
-    def hook_generator(self, parms):
-        self.output.append(f'{parms["indentation"]}{watiba_ref}.add_hook('
-            f'{parms["match"].group(1).strip()},' 
-            f'{parms["match"].group(2).strip()},' 
-            f'{parms["match"].group(3).strip()},' 
-            'recursive=True, post=False)')
-    
-    # Generate command non-recursive hook
-    def hook_nr_generator(self, parms):
-        self.output.append(f'{parms["indentation"]}{watiba_ref}.add_hook('
-            f'{parms["match"].group(1).strip()},' 
-            f'{parms["match"].group(2).strip()},' 
-            f'{parms["match"].group(3).strip()},' 
-            'recursive=False, post=False)')
+    def _command_expression(self, command):
+        return command[1:] if command.startswith("$") else repr(command)
 
-    # Generate post-command hook
-    def post_hook_generator(self, parms):
-        self.output.append(f'{parms["indentation"]}{watiba_ref}.add_hook('
-            f'{parms["match"].group(1).strip()},' 
-            f'{parms["match"].group(2).strip()},' 
-            f'{parms["match"].group(3).strip()},' 
-            'recursive=True, post=True)')
-    
-    # Generate post_command non-recursive hook
-    def post_hook_nr_generator(self, parms):
-        self.output.append(f'{parms["indentation"]}{watiba_ref}.add_hook('
-            f'{parms["match"].group(1).strip()},' 
-            f'{parms["match"].group(2).strip()},' 
-            f'{parms["match"].group(3).strip()},' 
-            'recursive=False, post=True)')
-    
+    def _host_expression(self, host):
+        if not host:
+            return repr("localhost")
+        return host[1:] if host.startswith("$") else repr(host)
 
-
-    # Generate removal of command hooks
-    def remove_hooks_generator(self, parms):
-        if len(parms["match"].groups()) >  0 and parms["match"].group(1) != None:
-            self.output.append(f'{parms["indentation"]}{watiba_ref}.remove_hooks({parms["match"].group(1).strip()})')
-            return
-        
-        self.output.append(f'{parms["indentation"]}{watiba_ref}.remove_hooks()')
-
-    # Generate chain command
-    def chain_generator(self, parms):
-        assignment = parms["match"].group(1) if parms["match"].group(1) else ""
-        quote_type = "'" if "'" not in parms["match"].group(2) else '"'
-        cmd = f'{quote_type}{parms["match"].group(2)}{quote_type}' if parms["match"].group(2)[0] != "$" else parms[
-            "match"].group(2).replace("$", "")
-        args = parms["match"].group(3)
-
-        self.output.append(f'{parms["indentation"]}{assignment}{watiba_ref}.chain({cmd}, {args})')
-
-    # Set spawn controller args
-    def spawn_ctl_args(self, parms):
-        self.output.append(f'{parms["indentation"]}{watiba_ref}.spawn_ctlr.set_parms({parms["match"].group(1)})')
-
-    # Set watiba control args
-    def watiba_ctl_args(self, parms):
-        self.output.append(f'{parms["indentation"]}{watiba_ref}.set_parms({parms["match"].group(1)})')
-
-    # Handle spawn code blocks (with host specified)
-    def spawn_generator_with_host(self, parms):
-        self.spawn_generator(parms, host=parms["match"].group(3))
-
-    # Handle spawn code blocks
-    def spawn_generator(self, parms, host=None):
-        hostname = host if host else "localhost"
-        assign_idx = 1
-        cmd_idx = 2
-        args_idx = 3 if not host else 4
-
-        # Build the spawn call that will be located just after the resolver block
-        quote_style = "'" if "'" not in parms["match"].group(cmd_idx) else '"'
-
-        # extract the command and if it's a variable, remove the $ and no quotes, otherwise in quotes
-        cmd = parms["match"].group(cmd_idx)[1:] if parms["match"].group(cmd_idx)[
-                                                       0] == "$" else f'{quote_style}{parms["match"].group(cmd_idx)}{quote_style}'
+    def spawn_generator(self, match, indentation):
+        command = self._command_expression(match.group("command"))
         # Build the next resolver method name
         resolver_name = f"__watiba_resolver_{self.resolver_count}__"
         self.resolver_count += 1
-
-        # Include promise return if there's an assignment on the stmt
-        promise_assign = parms["match"].group(assign_idx) if parms["match"].group(assign_idx) else ""
-
-        # Add in args if there's any
-        resolver_args = parms["match"].group(args_idx) if parms["match"].group(args_idx) else "{}"
-
-        h = f'"{hostname}"' if hostname[0] != "$" else hostname
-        h = h.replace("$", "") if h and h[0] == "$" else h
-
-        # Queue up async call which is executed (spit out) at the end of the w_spawn block
+        assignment = match.group("assignment") or ""
+        resolver_args = match.group("args") or "{}"
+        host = self._host_expression(match.group("host"))
         self.spawn_call.append(
-            f'{parms["indentation"]}{promise_assign}{watiba_ref}.spawn({cmd}, {resolver_name}, {resolver_args}, {h})')
+            f"{indentation}{assignment}{watiba_ref}.spawn("
+            f"{command}, {resolver_name}, {resolver_args}, {host})"
+        )
+        self.output.append(f"{indentation}def {resolver_name}(promise, args):")
 
-        # Convert spawn `cmd`: statement to proper Python function definition
-        self.output.append(f'{parms["indentation"]}def {resolver_name}(promise, args):')
+    def backticks_generator(self, statement):
+        def replace(match):
+            command = self._command_expression(match.group("command"))
+            context = match.group("context") is None
+            host = match.group("host")
+            if host:
+                return f"{watiba_ref}.ssh({command}, {self._host_expression(host)}, {context})"
+            return f"{watiba_ref}.bash({command}, {context})"
 
-    # Generator for `cmd` expressions
-    def backticks_generator_with_host(self, parms):
-        host = parms["match"].group(3)
-        if host[0] == "$":
-            host = host.replace("$", "")
-        else:
-            host = f'"{host}"'
-        self.backticks_generator(parms, host)
+        return self.backtick_pattern.sub(replace, statement)
 
-    # Generator for `cmd` expressions
-    def backticks_generator(self, parms, host=None):
-        s = str(parms["statement"])
-
-        # Run through the statement and replace ALL the backticked shell commands with Watiba function calls
-        m = parms["match"]
-        while m:
-            # This flag control Watiba's CWD tracking
-            context = False if m.group(1) == "-" else True
-            cmd = m.group(2)
-
-            # Make sure the string to be replaced includes the dash if needed
-            repl_str = f'{"-" if not context else ""}`{cmd}`'
-
-            # Replace the backticked commands with a Watiba function call
-            if cmd[0] == "$":
-                cmd = cmd[1:]
-            else:
-                quote_style = "'" if cmd.find("'") < 0 else '"'
-                cmd = f"{quote_style}{cmd}{quote_style}"
-            if not host:
-                s = s.replace(repl_str, f"{watiba_ref}.bash({cmd}, {context})", 1)
-            else:
-                s = s.replace(repl_str, f"{watiba_ref}.ssh({cmd}, {host}, {context})", 1)
-            # Test for more backticked commands
-            m = re.search(parms["pattern"], s)
-
-        self.output.append(s)
+    def _close_resolver(self):
+        if not re.match(r"^return(?:\s|$)", self.last_stmt.strip()):
+            print("ERROR: Resolver block must end with a return statement.", file=sys.stderr)
+            print(f"    Block near line {self.stmt_count} ended with:", file=sys.stderr)
+            print(f"      {self.last_stmt}", file=sys.stderr)
+            sys.exit(1)
+        self.output.append(self.spawn_call.pop())
 
     # Compile the passed statement
     def compile(self, stmt):
-        # If this is the first statement to compile, keep it to generate the #! version header stuff...
+        self.stmt_count += 1
         if self.first_time:
-            self.output.insert(0, stmt)
             self.first_time = False
-            return
+            if stmt.startswith("#!"):
+                self.output.insert(0, stmt)
+                self.current_statement = stmt
+                return
 
         # Track our current statement
         self.current_statement = stmt
 
-        # Copy the statement to a local variable
-        s = str(stmt)
-        self.stmt_count += 1
+        stripped = stmt.strip()
+        indentation = stmt[:len(stmt) - len(stmt.lstrip())]
+        stmt_level = len(indentation) if stripped and not stripped.startswith("#") else -1
 
-        # Spit out spawn call if it's queued up (on block breaks)
+        while self.spawn_call and stmt_level != -1:
+            spawn_level = len(self.spawn_call[-1]) - len(self.spawn_call[-1].lstrip())
+            if stmt_level > spawn_level:
+                break
+            self._close_resolver()
 
-        # Indention level of current statement
-        stmt_level = len(s) - len(s.lstrip()) if len(s.strip()) > 0 and s.lstrip()[0] != "#" else -1
+        if not stripped or stripped.startswith("#"):
+            self.output.append(stmt)
+            return
 
-        # Indention level of last spawn expression
-        spawn_level = len(self.spawn_call[-1]) - len(self.spawn_call[-1].lstrip()) if len(self.spawn_call) > 0 else -1
+        match = self.spawn_pattern.match(stripped)
+        if match:
+            self.spawn_generator(match, indentation)
+            return
 
-        # If we're on an indention change and there's valid levels to compare,
-        #   check if we're done with the resolver block
-        resolver_level_completed = stmt_level == spawn_level if stmt_level != -1 else False
+        if stripped.startswith("spawn ") or "= spawn " in stripped:
+            print(f"ERROR: Invalid spawn expression at line {self.stmt_count}: {stripped}", file=sys.stderr)
+            sys.exit(1)
 
-        # If done with the resolver block, did it terminate with a resolve value?
-        if resolver_level_completed:
-            if re.search("^return ", self.last_stmt.strip()):
-                print(self.spawn_call.pop())
-            else:
-                print("ERROR: Resolver block not properly terminated with return.", file=sys.stderr)
-                print(f"    Block at line {self.stmt_count} incorrectly terminated with:", file=sys.stderr)
-                print(f"      {self.last_stmt}", file=sys.stderr)
-                sys.exit(1)
+        match = re.match(r"^spawn-ctl\s+(.+)$", stripped)
+        if match:
+            self.output.append(f"{indentation}{watiba_ref}.spawn_ctlr.set_parms({match.group(1)})")
+            return
 
-        # Check the statement for a Watiba expresion
-        for ex in self.expressions:
-            m = re.search(ex, s.strip())
+        match = re.match(r"^watiba-ctl\s+(.+)$", stripped)
+        if match:
+            self.output.append(f"{indentation}{watiba_ref}.set_parms({match.group(1)})")
+            return
 
-            # We have a Watiba expression. Generate the code.
-            if m:
-                return self.expressions[ex](
-                    {"match": m,
-                     "statement": s,
-                     "pattern": ex,
-                     "indentation": stmt[0:len(stmt) - len(stmt.lstrip())]
-                     })
+        match = self.hook_pattern.match(stripped)
+        if match:
+            kind = match.group("kind")
+            recursive = not kind.endswith("-nr")
+            post = kind.startswith("post-")
+            self.output.append(
+                f"{indentation}{watiba_ref}.add_hook({match.group('pattern')}, "
+                f"{match.group('function')}, {match.group('args')}, "
+                f"recursive={recursive}, post={post})"
+            )
+            return
+
+        match = re.match(r"^remove-hooks(?:\s+(.+))?$", stripped)
+        if match:
+            args = match.group(1) or ""
+            self.output.append(f"{indentation}{watiba_ref}.remove_hooks({args})")
+            return
+
+        match = self.chain_pattern.match(stripped)
+        if match:
+            assignment = match.group("assignment") or ""
+            command = self._command_expression(match.group("command"))
+            self.output.append(
+                f"{indentation}{assignment}{watiba_ref}.chain({command}, {match.group('args')})"
+            )
+            return
+
+        if "`" in stmt:
+            self.output.append(self.backticks_generator(stmt))
+            return
 
         self.output.append(stmt)
 

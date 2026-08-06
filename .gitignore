@@ -1,8 +1,13 @@
 .idea/
+.venv/
+.venv-*/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
 dist/
 tmp/
 notes.txt
 .pypirc
 venv/
-watiba.egg-info/
 log/

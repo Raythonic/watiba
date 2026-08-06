@@ -16,18 +16,19 @@
 # Author: Ray Walker  raythonic@gmail.com
 ####################################################################################################
 
-# Make sure we're in the watiba virtual environment
-declare -i chk_venv=$(which python3 | grep "venv_watiba" | wc -l)
+# Make sure we're in the shared Python 3.12 environment.
+expected_python=/home/rwalk/rwalkvenv3.12/bin/python3
+active_python=$(command -v python3)
 
-if [ $chk_venv -ne 1 ]
+if [ "$(readlink -f "$active_python")" != "$(readlink -f "$expected_python")" ]
 then
-  echo "You forgot to source your venv"
-  echo "Do this with this command:  .  ~rwalk/venv_watiba/bin/activate"
-  exit 0
+  echo "Activate /home/rwalk/rwalkvenv3.12 before building Watiba."
+  exit 1
 fi
 
-# Make sure we're in a known CWD
-cd ~/git/watiba
+# Make sure we're in the repository regardless of where the script was launched.
+project_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+cd "$project_dir"
 
 # Get our command line argument
 parms="$1"
@@ -109,9 +110,6 @@ echo "${new_ver}" > version.conf
 
 # Get current date
 dat=$(date +"%Y\/%m\/%d")
-
-# Dump our dependencies
-python3 -m pip freeze > requirements.txt
 
 echo "-----------------------------------------------------------------------------------------"
 echo "Compiling doc with new version ${new_ver}" | tee -a ${log}

@@ -183,10 +183,10 @@ except watiba.WTChainException as ex:
     print(f"ERROR in chain: {ex.message}")
 
 
-def pre-tar(match):
-    print(match).group(1))
+def pre_tar(match, parms):
+    print(match.group(1))
+    return True
 
-hook-cmd "tar -zcvf (\S.*)" "pre-tar" "{}"
+hook-cmd r"tar -zcvf (\S.*)" pre_tar {}
 
 print("test complete.")
-

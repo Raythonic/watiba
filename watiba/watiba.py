@@ -5,12 +5,12 @@ Author: Ray Walker
 Raythonic@gmail.com
 '''
 
-from subprocess import Popen, PIPE, STDOUT
+from subprocess import Popen, PIPE
 import re
 import os
 import threading
 import copy
-import inspect
+import shlex
 from watiba.wtspawncontroller import WTSpawnController, WTSpawnException
 from watiba.wtpromise import WTPromise
 from watiba.wtoutput import WTOutput
@@ -29,14 +29,15 @@ class WTChainException(Exception):
 ###############################################################################################################
 # Singleton object with no side effects
 # Executes the command and returns a new WTOutput object
-class Watiba(Exception):
+class Watiba:
 
     def __init__(self):
         self.spawn_ctlr = WTSpawnController()
         self.parms = {"ssh-port":22}
         self.hooks = {}
         self.hook_flags = {}
-        self.active_patterns = {}
+        self._hook_state = threading.local()
+        self._spawn_state = threading.local()
 
     # Merge in Watiba parameter changes
     def set_parms(self, args):
@@ -51,12 +52,14 @@ class Watiba(Exception):
             return self.bash(command, context, run_post_hooks=False)
         else:
             # A simple wrapper for self.bash()
-            return self.ssh(command, host)
+            return self.ssh(command, host, context=False, run_post_hooks=False)
 
     # Run command remotely
     # Returns WTOutput object
-    def ssh(self, command, host, context=True, port=None):
-        return self.bash(f'ssh -p {port if port else self.parms["ssh-port"]} {host} "{command}"', context)
+    def ssh(self, command, host, context=True, port=None, run_post_hooks=True):
+        ssh_port = port if port is not None else self.parms["ssh-port"]
+        ssh_command = f"ssh -p {shlex.quote(str(ssh_port))} -- {shlex.quote(str(host))} {shlex.quote(command)}"
+        return self.bash(ssh_command, context, run_post_hooks=run_post_hooks)
 
     # command - command string to execute
     # context - track or not track current dir
@@ -96,9 +99,10 @@ class Watiba(Exception):
                   stderr=PIPE,
                   executable="/bin/bash",
                   close_fds=True)
-        out.exit_code = p.wait()
-        out.stdout = p.stdout.read().decode('utf-8').split('\n')
-        out.stderr = p.stderr.read().decode('utf-8').split('\n')
+        stdout, stderr = p.communicate()
+        out.exit_code = p.returncode
+        out.stdout = stdout.decode("utf-8", errors="replace").splitlines()
+        out.stderr = stderr.decode("utf-8", errors="replace").splitlines()
 
         # Are we supposed to track context?  Yes, then set Python's CWD to where the command took us
         if context:
@@ -129,32 +133,33 @@ class Watiba(Exception):
         return out
 
     def spawn(self, command, resolver, spawn_args, host="localhost"):
-        # Get parent's local var frame
-        parent_locals = inspect.currentframe().f_back.f_locals
-
         # Create a new promise object
-        l_promise = WTPromise(command, host) if host else WTPromise(command)
+        l_promise = WTPromise(command, host or "localhost", copy.copy(spawn_args))
 
-        # Chain our promise in if we're a child
-        if 'promise' in parent_locals \
-                and str(type(parent_locals['promise'])).find("WTPromise") >= 0 \
-                and hasattr(parent_locals['promise'], "__WTPROMISE_STAMP__") \
-                and hasattr(parent_locals['promise'], "resolved") \
-                and inspect.ismethod(getattr(parent_locals['promise'], "resolved")):
-            # Link this child promise to its parent
-            l_promise.relate(parent_locals['promise'])
+        # A spawn issued by a resolver is a child of that resolver's promise.
+        parent_promise = getattr(self._spawn_state, "current_promise", None)
+        if isinstance(parent_promise, WTPromise):
+            l_promise.relate(parent_promise)
         
 
         # This is run under the new thread, and under the control of wtspawncontroller.py (i.e. spawn controller calls this function)
         def run_command(promise, thread_args):
-            # Get our thread id
-            promise.thread_id = threading.get_ident()
+            try:
+                # Get our thread id
+                promise.thread_id = threading.get_ident()
 
-            # Execute the command in a new thread (this is synchronously run)
-            promise.output = self.execute(thread_args["command"], thread_args["host"])
+                # Execute the command in a new thread (this is synchronously run)
+                promise.output = self.execute(thread_args["command"], thread_args["host"])
 
-            # Call promise resolver
-            promise.set_resolution(thread_args["resolver"](promise, copy.copy(thread_args["spawn-args"])))
+                # Call promise resolver
+                self._spawn_state.current_promise = promise
+                try:
+                    resolution = thread_args["resolver"](promise, copy.copy(thread_args["spawn-args"]))
+                    promise.set_resolution(resolution)
+                finally:
+                    self._spawn_state.current_promise = None
+            except BaseException as ex:
+                promise.set_exception(ex)
 
 
         # Call wtspawncontroller.py to run the command under a new thread
@@ -164,24 +169,26 @@ class Watiba(Exception):
             # Control the threads (the controller starts the thread)
             self.spawn_ctlr.start(l_promise, run_command, thread_args)
 
-        except WTSpawnException as ex:
-            print(f"ERROR.  w_async thread execution failed. {ex.promise.command}")
+        except WTSpawnException:
+            raise
 
         return l_promise
     
 
     # Determine if the command pattern can be run at this time
     # Return the condition of the regex match() function
-    def is_hook_runnable(self, command_regex, command, post_hook):
+    def is_hook_runnable(self, hook_key, command, post_hook):
+        command_regex, recursive, configured_post = hook_key
 
         # Avoid a loop on this command pattern
         # Note: Doesn't matter if the command matches the pattern or not.
-        if self.hook_flags[command_regex]["recursive"] == False and command_regex in self.active_patterns:
+        active_patterns = getattr(self._hook_state, "active_patterns", set())
+        if not recursive and command_regex in active_patterns:
             return None
         
         # See if we're to run this hook before or after the command
         # Note: Doesn't matter if the command matches the pattern or not.
-        if self.hook_flags[command_regex]["post"] != post_hook:
+        if configured_post != post_hook:
             return None
 
         # Tell the caller if the command passed to us matches the regex expression
@@ -202,10 +209,11 @@ class Watiba(Exception):
         return_obj = {"success": True, "failed-hooks": []}
 
         # Loop through the hooks and run them.  Also track ones that fail (i.e. report a False return code)
-        for command_regex, functions in self.hooks.items():
+        for hook_key, functions in list(self.hooks.items()):
+            command_regex = hook_key[0]
 
             # Are we allowed to run this hook for this command?
-            mat = self.is_hook_runnable(command_regex, command, post_hook)
+            mat = self.is_hook_runnable(hook_key, command, post_hook)
 
             # Does this command have attached hooks?
             if mat:
@@ -214,13 +222,15 @@ class Watiba(Exception):
                 for func, parms in functions.items():
 
                     # Track this pattern as an active hook
-                    self.active_patterns[command_regex] = True
+                    active_patterns = getattr(self._hook_state, "active_patterns", set())
+                    self._hook_state.active_patterns = active_patterns
+                    active_patterns.add(command_regex)
 
                     # Call the hook.  The hook must return True if succeeded, False if failed
-                    rc = func(mat, parms)
-
-                    # Remove tracking of this pattern
-                    del self.active_patterns[command_regex]
+                    try:
+                        rc = func(mat, parms)
+                    finally:
+                        active_patterns.discard(command_regex)
 
                     # If caller's hook didn't return a bool value, then it is marked as failed
                     rc = False if type(rc) != bool else rc
@@ -239,7 +249,7 @@ class Watiba(Exception):
         for pipe_to, command in pipe_target.items():
             for line in pipe_source:
                 # The output for piped command is not kept, but is checked for the exit code
-                out = self.ssh(f'echo "{line}" | {command}', pipe_to)
+                out = self.ssh(f"printf '%s\\n' {shlex.quote(line)} | {command}", pipe_to)
                 if out.exit_code != 0:
                     raise WTChainException(f'Piped command failed on {pipe_to}.  Error code: {out.exit_code}', pipe_to,
                                            command, out)
@@ -272,11 +282,11 @@ class Watiba(Exception):
 
             # If we are supposed to pipe the stdout for this host, do it
             if host in pipe_stdout:
-                self.pipe(output[host].stdout, pipe_stdout)
+                self.pipe(output[host].stdout, pipe_stdout[host])
 
             # If we are supposed to pipe the stderr for this host, do it
             if host in pipe_stderr:
-                self.pipe(output[host].stderr, pipe_stderr)
+                self.pipe(output[host].stderr, pipe_stderr[host])
 
         return output
 
@@ -284,25 +294,9 @@ class Watiba(Exception):
     # Add a new hook.  If command pattern already exists, add the functions to it otherwise create a new pattern level.
     #  Set recursive to True to keep hook from looping because it has a matching command within it
     def add_hook(self, pattern, function, parms, recursive=True, post=False):
-
-        defined_pattern = pattern in self.hooks
-        defined_function = function in self.hooks[pattern] if defined_pattern else False
-
-        # If the command pattern and hook function are new, then add them
-        if defined_pattern and not defined_function:
-            self.hooks[pattern].update({function: parms})
-            return
-        
-        # If the command pattern already has this hook function 
-        # defined, just update the parms for the hook function
-        #  Note: defined_function cannot be True if defined_pattern is false
-        if defined_function:
-            self.hooks[pattern][function] = parms
-            return
-        
-        # At this point we know the pattern has not been defined yet, so define it
-        self.hooks.update({pattern : {function: parms}})
-        self.hook_flags[pattern] = {"recursive": recursive, "post": post}
+        hook_key = (pattern, bool(recursive), bool(post))
+        self.hooks.setdefault(hook_key, {})[function] = parms
+        self.hook_flags[hook_key] = {"recursive": bool(recursive), "post": bool(post)}
 
     
     # Remove a specific hook, keyed by pattern, or all hooks if no pattern is passed
@@ -315,8 +309,6 @@ class Watiba(Exception):
             return
 
         # Remove the hook for only the pattern passed
-        if pattern in self.hooks:
-            del self.hooks[pattern]
-            del self.hook_flags[pattern]
-            return
-        
+        for hook_key in [key for key in self.hooks if key[0] == pattern]:
+            del self.hooks[hook_key]
+            self.hook_flags.pop(hook_key, None)

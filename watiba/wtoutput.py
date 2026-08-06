@@ -1,5 +1,5 @@
-# The object returned to the caller of _watiba_ for command results
-class WTOutput(Exception):
+# The object returned to the caller of Watiba for command results.
+class WTOutput:
     def __init__(self):
         self.stdout = []
         self.stderr = []

@@ -8,7 +8,6 @@ Raythonic@gmail.com
 import sys
 import time
 import threading
-from watiba.wtoutput import WTOutput
 
 
 class WTWaitException(Exception):
@@ -23,9 +22,9 @@ class WTKillException(Exception):
         self.message = message
 
 
-# The object returned for Watbia thread spawns
-class WTPromise(Exception):
-    def __init__(self, command, host="localhost"):
+# The object returned for Watiba thread spawns.
+class WTPromise:
+    def __init__(self, command, host="localhost", spawn_args=None):
         self.output = None
         self.host = host
         self.resolution = False
@@ -38,8 +37,11 @@ class WTPromise(Exception):
         self.children = []
         self.parent = None
         self.command = command
+        self.spawn_args = {} if spawn_args is None else spawn_args
+        self.exception = None
         self.depth = 0
         self.__WTPROMISE_STAMP__ = True
+        self._lock = threading.RLock()
 
     # Getter to check promise state
     def resolved(self):
@@ -47,15 +49,31 @@ class WTPromise(Exception):
 
     # Set promise to resolved state
     def set_resolved(self):
-        self.end_time = time.time()
         self.set_resolution(True)
 
     # Set resolution state from resolver
     # The OR is to ensure we don't override a resolved promise from a race condition!
     # once some thread marks it resolved, it's resolved.
     def set_resolution(self, resolution):
-        if type(resolution) == "bool":
-            self.resolution |= resolution
+        if not isinstance(resolution, bool):
+            raise TypeError(
+                "Watiba resolver blocks must return True or False; "
+                f"got {type(resolution).__name__}"
+            )
+        with self._lock:
+            self.resolution = self.resolution or resolution
+            if self.resolution and self.end_time is None:
+                self.end_time = time.time()
+
+    def set_exception(self, exception):
+        """Record a worker failure so waiters fail instead of hanging forever."""
+        with self._lock:
+            self.exception = exception
+            self.end_time = time.time()
+
+    def raise_if_failed(self):
+        if self.exception is not None:
+            raise self.exception
 
     ####################################################################################################################
     # kill() here just in case it's needed.  Not documenting right now.
@@ -109,14 +127,15 @@ class WTPromise(Exception):
     # Count resolve promises in tree
     def resolved_count(self, start_at_top=True):
         # Full tree count?
-        return self.spawn_count(resolved_only=True, start_at_top=True)
+        return self.spawn_count(resolved_only=True, start_at_top=start_at_top)
 
     # Encapsulate setting relating parent/child promises
     def relate(self, parent_promise):
         # Link child to parent
         self.parent = parent_promise
         self.depth = self.parent.depth + 1
-        self.parent.children.append(self)
+        with self.parent._lock:
+            self.parent.children.append(self)
 
     # Check the resolved state of nodes in promise tree.
     # Returns True of all nodes (promises) in tree or a subtree, starting from the position given,
@@ -177,51 +196,70 @@ class WTPromise(Exception):
             self.tree_dump(child, indent(dashes), header)
 
     # Wait until this promise and all its children down the tree are ALL resolved
-    def join(self, args={}):
-        sleep_time = int(args["sleep"]) if "sleep" in args else .5
-        expiration = int(args["expire"]) if "expire" in args else -1
+    def join(self, args=None):
+        args = {} if args is None else args
+        sleep_time = float(args.get("sleep", .5))
+        expiration = int(args.get("expire", -1))
+        if sleep_time < 0 or expiration == 0 or expiration < -1:
+            raise ValueError("sleep must be non-negative and expire must be -1 or a positive integer")
 
         # Pause until promise or promises resolved
         while not self.tree_resolved(self):
+            self._raise_tree_failure(self)
             time.sleep(sleep_time)
             if expiration != -1:
                 expiration -= 1
                 if expiration == 0:
                     self.tree_dump()
                     raise WTWaitException(self, "Join exceeded expiration period")
+        self._raise_tree_failure(self)
 
     # Wait on just this promise
-    def wait(self, args={}):
-        sleep_time = int(args["sleep"]) if "sleep" in args else .5
-        expiration = int(args["expire"]) if "expire" in args else -1
+    def wait(self, args=None):
+        args = {} if args is None else args
+        sleep_time = float(args.get("sleep", .5))
+        expiration = int(args.get("expire", -1))
+        if sleep_time < 0 or expiration == 0 or expiration < -1:
+            raise ValueError("sleep must be non-negative and expire must be -1 or a positive integer")
 
         # Pause until promise or promises resolved
         while not self.resolved():
+            self.raise_if_failed()
             time.sleep(sleep_time)
             if expiration != -1:
                 expiration -= 1
                 if expiration == 0:
                     self.tree_dump()
-                    raise WTWaitException(self, "Join exceeded expiration period")
+                    raise WTWaitException(self, "Wait exceeded expiration period")
+        self.raise_if_failed()
+
+    def _raise_tree_failure(self, promise):
+        promise.raise_if_failed()
+        for child in list(promise.children):
+            self._raise_tree_failure(child)
 
     # Establish a watcher thread for this promise
     # Does not pause like join or wait.
     #  Calls back user's method, specified in "notify" argument, if promise hasn't completed in time
-    def watch(self, watcher_method, args={}):
+    def watch(self, watcher_method, args=None):
+        args = {} if args is None else args
         # Thread function.  Wraps watcher notification method.
         def watcher(promise, watcher_method, args):
-            sleep_time = int(args["sleep"]) if "sleep" in args else .250
-            expiration = int(args["expire"]) * 4 if "expire" in args else 60
+            sleep_time = float(args.get("sleep", .250))
+            expiration_seconds = float(args.get("expire", 15))
+            if sleep_time <= 0 or expiration_seconds < 0:
+                raise ValueError("watch sleep must be positive and expire must be non-negative")
+            deadline = time.monotonic() + expiration_seconds
 
             # Sleep in 1 second chunks so if resolved we end quickly
-            while expiration > 0 and not promise.resolved():
-                time.sleep(sleep_time)
-                expiration -= 1
+            while time.monotonic() < deadline and not promise.resolved() and promise.exception is None:
+                time.sleep(min(sleep_time, max(0, deadline - time.monotonic())))
 
             # Call the user's watcher if promise still not resolved
-            if not self.resolved():
-                watcher_method(promise, args)
+            if not promise.resolved():
+                watcher_method(promise, copy_args)
 
         # Spawn a watcher thread
-        self.watcher = threading.Thread(target=watcher, args=(self, watcher_method, args))
+        copy_args = dict(self.spawn_args)
+        self.watcher = threading.Thread(target=watcher, args=(self, watcher_method, args), daemon=True)
         self.watcher.start()

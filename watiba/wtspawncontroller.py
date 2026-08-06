@@ -18,6 +18,7 @@ class WTSpawnException(Exception):
 class WTSpawnController():
     def __init__(self):
         self.promises = []
+        self._lock = threading.RLock()
         self.args = {"max": 10,  # Max number of threads allowed before slowdown mode
                      "sleep-floor": .125,  # Starting sleep value
                      "sleep-ceiling": 3,  # Maximum sleep value
@@ -29,7 +30,8 @@ class WTSpawnController():
 
     # clean out any promises that have resolved
     def promises_gc(self):
-        self.promises = [p for p in self.promises if not p.resolved()]
+        with self._lock:
+            self.promises = [p for p in self.promises if not p.resolved() and p.exception is None]
 
     def default_error(self, promise, promise_count):
         print(f"ERROR: Maximum promise/thread count reached: {promise_count}")
@@ -49,12 +51,13 @@ class WTSpawnController():
 
         # Check to see if we somehow are already tracking this promise (shouldn't happen)
         for p in self.promises:
-            if p.resolved():
+            if p is promise:
                 track_promise = False
 
         # Add this promise to our tracking list
         if track_promise:
-            self.promises.append(promise)
+            with self._lock:
+                self.promises.append(promise)
 
         # Don't start the new thread until we're below the threshold
         # This is slowdown mode...
@@ -94,4 +97,9 @@ class WTSpawnController():
 
     # Merge in parameters settings
     def set_parms(self, parms):
-        self.args = {**self.args, **parms}
+        updated = {**self.args, **parms}
+        if updated["max"] < 1:
+            raise ValueError("spawn-ctl max must be at least 1")
+        if updated["sleep-floor"] < 0 or updated["sleep-ceiling"] < 0 or updated["sleep-increment"] < 0:
+            raise ValueError("spawn-ctl sleep values must be non-negative")
+        self.args = updated
